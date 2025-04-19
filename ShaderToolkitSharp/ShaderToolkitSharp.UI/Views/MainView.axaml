@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="clr-namespace:ShaderToolkitSharp.UI.Views"
+             xmlns:vm="clr-namespace:ShaderToolkitSharp.UI.ViewModels"
+             xmlns:AvalonEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ShaderToolkitSharp.UI.Views.MainView"
+             x:DataType="vm:MainViewModel">
+  <Design.DataContext>
+    <!-- This only sets the DataContext for the previewer in an IDE,
+         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+    <vm:MainViewModel />
+  </Design.DataContext>
+
+  <StackPanel>
+    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+    <StackPanel Orientation="Horizontal">
+      <views:SourceCodeEditorView/>
+
+    <AvalonEdit:TextEditor Name="EditorCompiledCode"
+                               FontFamily="Cascadia Code,Consolas,Menlo,Monospace"
+                               HorizontalScrollBarVisibility="Auto"
+                               VerticalScrollBarVisibility="Visible"
+                               FontWeight="Light"
+                               FontSize="14"
+                               Watermark="Start typing to bring your ideas to life...">
+      <AvalonEdit:TextEditor.ContextFlyout>
+        <MenuFlyout>
+          <MenuItem Header="Copy" InputGesture="ctrl+C"></MenuItem>
+          <MenuItem Header="Cut" InputGesture="ctrl+X" ></MenuItem>
+          <MenuItem Header="Paste" InputGesture="ctrl+V"></MenuItem>
+          <MenuItem Header="-"/>
+          <MenuItem Header="Select All" InputGesture="ctrl+A"></MenuItem>
+        </MenuFlyout>
+      </AvalonEdit:TextEditor.ContextFlyout>
+      <!--<AvalonEdit:TextEditor.Styles>
+        <Style Selector="editing|LineNumberMargin">
+          <Setter Property="MinWidthInDigits" Value="3" />
+        </Style>
+      </AvalonEdit:TextEditor.Styles>-->
+    </AvalonEdit:TextEditor>
+    </StackPanel>
+  </StackPanel>
+</UserControl>
