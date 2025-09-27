@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ShaderToolkitSharp.UI\ShaderToolkitSharp.UI.csproj" />
-    <ProjectReference Include="..\ShaderToolkitSharp\ShaderToolkitSharp.csproj" />
+    <ProjectReference Include="..\ShaderToolkit.UI\ShaderToolkit.UI.csproj" />
+    <ProjectReference Include="..\ShaderToolkit\ShaderToolkit.csproj" />
   </ItemGroup>
 </Project>

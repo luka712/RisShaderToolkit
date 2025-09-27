@@ -398,3 +398,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# ShaderToolkitC
+ShaderToolkitC/cmake-build-debug
+ShaderToolkitC/cmake-build-debugvisualstudio
+ShaderToolkitC/vcpkg_installed

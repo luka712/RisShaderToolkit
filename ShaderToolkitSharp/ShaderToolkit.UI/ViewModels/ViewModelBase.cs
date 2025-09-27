@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace ShaderToolkitSharp.UI.ViewModels;
+namespace ShaderToolkit.UI.ViewModels;
 
 public class ViewModelBase : ObservableObject
 {

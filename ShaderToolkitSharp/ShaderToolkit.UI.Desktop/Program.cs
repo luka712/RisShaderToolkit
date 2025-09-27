@@ -2,7 +2,8 @@
 
 using Avalonia;
 
-namespace ShaderToolkitSharp.UI.Desktop;
+namespace 
+    .UI.Desktop;
 
 class Program
 {

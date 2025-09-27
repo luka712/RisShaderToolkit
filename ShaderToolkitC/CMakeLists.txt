@@ -1,0 +1,56 @@
+cmake_minimum_required(VERSION 3.30)
+project(shader_toolkit_c LANGUAGES CXX)
+
+set(TARGET_NAME shader_toolkit_c)
+set(TESTS_NAME ${TARGET_NAME}_tests)
+
+# C++ standard
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_OSX_ARCHITECTURES "arm64")
+
+# Dependencies
+include(cmake/VcpkgDependencies.cmake)
+include(cmake/VcpkgTestDependencies.cmake)
+
+# Include directories
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
+# Source files
+file(GLOB SRC_FILES src/*.cpp src/**/*.cpp src/**/**/*.cpp src/**/**/**/*.cpp)
+
+
+# Define the target FIRST
+add_library(${TARGET_NAME} SHARED
+        library.cpp
+        ${SRC_FILES}
+)
+
+add_executable(${TESTS_NAME}
+        ${SRC_FILES}
+        tests/tests.cpp
+        tests/session_tests.cpp
+)
+
+# Include dirs
+target_include_directories(${TARGET_NAME} PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${PACKAGES_INCLUDE}
+)
+target_include_directories(${TESTS_NAME} PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${PACKAGES_INCLUDE}
+        ${TEST_PACKAGES_INCLUDE}
+)
+
+# SOURCES
+file(GLOB COMMON_SOURCES src/*.cpp src/**/*.cpp src/**/**/*.cpp src/**/**/**/*.cpp)
+
+# Link libraries
+target_link_libraries(${TARGET_NAME} PRIVATE
+        ${PACKAGES_LIBRARIES}
+)
+target_link_libraries(${TESTS_NAME} PRIVATE
+        ${PACKAGES_LIBRARIES}
+        ${TEST_PACKAGES_LIBRARIES}
+)
+

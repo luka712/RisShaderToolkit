@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace ShaderToolkitSharp
+namespace ShaderToolkit
 {
     /// <summary>
     /// Compiles glsl to glsl using shaderc.

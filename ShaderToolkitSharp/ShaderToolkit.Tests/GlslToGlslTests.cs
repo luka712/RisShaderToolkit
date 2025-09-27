@@ -1,4 +1,4 @@
-namespace ShaderToolkitSharp.Tests
+namespace ShaderToolkit.Tests
 {
     [Collection("GlslToGlslTests")]
     public class GlslToGlslTests
