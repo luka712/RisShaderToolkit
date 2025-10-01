@@ -11,6 +11,7 @@ set(CMAKE_OSX_ARCHITECTURES "arm64")
 # Dependencies
 include(cmake/VcpkgDependencies.cmake)
 include(cmake/VcpkgTestDependencies.cmake)
+include(cmake/CopyTestFiles.cmake)
 
 # Include directories
 include_directories(${CMAKE_SOURCE_DIR}/include)
