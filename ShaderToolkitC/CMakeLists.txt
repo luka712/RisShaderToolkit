@@ -18,7 +18,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # Source files
 file(GLOB SRC_FILES src/*.cpp src/**/*.cpp src/**/**/*.cpp src/**/**/**/*.cpp)
-
+file(GLOB TEST_SRC_FILES tests/*.cpp tests/**/*.cpp tests/**/**/*.cpp tests/**/**/**/*.cpp)
 
 # Define the target FIRST
 add_library(${TARGET_NAME} SHARED
@@ -28,8 +28,7 @@ add_library(${TARGET_NAME} SHARED
 
 add_executable(${TESTS_NAME}
         ${SRC_FILES}
-        tests/tests.cpp
-        tests/session_tests.cpp
+        ${TEST_SRC_FILES}
 )
 
 # Include dirs
