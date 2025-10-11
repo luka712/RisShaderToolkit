@@ -9,7 +9,7 @@ using namespace shader_toolkit;
 // TODO: find a better way to locate fxc.exe
 const std::string SDK_PATH = "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.22621.0\\x64\\fxc.exe";
 
-bool compile_hlsl_to_fxc()
+bool proces_compile_hlsl_to_fxc()
 {
 	std::string input = "D:/Projects/ShaderToolkitSharp/ShaderToolkitC/test_files/sprite_vs.hlsl";
 	std::string output = "D:/Projects/ShaderToolkitSharp/ShaderToolkitC/test_files/sprite_vs_fxc.cso";
@@ -23,6 +23,6 @@ bool compile_hlsl_to_fxc()
 }
 
 
-TEST_CASE("slang tests", "[compile_hlsl_to_fxc]") {
-	REQUIRE(compile_hlsl_to_fxc());
+TEST_CASE("process tests", "[proces_compile_hlsl_to_fxc]") {
+	REQUIRE(proces_compile_hlsl_to_fxc());
 }

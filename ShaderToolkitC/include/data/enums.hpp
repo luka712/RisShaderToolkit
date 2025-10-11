@@ -1,7 +1,3 @@
-//
-// Created by lukaa on 1.10.2025..
-//
-
 #ifndef ENUMS_H
 #define ENUMS_H
 
