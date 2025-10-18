@@ -7,6 +7,7 @@
 #include <map>
 #include "slang/slang_compile_result.hpp"
 #include "data/enums.hpp"
+#include <vector>
 
 using Slang::ComPtr;
 
@@ -42,6 +43,21 @@ namespace shader_toolkit {
 			const std::string& entryPoint = "main"
 		);
 
+		//! Compiles a Slang shader file to the specified target and profile. 
+		//! This is low-level function that directly uses the Slang API.
+		//! @param filePath The path to the Slang shader file.
+		//! @param compileTarget The target to compile to (e.g., SLANG_HLSL).
+		//! @param profile The profile to compile to (e.g., "sm_5_0").
+		//! @param stages The shader stages (e.g., SLANG_STAGE_VERTEX).
+		//! @param entryPoints The entry points info function name. Must match the stages count.
+		SlangCompileResult compile(
+			const std::string& filePath,
+			SlangCompileTarget compileTarget,
+			const std::string& profile,
+			std::vector<SlangStage> stages,
+			std::vector<std::string> entryPoints
+		);
+
 		//! Compiles an HLSL shader file to the specified profile and stage.
 		//! @param filePath The path to the HLSL shader file.
 		//! @param stage The shader stage (e.g., ShaderStage::Vertex). By default, it is ShaderStage::Vertex.
@@ -53,11 +69,36 @@ namespace shader_toolkit {
 			const std::string& entryPoint = "main",
 			HlslProfile profile = HlslProfile::SM_5_0);
 
+		//! Compiles a Metal shader file to the specified profile and stage.
+		//! @param filePath The path to the Metal shader file.
+		//! @param stage The shader stage (e.g., ShaderStage::Vertex). By default, it is ShaderStage::Vertex.
+		//! @param entryPoint The entry point function name (default is "main").
+		//! @param profile The Metal profile to compile to (e.g., "metal2.0"). By default, it is MetalProfile::MSL_2_0.
+		SlangCompileResult compileToMetal(
+			const std::string& filePath,
+			ShaderStage stage = ShaderStage::Vertex,
+			const std::string& entryPoint = "main",
+			MetalProfile profile = MetalProfile::MSL_2_0
+			);
+
+		//! Compiles a Metal shader file to the specified profile and stages.
+		//! @param filePath The path to the Metal shader file.
+		//! @param stages The shader stages (e.g., ShaderStage::Vertex).
+		//! @param entryPoints The entry points info function name. Must match the stages count.
+		//! @param profile The Metal profile to compile to (e.g., "metal2.0"). By default, it is MetalProfile::MSL_2_0.
+		SlangCompileResult compileToMetal(
+			const std::string& filePath,
+			std::vector<ShaderStage> stages,
+			std::vector<std::string> entryPoints,
+			MetalProfile profile = MetalProfile::MSL_2_0
+		);
+
 	private:
 		ComPtr<slang::IGlobalSession> session;
 
 		std::map<ShaderStage, SlangStage> shaderStageMap;
 		std::map<HlslProfile, std::string> hlslProfileMap;
+		std::map<MetalProfile, std::string> metalProfileMap;
 	};
 };
 

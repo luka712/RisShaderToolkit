@@ -44,8 +44,82 @@ bool create_hlsl_shader_high_level()
 	return result.isSuccess();
 }
 
-TEST_CASE("slang tests", "[create_slang_session], [create_hlsl_shader_low_level], [create_hlsl_shader_high_level]") {
+bool create_metal_shader_low_level()
+{
+	shader_toolkit::SlangSession session;
+	if (!session.initialize())
+	{
+		return false;
+	}
+
+	SlangCompileResult result = session.compile(
+		"test_files/sprite.slang",
+		SLANG_METAL,
+		"metal2.0",
+		SLANG_STAGE_VERTEX,
+		"main_vs"
+	);
+	return result.isSuccess();
+}
+
+bool create_metal_shader_high_level()
+{
+	shader_toolkit::SlangSession session;
+	if (!session.initialize())
+	{
+		return false;
+	}
+	SlangCompileResult result = session.compileToMetal(
+		"test_files/sprite.slang",
+		ShaderStage::Vertex,
+		"main_vs",
+		MetalProfile::MSL_2_0
+	);
+	return result.isSuccess();
+}
+
+bool create_metal_shader_low_level_multistage()
+{
+	shader_toolkit::SlangSession session;
+	if (!session.initialize())
+	{
+		return false;
+	}
+
+	SlangCompileResult result = session.compile(
+		"test_files/sprite.slang",
+		SLANG_METAL,
+		"metal2.0",
+		{ SLANG_STAGE_VERTEX, SLANG_STAGE_FRAGMENT },
+		{ "main_vs", "main_fs" }
+	);
+	return result.isSuccess();
+}
+
+bool create_metal_shader_high_level_multistage()
+{
+	shader_toolkit::SlangSession session;
+	if (!session.initialize())
+	{
+		return false;
+	}
+	SlangCompileResult result = session.compileToMetal(
+		"test_files/sprite.slang",
+		{ ShaderStage::Vertex, ShaderStage::Fragment },
+		{ "main_vs", "main_fs" },
+		MetalProfile::MSL_2_0
+	);
+	return result.isSuccess();
+}
+
+TEST_CASE("slang tests", "[create_slang_session],\
+ [create_hlsl_shader_low_level], [create_hlsl_shader_high_level], \
+[create_metal_shader_low_level], [create_metal_shader_high_level], [create_metal_shader_low_level_multistage], [create_metal_shader_high_level_multistage]") {
 	REQUIRE(create_slang_session());
 	REQUIRE(create_hlsl_shader_low_level());
 	REQUIRE(create_hlsl_shader_high_level());
+	REQUIRE(create_metal_shader_low_level());
+	REQUIRE(create_metal_shader_high_level());
+	REQUIRE(create_metal_shader_low_level_multistage());
+	REQUIRE(create_metal_shader_high_level_multistage());
 }

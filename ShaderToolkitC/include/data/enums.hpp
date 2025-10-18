@@ -6,7 +6,8 @@ namespace shader_toolkit {
    //! The compile target enum.
    enum class CompileTarget {
         HLSL = 0,
-        GLSL = 1
+        GLSL = 1,
+		Metal = 2,
     };
 
    //! The shader stage enum.
@@ -28,6 +29,16 @@ namespace shader_toolkit {
         SM_6_4 = 8,
         SM_6_5 = 9
     };
+
+    enum class MetalProfile {
+        MSL_1_0 = 0,
+        MSL_1_1 = 1,
+        MSL_1_2 = 2,
+        MSL_2_0 = 3,
+        MSL_2_1 = 4,
+        MSL_2_2 = 5,
+        MSL_3_0 = 6
+	};
 }
 
 #endif //ENUMS_H
