@@ -9,8 +9,9 @@ using namespace shader_toolkit;
 // TODO: find a better way to locate fxc.exe
 const std::string SDK_PATH = "C:\\Program Files (x86)\\Windows Kits\\10\\bin\\10.0.22621.0\\x64\\fxc.exe";
 
-bool proces_compile_hlsl_to_fxc()
+bool process_compile_hlsl_to_fxc()
 {
+#if _WIN32
 	std::string input = "D:/Projects/ShaderToolkitSharp/ShaderToolkitC/test_files/sprite_vs.hlsl";
 	std::string output = "D:/Projects/ShaderToolkitSharp/ShaderToolkitC/test_files/sprite_vs_fxc.cso";
 
@@ -20,9 +21,25 @@ bool proces_compile_hlsl_to_fxc()
 	std::cout << "FXC Output: " << fxc_output << std::endl;
 
 	return result;
+#else
+	return true; // No need to run on non-Windows platforms
+#endif
 }
 
+bool process_compile_metal_to_air()
+{
+	std::string input = "D:/Projects/ShaderToolkitSharp/ShaderToolkitC/test_files/sprite.metal";
+	std::string output = "D:/Projects/ShaderToolkitSharp/ShaderToolkitC/test_files/sprite.air";
 
-TEST_CASE("process tests", "[proces_compile_hlsl_to_fxc]") {
-	REQUIRE(proces_compile_hlsl_to_fxc());
+	std::string xcrun_output;
+	bool result = shader_toolkit::Process::launchMac("xcrun -sdk macosx metal " + input + " -o " + output, xcrun_output);
+
+	std::cout << "xcrun Output: " << xcrun_output << std::endl;
+
+	return result;
+}
+
+TEST_CASE("process tests", "[process_compile_hlsl_to_fxc], [process_compile_metal_to_air]") {
+	REQUIRE(process_compile_hlsl_to_fxc());
+	REQUIRE(process_compile_metal_to_air());
 }
