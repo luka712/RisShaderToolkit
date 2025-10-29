@@ -12,6 +12,13 @@ namespace shader_toolkit {
 		//! @return The output of the command.
 		static bool launchWin(std::string command, std::string& output);
 
+		//! Launches a command using MacOS API.
+		//! @param command The command to launch.
+		//! @return The output of the command.
+		static bool launchMac(std::string command, std::string& output);
+
+		//! Launches a command and returns the output as a string.
+		//! @param command The command to launch.
 		static std::string launch(std::string command);
 	};
 }

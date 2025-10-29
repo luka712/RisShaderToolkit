@@ -39,6 +39,17 @@ namespace shader_toolkit {
         MSL_2_2 = 5,
         MSL_3_0 = 6
 	};
+
+    //! The Apple SDK enum.
+    //! Used to specify the target Apple platform for Metal shader compilation to .metallib and .air files.
+    //! The -sdk argument in xcrun requires specifying the target platform.
+    enum class AppleSdk {
+        iOS = 0,
+        macOS = 1,
+        tvOS = 2,
+        watchOS = 3,
+        iOS_Simulator = 4,
+    };
 }
 
 #endif //ENUMS_H

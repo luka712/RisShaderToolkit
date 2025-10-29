@@ -3,6 +3,12 @@
 #include <windows.h>
 #endif
 
+#include <vector>
+#include <sstream>
+#include <iostream>
+#include <unistd.h>
+#include <sys/wait.h>
+
 namespace shader_toolkit {
 	bool Process::launchWin(std::string command, std::string& output) {
 #if _WIN32
@@ -74,4 +80,57 @@ namespace shader_toolkit {
 		output = "Not implemented on this platform.";
 		return false;
 	}
+
+	bool Process::launchMac(std::string command, std::string& output) {
+#if __APPLE__
+
+		// Parse command into arguments
+		std::vector<std::string> args;
+		std::stringstream ss(command);
+		std::string arg;
+		while (ss >> arg) {
+			args.push_back(arg);
+		}
+
+		// Convert to char* array for execvp
+		std::vector<char*> argv;
+		for (auto& a : args) {
+			argv.push_back(const_cast<char*>(a.c_str()));
+		}
+		argv.push_back(nullptr); // Null-terminate the array
+
+		pid_t pid = fork();
+		if (pid == -1) {
+			std::cerr << "Fork failed: " << strerror(errno) << std::endl;
+			return false;
+		} else if (pid == 0) {
+			// Child process
+			execvp(argv[0], argv.data());
+			std::cerr << "execvp failed: " << strerror(errno) << std::endl;
+			return false;
+		} else {
+			int status;
+			waitpid(pid, &status, 0);
+			if (WIFEXITED(status)) {
+				std::cout << "Child exited with status " << WEXITSTATUS(status) << std::endl;
+				return WEXITSTATUS(status) == 0;
+			}
+			return false;
+		}
+#endif
+		output = "Not implemented on this platform.";
+		return false;
+	}
+
+std::string Process::launch(std::string command) {
+    std::string output;
+#if _WIN32
+    launchWin(command, output);
+#elif __APPLE__
+    launchMac(command, output);
+#else
+    output = "Not implemented on this platform.";
+#endif
+    return output;
+}
 }
