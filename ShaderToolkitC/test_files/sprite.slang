@@ -1,15 +1,15 @@
 struct VSInput
 {
     float3 position : POSITION;
-    float2 texCoord;
-    float4 color;
+    float2 texCoord: TEXCOORD0;
+    float4 color: COLOR0;
 }
 
 struct VSOutput
 {
     float4 position : SV_POSITION;
-    float2 texCoord;
-    float4 color;
+    float2 texCoord: TEXCOORD0;
+    float4 color: COLOR0;
 }
 
 ConstantBuffer<float4x4> c_viewProjection;
