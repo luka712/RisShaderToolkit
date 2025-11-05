@@ -6,8 +6,10 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
+# if __APPLE__
 #include <unistd.h>
 #include <sys/wait.h>
+#endif 
 
 namespace shader_toolkit {
 	bool Process::launchWin(std::string command, std::string& output) {

@@ -17,6 +17,7 @@ namespace shader_toolkit {
         Compute = 2
     };
 
+    //! The HLSL profile enum.
     enum class HlslProfile {
         SM_4_0 = 0,
         SM_4_1 = 1,
@@ -30,6 +31,22 @@ namespace shader_toolkit {
         SM_6_5 = 9
     };
 
+    //! The GLSL profile enum.
+    enum class GlslProfile {
+        GLSL_330 = 0,
+        GLSL_400 = 1,
+        GLSL_410 = 2,
+        GLSL_420 = 3,
+        GLSL_430 = 4,
+        GLSL_440 = 5,
+        GLSL_450 = 6,
+        GLSL_460 = 7,
+        GLES_300 = 8,
+        GLES_310 = 9,
+        GLES_320 = 10
+   	};
+
+    //! The Metal profile enum.
     enum class MetalProfile {
         MSL_1_0 = 0,
         MSL_1_1 = 1,
@@ -37,7 +54,8 @@ namespace shader_toolkit {
         MSL_2_0 = 3,
         MSL_2_1 = 4,
         MSL_2_2 = 5,
-        MSL_3_0 = 6
+        MSL_2_3 = 6,
+        MSL_2_4 = 7
 	};
 
     //! The Apple SDK enum.

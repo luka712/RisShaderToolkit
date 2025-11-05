@@ -69,6 +69,17 @@ namespace shader_toolkit {
 			const std::string& entryPoint = "main",
 			HlslProfile profile = HlslProfile::SM_5_0);
 
+        //! Compiles an GLSL shader file to the specified profile and stage.
+		//! @param filePath The path to the GLSL shader file.
+		//! @param stage The shader stage (e.g., ShaderStage::Vertex). By default, it is ShaderStage::Vertex.
+		//! @param entryPoint The entry point function name (default is "main").
+		//! @param profile The GLSL profile to compile to (e.g., "450"). By default, it is GlslProfile::GL_450.
+		SlangCompileResult compileToGlsl(
+			const std::string& filePath,
+			ShaderStage stage = ShaderStage::Vertex,
+			const std::string& entryPoint = "main",
+			GlslProfile profile = GlslProfile::GLSL_450);
+
 		//! Compiles a Metal shader file to the specified profile and stage.
 		//! @param filePath The path to the Metal shader file.
 		//! @param stage The shader stage (e.g., ShaderStage::Vertex). By default, it is ShaderStage::Vertex.
@@ -93,11 +104,14 @@ namespace shader_toolkit {
 			MetalProfile profile = MetalProfile::MSL_2_0
 		);
 
+
+
 	private:
 		ComPtr<slang::IGlobalSession> session;
 
 		std::map<ShaderStage, SlangStage> shaderStageMap;
 		std::map<HlslProfile, std::string> hlslProfileMap;
+		std::map<GlslProfile, std::string> glslProfileMap;
 		std::map<MetalProfile, std::string> metalProfileMap;
 	};
 };

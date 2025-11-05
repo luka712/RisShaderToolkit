@@ -30,14 +30,26 @@ namespace shader_toolkit {
 			   { HlslProfile::SM_6_5, "sm_6_5" },
 		};
 
+		glslProfileMap = {
+			{ GlslProfile::GLSL_330, "glsl_330" },
+			{ GlslProfile::GLSL_400, "glsl_400" },
+			{ GlslProfile::GLSL_410, "glsl_410" },
+			{ GlslProfile::GLSL_420, "glsl_420" },
+			{ GlslProfile::GLSL_430, "glsl_430" },
+			{ GlslProfile::GLSL_440, "glsl_440" },
+			{ GlslProfile::GLSL_450, "glsl_450" },
+			{ GlslProfile::GLSL_460, "glsl_460" },
+		};
+
 		metalProfileMap = {
-			{ MetalProfile::MSL_1_0, "metal1.0" },
-			{ MetalProfile::MSL_1_1, "metal1.1" },
-			{ MetalProfile::MSL_1_2, "metal1.2" },
-			{ MetalProfile::MSL_2_0, "metal2.0" },
-			{ MetalProfile::MSL_2_1, "metal2.1" },
-			{ MetalProfile::MSL_2_2, "metal2.2" },
-			{ MetalProfile::MSL_3_0, "metal3.0" },
+			{ MetalProfile::MSL_1_0, "metallib_1_0" },
+			{ MetalProfile::MSL_1_1, "metallib_1_1" },
+			{ MetalProfile::MSL_1_2, "metallib_1_2" },
+			{ MetalProfile::MSL_2_0, "metallib_2_0" },
+			{ MetalProfile::MSL_2_1, "metallib_2_1" },
+			{ MetalProfile::MSL_2_2, "metallib_2_2" },
+			{ MetalProfile::MSL_2_3, "metallib_2_3" },
+			{ MetalProfile::MSL_2_4, "metallib_2_4" }
 		};
 	}
 
@@ -69,7 +81,8 @@ namespace shader_toolkit {
 
 		// Add target
 		int targetIndex = request->addCodeGenTarget(compileTarget);
-		request->setTargetProfile(targetIndex, session->findProfile(profile.c_str())); // shader model
+		SlangProfileID profileID = session->findProfile(profile.c_str());
+		request->setTargetProfile(targetIndex, profileID); // shader model
 
 		request->addEntryPoint(translationUnitIndex, entryPoint.c_str(), stage); // for VS
 
@@ -104,11 +117,16 @@ namespace shader_toolkit {
 
 		// Add target
 		int targetIndex = request->addCodeGenTarget(compileTarget);
-		request->setTargetProfile(targetIndex, session->findProfile(profile.c_str())); // shader model
-
-		for (size_t i = 0; i < stages.size(); i++) 
+		SlangProfileID profileID = session->findProfile(profile.c_str());
+		if(profileID == SLANG_PROFILE_UNKNOWN)
 		{
-			request->addEntryPoint(translationUnitIndex, entryPoints[i].c_str(), stages[i]); 
+			return SlangCompileResult(false, "", "Failed to find profile: " + profile);
+		}
+		request->setTargetProfile(targetIndex, profileID); // shader model
+
+		for (size_t i = 0; i < stages.size(); i++)
+		{
+			request->addEntryPoint(translationUnitIndex, entryPoints[i].c_str(), stages[i]);
 		}
 
 		SlangResult res = request->compile();
@@ -126,9 +144,27 @@ namespace shader_toolkit {
 		return SlangCompileResult(true, code);
 	}
 
+	SlangCompileResult SlangSession::compileToGlsl(
+		const std::string& filePath,
+		ShaderStage stage,
+		const std::string& entryPoint,
+		GlslProfile profile)
+	{
+		SlangStage slangStage = shaderStageMap[stage];
+		std::string glslProfile = glslProfileMap[profile];
+
+		return compile(
+			filePath,
+			SLANG_GLSL,
+			glslProfile,
+			slangStage,
+			entryPoint
+		);
+	}
+
 	SlangCompileResult SlangSession::compileToHlsl(
-		const std::string& filePath, 
-		ShaderStage stage, 
+		const std::string& filePath,
+		ShaderStage stage,
 		const std::string& entryPoint,
 		HlslProfile profile)
 	{
@@ -146,7 +182,7 @@ namespace shader_toolkit {
 
 	SlangCompileResult SlangSession::compileToMetal(
 		const std::string& filePath,
-		ShaderStage stage, 
+		ShaderStage stage,
 		const std::string& entryPoint,
 		MetalProfile profile)
 	{
@@ -168,7 +204,7 @@ namespace shader_toolkit {
 		MetalProfile profile)
 	{
 		std::vector<SlangStage> slangStages;
-		for (const auto& stage : stages) 
+		for (const auto& stage : stages)
 		{
 			slangStages.push_back(shaderStageMap[stage]);
 		}
