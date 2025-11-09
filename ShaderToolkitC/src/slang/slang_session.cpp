@@ -82,6 +82,10 @@ namespace shader_toolkit {
 		// Add target
 		int targetIndex = request->addCodeGenTarget(compileTarget);
 		SlangProfileID profileID = session->findProfile(profile.c_str());
+		if(profileID == SLANG_PROFILE_UNKNOWN)
+		{
+			return SlangCompileResult(false, "", "Failed to find profile: " + profile);
+		}
 		request->setTargetProfile(targetIndex, profileID); // shader model
 
 		request->addEntryPoint(translationUnitIndex, entryPoint.c_str(), stage); // for VS

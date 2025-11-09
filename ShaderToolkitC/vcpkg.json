@@ -1,6 +1,7 @@
 {
   "dependencies": [
     "shader-slang",
+    "glslang",
     "catch2"
   ]
 }
