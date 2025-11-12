@@ -5,7 +5,7 @@
 #include <map>
 #include "fxc/fxc_compile_result.hpp"
 
-namespace shader_toolkit {
+namespace ris_shader_toolkit {
 
 	/// <summary>
 	/// The FxcCompiler class provides functionality to compile HLSL shaders using the fxc.exe compiler.

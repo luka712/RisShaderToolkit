@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace shader_toolkit {
+namespace ris_shader_toolkit {
 
     //! A class that represents the result of a glslang compilation.
     class GlslangCompileResult

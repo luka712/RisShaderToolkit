@@ -2,6 +2,7 @@
   "dependencies": [
     "shader-slang",
     "glslang",
+    "spirv-tools",
     "catch2"
   ]
 }

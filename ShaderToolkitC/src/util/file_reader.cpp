@@ -3,7 +3,7 @@
 #include <sstream>
 
 
-namespace shader_toolkit {
+namespace ris_shader_toolkit {
 
 	std::string FileReader::read(const std::string& filePath)
 	{

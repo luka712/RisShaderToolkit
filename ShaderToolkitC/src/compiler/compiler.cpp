@@ -2,7 +2,7 @@
 #include <fstream>
 #include <filesystem>
 
-namespace shader_toolkit {
+namespace ris_shader_toolkit {
 	Compiler::Compiler() : fxcCompiler() {}
 
 

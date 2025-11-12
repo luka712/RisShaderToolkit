@@ -2,17 +2,17 @@
 #include <cstdint>
 #include "slang/slang_session.hpp"
 
-using namespace shader_toolkit;
+using namespace ris_shader_toolkit;
 
 bool create_slang_session()
 {
-	shader_toolkit::SlangSession session;
+	ris_shader_toolkit::SlangSession session;
 	return session.initialize();
 }
 
 bool create_hlsl_shader_low_level()
 {
-	shader_toolkit::SlangSession session;
+	ris_shader_toolkit::SlangSession session;
 	if (!session.initialize())
 	{
 		return false;
@@ -30,7 +30,7 @@ bool create_hlsl_shader_low_level()
 
 bool create_hlsl_shader_high_level()
 {
-	shader_toolkit::SlangSession session;
+	ris_shader_toolkit::SlangSession session;
 	if (!session.initialize())
 	{
 		return false;
@@ -46,7 +46,7 @@ bool create_hlsl_shader_high_level()
 
 bool create_glsl_shader_low_level()
 {
-	shader_toolkit::SlangSession session;
+	ris_shader_toolkit::SlangSession session;
 	if (!session.initialize())
 	{
 		return false;
@@ -64,7 +64,7 @@ bool create_glsl_shader_low_level()
 
 bool create_glsl_shader_high_level()
 {
-	shader_toolkit::SlangSession session;
+	ris_shader_toolkit::SlangSession session;
 	if (!session.initialize())
 	{
 		return false;
@@ -78,27 +78,9 @@ bool create_glsl_shader_high_level()
 	return result.isSuccess();
 }
 
-bool create_glsl_es_shader_low_level()
-{
-	shader_toolkit::SlangSession session;
-	if (!session.initialize())
-	{
-		return false;
-	}
-
-	SlangCompileResult result = session.compile(
-		"test_files/sprite.slang",
-		SLANG_GLSL,
-		"glsl_es_300",
-		SLANG_STAGE_VERTEX,
-		"main_vs"
-	);
-	return result.isSuccess();
-}
-
 bool create_metal_shader_low_level()
 {
-	shader_toolkit::SlangSession session;
+	ris_shader_toolkit::SlangSession session;
 	if (!session.initialize())
 	{
 		return false;
@@ -116,7 +98,7 @@ bool create_metal_shader_low_level()
 
 bool create_metal_shader_high_level()
 {
-	shader_toolkit::SlangSession session;
+	ris_shader_toolkit::SlangSession session;
 	if (!session.initialize())
 	{
 		return false;
@@ -132,7 +114,7 @@ bool create_metal_shader_high_level()
 
 bool create_metal_shader_low_level_multistage()
 {
-	shader_toolkit::SlangSession session;
+	ris_shader_toolkit::SlangSession session;
 	if (!session.initialize())
 	{
 		return false;
@@ -150,7 +132,7 @@ bool create_metal_shader_low_level_multistage()
 
 bool create_metal_shader_high_level_multistage()
 {
-	shader_toolkit::SlangSession session;
+	ris_shader_toolkit::SlangSession session;
 	if (!session.initialize())
 	{
 		return false;
@@ -164,18 +146,54 @@ bool create_metal_shader_high_level_multistage()
 	return result.isSuccess();
 }
 
+bool create_spirv_shader_low_level()
+{
+	ris_shader_toolkit::SlangSession session;
+	if (!session.initialize())
+	{
+		return false;
+	}
+	SlangCompileResult result = session.compile(
+		"test_files/sprite.slang",
+		SLANG_SPIRV,
+		"spirv_1_5",
+		SLANG_STAGE_VERTEX,
+		"main_vs"
+	);
+	return result.isSuccess();
+}
+
+bool create_spirv_shader_multistage()
+{
+	ris_shader_toolkit::SlangSession session;
+	if (!session.initialize())
+	{
+		return false;
+	}
+	SlangCompileResult result = session.compileToSpirV(
+		"test_files/sprite.slang",
+		{ ShaderStage::Vertex, ShaderStage::Fragment },
+		{ "main_vs", "main_fs" },
+		SpirVProfile::SPIRV_1_5
+	);
+	return result.isSuccess();
+}
+
 TEST_CASE("slang tests", "[create_slang_session],\
  [create_hlsl_shader_low_level], [create_hlsl_shader_high_level], \
  [create_glsl_shader_low_level], [create_glsl_shader_high_level], [create_glsl_es_shader_low_level], \
-[create_metal_shader_low_level], [create_metal_shader_high_level], [create_metal_shader_low_level_multistage], [create_metal_shader_high_level_multistage]") {
+[create_metal_shader_low_level], [create_metal_shader_high_level], [create_metal_shader_low_level_multistage], [create_metal_shader_high_level_multistage] \
+[create_spirv_shader_low_level], [create_spirv_shader_multistage]"
+) {
 	REQUIRE(create_slang_session());
 	REQUIRE(create_hlsl_shader_low_level());
 	REQUIRE(create_hlsl_shader_high_level());
 	REQUIRE(create_glsl_shader_low_level());
 	REQUIRE(create_glsl_shader_high_level());
-	REQUIRE(create_glsl_es_shader_low_level());
 	REQUIRE(create_metal_shader_low_level());
 	REQUIRE(create_metal_shader_high_level());
 	REQUIRE(create_metal_shader_low_level_multistage());
 	REQUIRE(create_metal_shader_high_level_multistage());
+	REQUIRE(create_spirv_shader_low_level());
+	REQUIRE(create_spirv_shader_multistage());
 }

@@ -3,7 +3,7 @@
 #include "fxc/fxc_compiler.hpp"
 #include <iostream>
 
-using namespace shader_toolkit;
+using namespace ris_shader_toolkit;
 
 bool compile_hlsl_to_fxc()
 {
@@ -11,8 +11,8 @@ bool compile_hlsl_to_fxc()
     std::string input = "D:/Projects/ShaderToolkitSharp/ShaderToolkitC/test_files/sprite_vs.hlsl";
     std::string output = "D:/Projects/ShaderToolkitSharp/ShaderToolkitC/test_files/sprite_vs_fxc.cso";
 
-    shader_toolkit::FxcCompiler fxcCompiler;
-    shader_toolkit::FxcCompileResult result = fxcCompiler.compile(input, output);
+    FxcCompiler fxcCompiler;
+    FxcCompileResult result = fxcCompiler.compile(input, output);
     std::cout << "FXC Source Code: " << result.getSourceCode() << std::endl;
 
     return result.isSuccess();

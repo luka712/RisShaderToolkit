@@ -1,7 +1,7 @@
 #ifndef ENUMS_H
 #define ENUMS_H
 
-namespace shader_toolkit {
+namespace ris_shader_toolkit {
 
    //! The compile target enum.
    enum class CompileTarget {
@@ -45,6 +45,17 @@ namespace shader_toolkit {
         GLES_310 = 9,
         GLES_320 = 10
    	};
+
+    //! The SpirV profile enum.
+    enum class SpirVProfile {
+        SPIRV_1_0 = 0,
+        SPIRV_1_1 = 1,
+        SPIRV_1_2 = 2,
+        SPIRV_1_3 = 3,
+        SPIRV_1_4 = 4,
+        SPIRV_1_5 = 5,
+        SPIRV_1_6 = 6
+    };
 
     //! The Metal profile enum.
     enum class MetalProfile {

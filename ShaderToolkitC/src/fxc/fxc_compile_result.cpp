@@ -1,6 +1,6 @@
 #include "fxc/fxc_compile_result.hpp"
 
-namespace shader_toolkit {
+namespace ris_shader_toolkit {
 
     FxcCompileResult::FxcCompileResult(bool success, const std::string& sourceCode, const std::string& error)
         : success(success), sourceCode(sourceCode), errorMessage(error)

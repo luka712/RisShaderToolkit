@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace shader_toolkit
+namespace ris_shader_toolkit
 {
     //! The XcrunCompileResult class represents the result of a compilation using xcrun.
     class XcrunCompileResult

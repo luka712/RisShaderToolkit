@@ -5,7 +5,7 @@
 #include <map>
 #include "xcrun/xcrun_compile_result.hpp"
 
-namespace shader_toolkit
+namespace ris_shader_toolkit
 {
     //! The XcrunCompiler class provides functionality to compile shaders using the xcrun tool.
     class XcrunCompiler

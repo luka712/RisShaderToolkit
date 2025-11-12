@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <fstream>
 
-namespace shader_toolkit {
+namespace ris_shader_toolkit {
 
 	XcrunCompiler::XcrunCompiler()
 	{

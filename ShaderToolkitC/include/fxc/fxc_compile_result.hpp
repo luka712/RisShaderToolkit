@@ -4,7 +4,7 @@
 
 #include <string>
 
-namespace shader_toolkit
+namespace ris_shader_toolkit
 {
     class FxcCompileResult
     {

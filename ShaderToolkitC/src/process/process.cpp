@@ -11,7 +11,7 @@
 #include <sys/wait.h>
 #endif 
 
-namespace shader_toolkit {
+namespace ris_shader_toolkit {
 	bool Process::launchWin(std::string command, std::string& output) {
 #if _WIN32
 		SECURITY_ATTRIBUTES sa;

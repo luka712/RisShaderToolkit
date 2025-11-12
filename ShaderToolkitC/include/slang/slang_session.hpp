@@ -11,7 +11,7 @@
 
 using Slang::ComPtr;
 
-namespace shader_toolkit {
+namespace ris_shader_toolkit {
 
 	//! A class that manages the Slang global session.
 	class SlangSession
@@ -97,6 +97,7 @@ namespace shader_toolkit {
 		//! @param stages The shader stages (e.g., ShaderStage::Vertex).
 		//! @param entryPoints The entry points info function name. Must match the stages count.
 		//! @param profile The Metal profile to compile to (e.g., "metal2.0"). By default, it is MetalProfile::MSL_2_0.
+		//! @return A SlangCompileResult object containing the result of the compilation.
 		SlangCompileResult compileToMetal(
 			const std::string& filePath,
 			std::vector<ShaderStage> stages,
@@ -104,6 +105,18 @@ namespace shader_toolkit {
 			MetalProfile profile = MetalProfile::MSL_2_0
 		);
 
+        //! Compiles a ASlang shader to the SPIR-V shader file.
+		//! @param filePath The path to the Slang shader file.
+		//! @param stages The shader stages (e.g., ShaderStage::Vertex).
+		//! @param entryPoints The entry points info function name. Must match the stages count.
+		//! @param profile The SpirV profile to compile to (e.g., "spirv_1_5"). By default, it is SpirVProfile::SPIRV_1_5.
+		//! @return A SlangCompileResult object containing the result of the compilation.
+        SlangCompileResult compileToSpirV(
+			const std::string& filePath,
+			std::vector<ShaderStage> stages,
+			std::vector<std::string> entryPoints,
+			SpirVProfile profile = SpirVProfile::SPIRV_1_5
+		);
 
 
 	private:
@@ -113,6 +126,7 @@ namespace shader_toolkit {
 		std::map<HlslProfile, std::string> hlslProfileMap;
 		std::map<GlslProfile, std::string> glslProfileMap;
 		std::map<MetalProfile, std::string> metalProfileMap;
+        std::map<SpirVProfile, std::string> spirvProfileMap;
 	};
 };
 

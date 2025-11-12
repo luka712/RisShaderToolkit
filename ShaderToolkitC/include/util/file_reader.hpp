@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace shader_toolkit {
+namespace ris_shader_toolkit {
     class FileReader {
       public:
         //! Reads the contents of a file and returns it as a string.

@@ -5,7 +5,7 @@
 #include "fxc/fxc_compiler.hpp"
 #include "compiler/compile_result.hpp"
 
-namespace shader_toolkit {
+namespace ris_shader_toolkit {
     class Compiler {
     public:
         Compiler();

@@ -11,7 +11,7 @@
 #include "glslang_compile_result.hpp"
 
 
-namespace shader_toolkit {
+namespace ris_shader_toolkit {
 
 	//! The GlslangCompiler class provides functionality to compile using glsllang.
 	//! Compiles GLSL shader code to SPIR-V binary format.

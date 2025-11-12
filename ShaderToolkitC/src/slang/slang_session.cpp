@@ -1,11 +1,7 @@
-//
-// Created by Erkapic Luka on 27.9.2025.
-//
-
 #include "slang/slang_session.hpp"
 #include <string>
 
-namespace shader_toolkit {
+namespace ris_shader_toolkit {
 	SlangSession::SlangSession()
 	{
 		shaderStageMap = {
@@ -50,6 +46,16 @@ namespace shader_toolkit {
 			{ MetalProfile::MSL_2_2, "metallib_2_2" },
 			{ MetalProfile::MSL_2_3, "metallib_2_3" },
 			{ MetalProfile::MSL_2_4, "metallib_2_4" }
+		};
+
+		spirvProfileMap = {
+			{ SpirVProfile::SPIRV_1_0, "spirv_1_0" },
+			{ SpirVProfile::SPIRV_1_1, "spirv_1_1" },
+			{ SpirVProfile::SPIRV_1_2, "spirv_1_2" },
+			{ SpirVProfile::SPIRV_1_3, "spirv_1_3" },
+			{ SpirVProfile::SPIRV_1_4, "spirv_1_4" },
+			{ SpirVProfile::SPIRV_1_5, "spirv_1_5" },
+			{ SpirVProfile::SPIRV_1_6, "spirv_1_6" }
 		};
 	}
 
@@ -222,5 +228,30 @@ namespace shader_toolkit {
 			slangStages,
 			entryPoints
 		);
+	}
+
+	SlangCompileResult SlangSession::compileToSpirV(
+		const std::string& filePath,
+		std::vector<ShaderStage> stages,
+		std::vector<std::string> entryPoints,
+		SpirVProfile profile
+	)
+	{
+		std::vector<SlangStage> slangStages;
+		for (const auto& stage : stages)
+		{
+			slangStages.push_back(shaderStageMap[stage]);
+		}
+
+		std::string metalProfile = spirvProfileMap[profile];
+
+		return compile(
+			filePath,
+			SLANG_SPIRV,
+			"spirv_1_0",
+			slangStages,
+			entryPoints
+		);
+
 	}
 }

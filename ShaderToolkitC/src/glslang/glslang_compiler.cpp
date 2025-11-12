@@ -1,6 +1,6 @@
 #include "glslang/glslang_compiler.hpp"
 
-namespace shader_toolkit
+namespace ris_shader_toolkit
 {
 	GlslangCompiler::GlslangCompiler() {
 		shaderStageMap = {

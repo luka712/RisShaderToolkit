@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <compiler/compiler.hpp>
 
-using namespace shader_toolkit;
+using namespace ris_shader_toolkit;
 
 std::string fxc_vs_output = "D:/Projects/ShaderToolkitSharp/ShaderToolkitC/test_files/sprite_vs.fxc";
 std::string fxc_ps_output = "D:/Projects/ShaderToolkitSharp/ShaderToolkitC/test_files/sprite_ps.fxc";

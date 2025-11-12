@@ -3,7 +3,7 @@
 #include "process/process.hpp"
 #include <fstream>
 
-namespace shader_toolkit {
+namespace ris_shader_toolkit {
 
 	FxcCompiler::FxcCompiler()
 	{
