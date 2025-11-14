@@ -1,0 +1,157 @@
+; SPIR-V
+; Version: 1.5
+; Generator: NVIDIA Slang Compiler; 0
+; Bound: 104
+; Schema: 0
+               OpCapability Shader
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Vertex %main_vs "main_vs" %c_viewProjection %gl_Position %entryPointParam_main_vs_texCoord %entryPointParam_main_vs_color %input_position %input_texCoord %input_color
+               OpEntryPoint Fragment %main_fs "main_fs" %t_diffuseTexture %s_diffuseTexSampler %entryPointParam_main_fs %input_texCoord_0 %input_color_0
+               OpExecutionMode %main_fs OriginUpperLeft
+               OpSource Slang 1
+               OpName %VSOutput "VSOutput"
+               OpMemberName %VSOutput 0 "position"
+               OpMemberName %VSOutput 1 "texCoord"
+               OpMemberName %VSOutput 2 "color"
+               OpName %output "output"
+               OpName %output "output"
+               OpName %input_position "input.position"
+               OpName %input_texCoord "input.texCoord"
+               OpName %input_color "input.color"
+               OpName %_MatrixStorage_float4x4std140 "_MatrixStorage_float4x4std140"
+               OpMemberName %_MatrixStorage_float4x4std140 0 "data"
+               OpName %c_viewProjection "c_viewProjection"
+               OpName %entryPointParam_main_vs_texCoord "entryPointParam_main_vs.texCoord"
+               OpName %entryPointParam_main_vs_color "entryPointParam_main_vs.color"
+               OpName %main_vs "main_vs"
+               OpName %input_texCoord_0 "input.texCoord"
+               OpName %input_color_0 "input.color"
+               OpName %t_diffuseTexture "t_diffuseTexture"
+               OpName %s_diffuseTexSampler "s_diffuseTexSampler"
+               OpName %sampledImage "sampledImage"
+               OpName %sampled "sampled"
+               OpName %entryPointParam_main_fs "entryPointParam_main_fs"
+               OpName %main_fs "main_fs"
+               OpDecorate %input_position Location 0
+               OpDecorate %input_texCoord Location 1
+               OpDecorate %input_color Location 2
+               OpDecorate %_arr_v4float_int_4 ArrayStride 16
+               OpDecorate %_MatrixStorage_float4x4std140 Block
+               OpMemberDecorate %_MatrixStorage_float4x4std140 0 Offset 0
+               OpDecorate %c_viewProjection Binding 0
+               OpDecorate %c_viewProjection DescriptorSet 0
+               OpDecorate %gl_Position BuiltIn Position
+               OpDecorate %entryPointParam_main_vs_texCoord Location 0
+               OpDecorate %entryPointParam_main_vs_color Location 1
+               OpDecorate %input_texCoord_0 Location 0
+               OpDecorate %input_color_0 Location 1
+               OpDecorate %t_diffuseTexture Binding 1
+               OpDecorate %t_diffuseTexture DescriptorSet 0
+               OpDecorate %s_diffuseTexSampler Binding 2
+               OpDecorate %s_diffuseTexSampler DescriptorSet 0
+               OpDecorate %entryPointParam_main_fs Location 0
+       %void = OpTypeVoid
+          %3 = OpTypeFunction %void
+      %float = OpTypeFloat 32
+    %v4float = OpTypeVector %float 4
+    %v2float = OpTypeVector %float 2
+   %VSOutput = OpTypeStruct %v4float %v2float %v4float
+%_ptr_Function_VSOutput = OpTypePointer Function %VSOutput
+    %v3float = OpTypeVector %float 3
+%_ptr_Input_v3float = OpTypePointer Input %v3float
+%_ptr_Input_v2float = OpTypePointer Input %v2float
+%_ptr_Input_v4float = OpTypePointer Input %v4float
+        %int = OpTypeInt 32 1
+      %int_0 = OpConstant %int 0
+%_ptr_Function_v4float = OpTypePointer Function %v4float
+      %int_4 = OpConstant %int 4
+%_arr_v4float_int_4 = OpTypeArray %v4float %int_4
+%_MatrixStorage_float4x4std140 = OpTypeStruct %_arr_v4float_int_4
+%_ptr_Uniform__MatrixStorage_float4x4std140 = OpTypePointer Uniform %_MatrixStorage_float4x4std140
+%mat4v4float = OpTypeMatrix %v4float 4
+    %float_1 = OpConstant %float 1
+      %int_1 = OpConstant %int 1
+%_ptr_Function_v2float = OpTypePointer Function %v2float
+      %int_2 = OpConstant %int 2
+%_ptr_Output_v4float = OpTypePointer Output %v4float
+%_ptr_Output_v2float = OpTypePointer Output %v2float
+         %88 = OpTypeImage %float 2D 2 0 0 1 Unknown
+%_ptr_UniformConstant_88 = OpTypePointer UniformConstant %88
+         %92 = OpTypeSampler
+%_ptr_UniformConstant_92 = OpTypePointer UniformConstant %92
+         %96 = OpTypeSampledImage %88
+%input_position = OpVariable %_ptr_Input_v3float Input
+%input_texCoord = OpVariable %_ptr_Input_v2float Input
+%input_color = OpVariable %_ptr_Input_v4float Input
+%c_viewProjection = OpVariable %_ptr_Uniform__MatrixStorage_float4x4std140 Uniform
+%gl_Position = OpVariable %_ptr_Output_v4float Output
+%entryPointParam_main_vs_texCoord = OpVariable %_ptr_Output_v2float Output
+%entryPointParam_main_vs_color = OpVariable %_ptr_Output_v4float Output
+%input_texCoord_0 = OpVariable %_ptr_Input_v2float Input
+%input_color_0 = OpVariable %_ptr_Input_v4float Input
+%t_diffuseTexture = OpVariable %_ptr_UniformConstant_88 UniformConstant
+%s_diffuseTexSampler = OpVariable %_ptr_UniformConstant_92 UniformConstant
+%entryPointParam_main_fs = OpVariable %_ptr_Output_v4float Output
+    %main_vs = OpFunction %void None %3
+          %4 = OpLabel
+     %output = OpVariable %_ptr_Function_VSOutput Function
+         %12 = OpLoad %v3float %input_position
+         %15 = OpLoad %v2float %input_texCoord
+         %18 = OpLoad %v4float %input_color
+         %24 = OpAccessChain %_ptr_Function_v4float %output %int_0
+         %28 = OpLoad %_MatrixStorage_float4x4std140 %c_viewProjection
+         %31 = OpCompositeExtract %_arr_v4float_int_4 %28 0
+         %32 = OpCompositeExtract %v4float %31 0
+         %33 = OpCompositeExtract %float %32 0
+         %34 = OpCompositeExtract %float %32 1
+         %35 = OpCompositeExtract %float %32 2
+         %36 = OpCompositeExtract %float %32 3
+         %37 = OpCompositeExtract %v4float %31 1
+         %38 = OpCompositeExtract %float %37 0
+         %39 = OpCompositeExtract %float %37 1
+         %40 = OpCompositeExtract %float %37 2
+         %41 = OpCompositeExtract %float %37 3
+         %42 = OpCompositeExtract %v4float %31 2
+         %43 = OpCompositeExtract %float %42 0
+         %44 = OpCompositeExtract %float %42 1
+         %45 = OpCompositeExtract %float %42 2
+         %46 = OpCompositeExtract %float %42 3
+         %47 = OpCompositeExtract %v4float %31 3
+         %48 = OpCompositeExtract %float %47 0
+         %49 = OpCompositeExtract %float %47 1
+         %50 = OpCompositeExtract %float %47 2
+         %51 = OpCompositeExtract %float %47 3
+         %52 = OpCompositeConstruct %v4float %33 %34 %35 %36
+         %53 = OpCompositeConstruct %v4float %38 %39 %40 %41
+         %54 = OpCompositeConstruct %v4float %43 %44 %45 %46
+         %55 = OpCompositeConstruct %v4float %48 %49 %50 %51
+         %57 = OpCompositeConstruct %mat4v4float %52 %53 %54 %55
+         %58 = OpCompositeConstruct %v4float %12 %float_1
+         %60 = OpVectorTimesMatrix %v4float %58 %57
+               OpStore %24 %60
+         %64 = OpAccessChain %_ptr_Function_v2float %output %int_1
+               OpStore %64 %15
+         %67 = OpAccessChain %_ptr_Function_v4float %output %int_2
+               OpStore %67 %18
+         %69 = OpLoad %VSOutput %output
+         %70 = OpCompositeExtract %v4float %69 0
+               OpStore %gl_Position %70
+         %74 = OpCompositeExtract %v2float %69 1
+               OpStore %entryPointParam_main_vs_texCoord %74
+         %78 = OpCompositeExtract %v4float %69 2
+               OpStore %entryPointParam_main_vs_color %78
+               OpReturn
+               OpFunctionEnd
+    %main_fs = OpFunction %void None %3
+         %83 = OpLabel
+         %84 = OpLoad %v2float %input_texCoord_0
+         %86 = OpLoad %v4float %input_color_0
+         %89 = OpLoad %88 %t_diffuseTexture
+         %93 = OpLoad %92 %s_diffuseTexSampler
+%sampledImage = OpSampledImage %96 %89 %93
+    %sampled = OpImageSampleImplicitLod %v4float %sampledImage %84 None
+         %99 = OpCopyObject %v4float %sampled
+        %100 = OpFMul %v4float %99 %86
+               OpStore %entryPointParam_main_fs %100
+               OpReturn
+               OpFunctionEnd

@@ -3,6 +3,7 @@
     "shader-slang",
     "glslang",
     "spirv-tools",
+    "spirv-cross",
     "catch2"
   ]
 }
