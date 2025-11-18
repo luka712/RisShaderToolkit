@@ -1,6 +1,8 @@
 #include "compiler/compiler.hpp"
+#include "util/binary_util.hpp"
 #include <fstream>
 #include <filesystem>
+#include <spirv-cross/spirv_cross_compiler.hpp>
 
 namespace ris_shader_toolkit {
 	Compiler::Compiler() : fxcCompiler() {}
@@ -21,9 +23,35 @@ namespace ris_shader_toolkit {
 		return false;
 	}
 
+	CompileResult Compiler::compileSlangToSpirV(
+		const std::string& inputFilePath,
+		ShaderStage shaderStage,
+		SpirVProfile profile,
+		const std::string& entryPoint
+	)
+	{
+		SlangSession slangSession;
+		if (!slangSession.initialize()) {
+			return CompileResult::errorResult("Failed to initialize Slang session.");
+		}
+
+		SlangCompileResult slangResult = slangSession.compileToSpirV(
+			inputFilePath,
+			{ shaderStage },
+			{ entryPoint },
+			profile
+		);
+		if (!slangResult.isSuccess()) {
+			return CompileResult::errorResult("Slang compilation failed: " + slangResult.getErrorMessage());
+		}
+		std::string spirvCode = slangResult.getSourceCode();
+
+		return CompileResult::successResult("", spirvCode);
+	}
+
 	CompileResult Compiler::compileSlangToHlsl(
-		const std::string& inputFilePath, 
-		ShaderStage shaderStage, 
+		const std::string& inputFilePath,
+		ShaderStage shaderStage,
 		HlslProfile profile,
 		const std::string& entryPoint)
 	{
@@ -77,5 +105,64 @@ namespace ris_shader_toolkit {
 			return CompileResult::errorResult("FXC compilation failed: " + fxcResult.getErrorMessage());
 		}
 		return CompileResult::successResult(outputFilePath, "");
+	}
+
+	CompileResult Compiler::compileSlangToGlsl(
+		const std::string& inputFilePath,
+		GlslProfile profile,
+		ShaderStage shaderStage,
+		const std::string& entryPoint,
+		ReplaceStageInputNameRule* replaceStageInputNameRule,
+		ReplaceStageOutputNameRule* replaceStageOutputNameRule
+	)
+	{
+		// First we need to determine if we can use Slang directly to GLSL or if we need to go through SPIR-V
+
+		// For GLES profiles, we need to go through SPIR-V
+		if (profile == GlslProfile::GLES_300
+			|| profile == GlslProfile::GLES_310
+			|| profile == GlslProfile::GLES_320
+			) {
+			CompileResult spirvResult = compileSlangToSpirV(
+				inputFilePath,
+				shaderStage,
+				SpirVProfile::SPIRV_1_5,
+				entryPoint
+			);
+			if (!spirvResult.isSuccess()) {
+				return spirvResult;
+			}
+
+			// Convert SPIR-V to GLSL using SpirVCrossCompiler
+			std::vector<uint32_t> spirvBinary = stringToBinary<uint32_t>(spirvResult.getSourceCode());
+			SpirVCrossCompiler spirvCompiler;
+			SpirVCrossCompileResult glslResult = spirvCompiler.compile(
+				spirvBinary, 
+				profile,
+				replaceStageInputNameRule,
+				replaceStageOutputNameRule
+			);
+			if (!glslResult.isSuccess()) {
+				return CompileResult::errorResult("SPIR-V to GLSL compilation failed: " + glslResult.getErrorMessage());
+			}
+			return CompileResult::successResult("", glslResult.getSourceCode());
+		}
+
+		SlangSession slangSession;
+		if (!slangSession.initialize()) {
+			return CompileResult::errorResult("Failed to initialize Slang session.");
+		}
+
+		SlangCompileResult slangResult = slangSession.compileToGlsl(
+			inputFilePath,
+			shaderStage,
+			entryPoint,
+			profile
+		);
+		if (!slangResult.isSuccess()) {
+			return CompileResult::errorResult("Slang compilation to GLSL failed: " + slangResult.getErrorMessage());
+		}
+		std::string glslSourceCode = slangResult.getSourceCode();
+		return CompileResult::successResult("", glslSourceCode);
 	}
 }

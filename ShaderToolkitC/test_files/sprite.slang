@@ -12,23 +12,23 @@ struct VSOutput
     float4 color: COLOR0;
 }
 
-ConstantBuffer<float4x4> c_viewProjection;
+ConstantBuffer<float4x4> viewProjection : register(b0);
 
 [shader("vertex")] VSOutput main_vs(VSInput input)
 {
     VSOutput output;
-    output.position = mul(c_viewProjection, float4(input.position, 1.0));
+    output.position = mul(viewProjection, float4(input.position, 1.0));
     output.texCoord = input.texCoord;
     output.color = input.color;
     return output;
 }
 
-Texture2D t_diffuseTexture;
-SamplerState s_diffuseTexSampler;
+Texture2D diffuseTexture;
+SamplerState diffuseTexSampler;
 
 [shader("fragment")]
 float4 main_fs(VSOutput input) : SV_TARGET
 {
-    float4 textureColor = t_diffuseTexture.Sample(s_diffuseTexSampler, input.texCoord);
+    float4 textureColor = diffuseTexture.Sample(diffuseTexSampler, input.texCoord);
     return textureColor * input.color;
 }
