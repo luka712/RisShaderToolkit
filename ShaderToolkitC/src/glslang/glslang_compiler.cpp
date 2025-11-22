@@ -82,7 +82,7 @@ namespace ris_shader_toolkit
 		if (spirv_messages)
 		{
 			// TODO: Log any messages from SPIR-V generation
-			printf("(%s) %s\b", filePath, spirv_messages);
+			// printf("(%s) %s\b", filePath, spirv_messages);
 		}
 
 		glslang_program_delete(program);

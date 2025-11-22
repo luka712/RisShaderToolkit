@@ -24,11 +24,7 @@ file(GLOB TEST_SRC_FILES tests/*.cpp tests/**/*.cpp tests/**/**/*.cpp tests/**/*
 # Define the target FIRST
 add_library(${TARGET_NAME} SHARED
         library.cpp
-        ${SRC_FILES}
-        src/xcrun/xcrun_compiler.cpp
-        include/xcrun/xcrun_compiler.hpp
-        include/xcrun/xcrun_compile_result.hpp
-        src/xcrun/xcrun_compile_result.cpp
+        ${SRC_FILES}git
 )
 
 add_executable(${TESTS_NAME}

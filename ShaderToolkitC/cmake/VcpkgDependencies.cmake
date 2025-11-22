@@ -19,7 +19,8 @@ SET(PACKAGES_LIBRARIES
         ${PACKAGES}
         ${SLANG_LIBRARY}
         glslang::glslang glslang::glslang-default-resource-limits glslang::SPIRV glslang::SPVRemapper
-        SPIRV-Tools-shared
+        # SPIRV-Tools-shared
+        # SPIRV-Tools
         SPIRV-Tools-link
         SPIRV-Tools-lint
         SPIRV-Tools-opt
