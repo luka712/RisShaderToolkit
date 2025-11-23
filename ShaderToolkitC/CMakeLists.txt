@@ -24,7 +24,7 @@ file(GLOB TEST_SRC_FILES tests/*.cpp tests/**/*.cpp tests/**/**/*.cpp tests/**/*
 # Define the target FIRST
 add_library(${TARGET_NAME} SHARED
         library.cpp
-        ${SRC_FILES}git
+        ${SRC_FILES}
 )
 
 add_executable(${TESTS_NAME}
