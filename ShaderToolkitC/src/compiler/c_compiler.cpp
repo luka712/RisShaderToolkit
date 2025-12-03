@@ -16,8 +16,8 @@ void* compile_slang_to_glsl(
 	int profile,           // GlslProfile as int
 	int shaderStage,       // ShaderStage as int
 	const char* entryPointPtr,
-	void* inputRulePtr,
-	void* outputRulePtr
+	c_ReplaceStageInputNameRule* inputRulePtr,
+	c_ReplaceStageOutputNameRule* outputRulePtr
 )
 {
 	if (compilerPtr == nullptr)
@@ -37,16 +37,8 @@ void* compile_slang_to_glsl(
 
 	// Use "main" as default entry point if none is provided
 	std::string entryPoint = (entryPointPtr != nullptr) ? std::string(entryPointPtr) : "main";
-	ris_shader_toolkit::ReplaceStageInputNameRule* inputRule = nullptr;
-	if (inputRulePtr != nullptr)
-	{
-		inputRule = static_cast<ris_shader_toolkit::ReplaceStageInputNameRule*>(inputRulePtr);
-	}
-	ris_shader_toolkit::ReplaceStageOutputNameRule* outputRule = nullptr;
-	if (outputRulePtr != nullptr)
-	{
-		outputRule = static_cast<ris_shader_toolkit::ReplaceStageOutputNameRule*>(outputRulePtr);
-	}
+	ris_shader_toolkit::ReplaceStageInputNameRule* inputRule = c_to_cpp_ReplaceStageInputNameRule(inputRulePtr);
+	ris_shader_toolkit::ReplaceStageOutputNameRule* outputRule = c_to_cpp_ReplaceStageOutputNameRule(outputRulePtr);
 
 	ris_shader_toolkit::CompileResult result = compiler->compileSlangToGlsl(
 		std::string(inputFilePath),
@@ -55,6 +47,8 @@ void* compile_slang_to_glsl(
 		inputRule, outputRule
 	);
 
+	delete inputRule;
+	delete outputRule;
 
 	return c_to_cpp_CompileResult(result);
 }

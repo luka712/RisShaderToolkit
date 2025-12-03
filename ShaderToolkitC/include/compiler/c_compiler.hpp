@@ -25,8 +25,8 @@ extern "C" {
 		int profile,           // GlslProfile as int
 		int shaderStage,       // ShaderStage as int
 		const char* entryPoint,
-		void* inputRule,
-		void* outputRule
+		c_ReplaceStageInputNameRule* inputRule,
+		c_ReplaceStageOutputNameRule* outputRule
 	);
 
      //! Frees the Compiler instance.

@@ -25,6 +25,7 @@ file(GLOB TEST_SRC_FILES tests/*.cpp tests/**/*.cpp tests/**/**/*.cpp tests/**/*
 add_library(${TARGET_NAME} SHARED
         library.cpp
         ${SRC_FILES}
+        include/compiler/c_rules.hpp
 )
 
 add_executable(${TESTS_NAME}
