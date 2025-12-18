@@ -20,7 +20,7 @@ public class CompilerTests
         Compiler compiler = new Compiler();
         string inputFilePath = "Data/sprite.slang";
         GlslProfile glslProfile = GlslProfile.GLES_300;
-        ShaderStage shaderStage = ShaderStage.Vertex;
+        ShaderStage shaderStage = ShaderStage.VERTEX;
         string entryPoint = "main_vs";
         // Act
         CompileResult result = compiler.CompileSlangToGlsl(inputFilePath, glslProfile, shaderStage, entryPoint);
@@ -34,7 +34,7 @@ public class CompilerTests
         Compiler compiler = new Compiler();
         string inputFilePath = "Data/sprite.slang";
         GlslProfile glslProfile = GlslProfile.GLES_300;
-        ShaderStage shaderStage = ShaderStage.Fragment;
+        ShaderStage shaderStage = ShaderStage.FRAGMENT;
         string entryPoint = "main_fs";
         // Act
         CompileResult result = compiler.CompileSlangToGlsl(inputFilePath, glslProfile, shaderStage, entryPoint);
@@ -48,7 +48,7 @@ public class CompilerTests
         Compiler compiler = new Compiler();
         string inputFilePath = "Data/sprite.slang";
         GlslProfile glslProfile = GlslProfile.GLES_300;
-        ShaderStage shaderStage = ShaderStage.Vertex;
+        ShaderStage shaderStage = ShaderStage.VERTEX;
         string entryPoint = "main_vs";
         // Act
         CompileResult result = compiler.CompileSlangToGlsl(inputFilePath, glslProfile, shaderStage, entryPoint,
@@ -66,7 +66,7 @@ public class CompilerTests
         Compiler compiler = new Compiler();
         string inputFilePath = "Data/sprite.slang";
         GlslProfile glslProfile = GlslProfile.GLES_300;
-        ShaderStage shaderStage = ShaderStage.Vertex;
+        ShaderStage shaderStage = ShaderStage.VERTEX;
         string entryPoint = "main_vs";
         // Act
         CompileResult result = compiler.CompileSlangToGlsl(inputFilePath, glslProfile, shaderStage, entryPoint,
@@ -81,5 +81,24 @@ public class CompilerTests
             }
             );
         Assert.True(result.Success);
+    }
+
+    /// <summary>
+    /// Compiles shaders from a JSON file.
+    /// </summary>
+    [Fact]
+    public void CompileFromJson_Test()
+    {
+        // Arrange
+        Compiler compiler = new Compiler();
+        string jsonFilePath = "Data/compile.json";
+        // Act
+        compiler.CompileFromJson(jsonFilePath);
+        // If we reach this point, the compilation was successful.
+        Assert.True(true);
+        foreach(var result in compiler.CompileFromJson(jsonFilePath).Results)
+        {
+            Assert.True(result.Success);
+        }
     }
 }

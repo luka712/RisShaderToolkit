@@ -1,8 +1,11 @@
 ﻿
 
 using Ris.ShaderToolkit.CObjects;
+using Ris.ShaderToolkit.Dto;
+using Ris.ShaderToolkit.Json;
 using Ris.ShaderToolkit.Rules;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 
 namespace Ris.ShaderToolkit;
 
@@ -30,6 +33,7 @@ public class Compiler : IDisposable
         IntPtr outputRule);
 
     private readonly IntPtr NativePtr;
+    private readonly JsonReader _jsonReader = new();
 
     /// <summary>
     /// The constructor for the <see cref="Compiler"/>.
@@ -43,6 +47,50 @@ public class Compiler : IDisposable
         }
     }
 
+    /// <summary>
+    /// Compiles shaders based on the given JSON file.
+    /// </summary>
+    /// <param name="jsonFilePath">The json file path.</param>
+    /// <exception cref="InvalidOperationException"></exception>
+    public AggregatedCompileResult CompileFromJson(string jsonFilePath)
+    {
+        IReadOnlyList<ShaderCompileTaskDto> compileTasks = _jsonReader.LoadJson(jsonFilePath);
+
+        List<CompileResult> results = new List<CompileResult>();
+        foreach (ShaderCompileTaskDto compileTask in compileTasks)
+        {
+            if (compileTask.SourceProfile == AnyProfile.SLANG && ProfileResolver.IsGlslProfile(compileTask.Profile, out GlslProfile glslProfile))
+            {
+                CompileResult result = CompileSlangToGlsl(
+                  compileTask.InputFilePath,
+                  glslProfile,
+                  compileTask.Stage,
+                  compileTask.EntryPoint,
+                  compileTask.InputNameRule,
+                  compileTask.OutputNameRule);
+                results.Add(result);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"Unsupported profile conversion from {compileTask.SourceProfile} to {compileTask.Profile}.");
+            }
+        }
+
+        return new(results);
+    }
+
+    /// <summary>
+    /// Transpiles the given Slang shader to GLSL.
+    /// </summary>
+    /// <param name="inputFilePath">The input file path.</param>
+    /// <param name="glslProfile">The <see cref="GlslProfile"/>.</param>
+    /// <param name="shaderStage">The <see cref="ShaderStage"/>.</param>
+    /// <param name="entryPoint">The entry point.</param>
+    /// <param name="inputNameRule">The optional <see cref="ReplaceStageInputNameRule"/>.</param>
+    /// <param name="outputNameRule">The optional <see cref="ReplaceStageOutputNameRule"/>.</param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public CompileResult CompileSlangToGlsl(
         string inputFilePath,
         GlslProfile glslProfile,
