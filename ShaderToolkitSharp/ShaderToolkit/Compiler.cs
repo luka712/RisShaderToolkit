@@ -2,10 +2,8 @@
 
 using Ris.ShaderToolkit.CObjects;
 using Ris.ShaderToolkit.Dto;
-using Ris.ShaderToolkit.Json;
 using Ris.ShaderToolkit.Rules;
 using System.Runtime.InteropServices;
-using System.Text.Json;
 
 namespace Ris.ShaderToolkit;
 
@@ -35,6 +33,14 @@ public class Compiler : IDisposable
     private readonly IntPtr NativePtr;
     private readonly JsonReader _jsonReader = new();
 
+    private Dictionary<ShaderStage, string> _shortStageName = new()
+    {
+        [ShaderStage.VERTEX] = "vs",
+        [ShaderStage.FRAGMENT] = "fs",
+        [ShaderStage.COMPUTE] = "cs",
+    };
+
+
     /// <summary>
     /// The constructor for the <see cref="Compiler"/>.
     /// </summary>
@@ -44,6 +50,29 @@ public class Compiler : IDisposable
         if (NativePtr == IntPtr.Zero)
         {
             throw new InvalidOperationException("Failed to create compiler.");
+        }
+    }
+
+    private void WriteGlslShaderToFile(ShaderCompileTaskDto task, CompileResult result, GlslProfile glslProfile)
+    {
+        if(!result.Success)
+        {
+            return;
+        }
+
+        string? outputFilePath = task.OutputFilePath;
+        if (string.IsNullOrEmpty(outputFilePath))
+        {
+            string[] split = task.InputFilePath.Split('.');
+            split = split[..^1]; // Remove extension
+
+            string name = String.Join("", split);
+            outputFilePath = $"{name}_{_shortStageName[task.Stage]}_{glslProfile.ToString().ToLower()}.glsl";
+        }
+
+        if (result.Success && result.SourceCode != null)
+        {
+            File.WriteAllText(outputFilePath, result.SourceCode);
         }
     }
 
@@ -68,7 +97,9 @@ public class Compiler : IDisposable
                   compileTask.EntryPoint,
                   compileTask.InputNameRule,
                   compileTask.OutputNameRule);
+
                 results.Add(result);
+                WriteGlslShaderToFile(compileTask, result, glslProfile);
             }
             else
             {
@@ -130,7 +161,11 @@ public class Compiler : IDisposable
                     : null,
                 ErrorMessage = cCompileResult.Success
                     ? null
-                    : Marshal.PtrToStringAnsi(cCompileResult.ErrorMessage) ?? "Unknown error."
+                    : Marshal.PtrToStringAnsi(cCompileResult.ErrorMessage) ?? "Unknown error.",
+                EntryPoint = entryPoint,
+                InputFilePath = inputFilePath,
+                GlslProfile = glslProfile,
+                ShaderStage = shaderStage
             };
             cCompileResult.Dispose();
             return result;

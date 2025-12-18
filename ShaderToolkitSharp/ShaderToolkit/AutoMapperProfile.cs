@@ -28,6 +28,7 @@ namespace Ris.ShaderToolkit
             CreateMap<ReplaceStageInputNameRuleJson, ReplaceStageInputNameRule>();
             CreateMap<ReplaceStageOutputNameRuleJson, ReplaceStageOutputNameRule>();
             CreateMap<ShaderJson, ShaderCompileTaskDto>()
+                .ForMember(dest => dest.OutputFilePath, opt => opt.MapFrom(src => src.OutputFile))
                 .ForMember(dest => dest.InputNameRule, opt => opt.MapFrom(src => src.Rules != null ? src.Rules.InputNameRule : null))
                 .ForMember(dest => dest.OutputNameRule, opt => opt.MapFrom(src => src.Rules != null ? src.Rules.OutputNameRule : null))
                 .ForMember(dest => dest.Profile, opt => opt.MapFrom(src => ResolveProfile(src.Profile)))

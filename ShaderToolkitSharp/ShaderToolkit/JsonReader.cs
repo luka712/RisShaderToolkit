@@ -52,7 +52,7 @@ namespace Ris.ShaderToolkit
                     : Path.Combine(directory, shader.Name);
 
                 ShaderCompileTaskDto compileTask = _mapper.Map<ShaderCompileTaskDto>(shader);
-                compileTask.InputFilePath = inputFilePath;
+                compileTask.InputFilePath = inputFilePath.Replace("\\", "/");
                 results.Add(compileTask);
             }
 

@@ -13,6 +13,11 @@ internal record ShaderCompileTaskDto
     public string InputFilePath { get; set; } = string.Empty;
 
     /// <summary>
+    /// The output file path of the compiled shader.
+    /// </summary>
+    public string? OutputFilePath { get; set; }
+
+    /// <summary>
     /// The entry point of the shader. If not specified, defaults to "main".
     /// </summary>
     public string EntryPoint { get; set; } = "main";

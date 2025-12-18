@@ -11,6 +11,11 @@ public class ShaderJson
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
+    /// The output file path of the compiled shader.
+    /// </summary>
+    public string? OutputFile { get; set; }
+
+    /// <summary>
     /// The entry point of the shader. If not specified, defaults to "main".
     /// </summary>
     public string EntryPoint { get; set; } = "main";
