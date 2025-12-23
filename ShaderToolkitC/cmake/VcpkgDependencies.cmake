@@ -13,7 +13,7 @@ find_package(SPIRV-Tools-opt CONFIG REQUIRED)
 find_package(spirv_cross_core CONFIG REQUIRED)
 find_package(spirv_cross_glsl CONFIG REQUIRED)
 find_package(spirv_cross_reflect CONFIG REQUIRED)
-
+find_package(spdlog CONFIG REQUIRED)
 
 SET(PACKAGES_LIBRARIES
         ${PACKAGES}
@@ -27,6 +27,7 @@ SET(PACKAGES_LIBRARIES
         spirv-cross-core
         spirv-cross-glsl
         spirv-cross-reflect
+        spdlog::spdlog
 )
 
 SET(PACKAGES_INCLUDE

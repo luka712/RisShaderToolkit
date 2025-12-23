@@ -3,6 +3,7 @@
 #include <fstream>
 #include <filesystem>
 #include <spirv-cross/spirv_cross_compiler.hpp>
+#include <spdlog/spdlog.h>
 
 namespace ris_shader_toolkit {
 	Compiler::Compiler() : fxcCompiler() {}
@@ -30,9 +31,13 @@ namespace ris_shader_toolkit {
 		const std::string& entryPoint
 	)
 	{
+		spdlog::info("Compiling Slang shader to SPIR-V: {}", inputFilePath);
+
 		SlangSession slangSession;
 		if (!slangSession.initialize()) {
-			return CompileResult::errorResult("Failed to initialize Slang session.");
+			std::string errorMsg = "Failed to initialize Slang session.";
+			spdlog::error(errorMsg);
+			return CompileResult::errorResult(errorMsg);
 		}
 
 		SlangCompileResult slangResult = slangSession.compileToSpirV(
@@ -42,10 +47,13 @@ namespace ris_shader_toolkit {
 			profile
 		);
 		if (!slangResult.isSuccess()) {
-			return CompileResult::errorResult("Slang compilation failed: " + slangResult.getErrorMessage());
+			std::string errorMsg = "Slang compilation failed: " + slangResult.getErrorMessage();
+			spdlog::error(errorMsg);
+			return CompileResult::errorResult(errorMsg);
 		}
 		std::string spirvCode = slangResult.getSourceCode();
 
+		spdlog::info("Successfully compiled Slang shader to SPIR-V.");
 		return CompileResult::successResult("", spirvCode);
 	}
 
@@ -116,6 +124,7 @@ namespace ris_shader_toolkit {
 		ReplaceStageOutputNameRule* replaceStageOutputNameRule
 	)
 	{
+		spdlog::info("Compiling Slang shader to GLSL: {}", inputFilePath);
 		// First we need to determine if we can use Slang directly to GLSL or if we need to go through SPIR-V
 
 		// For GLES profiles, we need to go through SPIR-V
@@ -123,6 +132,7 @@ namespace ris_shader_toolkit {
 			|| profile == GlslProfile::GLES_310
 			|| profile == GlslProfile::GLES_320
 			) {
+			spdlog::info("Need to compile via SPIR-V for GLES profile first.");
 			CompileResult spirvResult = compileSlangToSpirV(
 				inputFilePath,
 				shaderStage,
@@ -145,6 +155,8 @@ namespace ris_shader_toolkit {
 			if (!glslResult.isSuccess()) {
 				return CompileResult::errorResult("SPIR-V to GLSL compilation failed: " + glslResult.getErrorMessage());
 			}
+
+			spdlog::info("Successfully compiled Slang shader to GLSL via SPIR-V.");
 			return CompileResult::successResult("", glslResult.getSourceCode());
 		}
 

@@ -1,5 +1,6 @@
 ﻿#include "spirv-cross/spirv_cross_compiler.hpp"
 #include <iostream>
+#include <spdlog/spdlog.h>
 
 namespace ris_shader_toolkit {
 
@@ -122,12 +123,16 @@ namespace ris_shader_toolkit {
 	) {
 		// Load SPIR-V
 		try {
+
+			spdlog::info("Compiling SPIR-V to GLSL using SPIRV-Cross.");
+
 			spirv_cross::CompilerGLSL compiler(spirv);
 			// Set GLSL options
 			spirv_cross::CompilerGLSL::Options options;
 			options.version = glslVersionMap[profile];
 			options.force_zero_initialized_variables = false;
 			if (profile == GlslProfile::GLES_300 || profile == GlslProfile::GLES_310 || profile == GlslProfile::GLES_320) {
+				spdlog::info("Using OpenGL ES profile for GLSL.");
 				options.es = true;
 			}
 
@@ -142,9 +147,14 @@ namespace ris_shader_toolkit {
 
 			// Compile to GLSL
 			std::string glslSource = compiler.compile();
+
+			spdlog::info("Successfully compiled SPIR-V to GLSL.");
+
 			return SpirVCrossCompileResult(true, glslSource, "");
 		}
 		catch (const std::exception& e) {
+			
+			spdlog::error("SPIRV-Cross compilation failed: {}", e.what());
 			return SpirVCrossCompileResult(false, "", e.what());
 		}
 	}
