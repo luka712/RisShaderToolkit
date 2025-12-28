@@ -5,13 +5,14 @@
 #include "compiler/macros.hpp"
 
 extern "C" {
-       API_EXPORT
+	API_EXPORT
 	struct c_ReplaceStageInputNameRule {
 
 		//! Gets the prefix to be added to input variable names.
 		const char* prefix;
 	};
-    API_EXPORT
+
+	API_EXPORT
 	struct c_ReplaceStageOutputNameRule {
 		//! Gets the prefix to be added to output variable names.
 		const char* prefix;

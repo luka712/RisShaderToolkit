@@ -8,7 +8,7 @@ extern "C" {
 
     //! The C-compatible structure representing the result of a compilation.
     API_EXPORT
-    struct c_CompileResult {
+    struct  c_CompileResult {
 
         //! Indicates whether the compilation was successful.
         bool success;

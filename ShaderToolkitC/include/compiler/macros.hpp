@@ -1,8 +1,8 @@
 #pragma once
 
-#ifndef API_EXPORT
+#include <string.h>
 
-#define API_EXPORT
+#ifndef API_EXPORT
 
 #if defined(_WIN32) || defined(_WIN64)
     #define API_EXPORT __declspec(dllexport)
@@ -12,3 +12,7 @@
 #endif
 
 #endif // API_EXPORT
+
+#if defined(_WIN32)
+    #define strdup _strdup
+#endif

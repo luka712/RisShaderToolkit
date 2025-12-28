@@ -9,6 +9,7 @@ std::string fxc_ps_output = "D:/Projects/ShaderToolkitSharp/ShaderToolkitC/test_
 
 bool compile_slang_vs_to_fxc()
 {
+#if _WIN32
 	Compiler compiler;
 	CompileResult result = compiler.compileSlangToFxc(
 		"test_files/sprite.slang",
@@ -20,10 +21,14 @@ bool compile_slang_vs_to_fxc()
 	);
 
 	return result.isSuccess();
+#else
+	return true;
+#endif
 }
 
 bool compile_slang_ps_to_fxc()
 {
+#if _WIN32
 	Compiler compiler;
 	CompileResult result = compiler.compileSlangToFxc(
 		"test_files/sprite.slang",
@@ -34,6 +39,9 @@ bool compile_slang_ps_to_fxc()
 		true
 	);
 	return result.isSuccess();
+#else
+	return true;
+#endif
 }
 
 bool compile_slang_to_glsl_es()

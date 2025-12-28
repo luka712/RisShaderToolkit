@@ -22,9 +22,9 @@ c_CompileResult* c_to_cpp_CompileResult(const ris_shader_toolkit::CompileResult&
 {
 	c_CompileResult* cResult = new c_CompileResult();
 	cResult->success = result.isSuccess();
-	cResult->sourceCode = result.getSourceCode().empty() ? nullptr : _strdup(result.getSourceCode().c_str());
-	cResult->outputFilePath = result.getOutputFilePath().empty() ? nullptr : _strdup(result.getOutputFilePath().c_str());
-	cResult->errorMessage = result.getErrorMessage().empty() ? nullptr : _strdup(result.getErrorMessage().c_str());
+	cResult->sourceCode = result.getSourceCode().empty() ? nullptr : strdup(result.getSourceCode().c_str());
+	cResult->outputFilePath = result.getOutputFilePath().empty() ? nullptr : strdup(result.getOutputFilePath().c_str());
+	cResult->errorMessage = result.getErrorMessage().empty() ? nullptr : strdup(result.getErrorMessage().c_str());
 	return cResult;
 }
 
@@ -34,6 +34,6 @@ c_CompileResult* errorResult(const char* errorMessage)
 	result->success = false;
 	result->sourceCode = nullptr;
 	result->outputFilePath = nullptr;
-	result->errorMessage = _strdup(errorMessage);
+	result->errorMessage = strdup(errorMessage);
 	return result;
 }
