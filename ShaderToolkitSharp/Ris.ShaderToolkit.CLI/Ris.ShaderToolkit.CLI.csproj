@@ -5,7 +5,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyName>ris-shader-toolkit</AssemblyName>
+    <AssemblyName>ris-shader-toolkit-cli</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>

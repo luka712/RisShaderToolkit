@@ -1,0 +1,5 @@
+#!/bin/sh
+
+DIR="$(dirname "$(readlink -f "$0")")"
+EXEC="${DIR}/usr/bin/ris-shader-toolkit-cli"
+exec "$EXEC"

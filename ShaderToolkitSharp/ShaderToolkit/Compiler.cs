@@ -12,7 +12,7 @@ namespace Ris.ShaderToolkit;
 /// </summary>
 public class Compiler : IDisposable
 {
-    private const string DLL_NAME = "shader_toolkit_c.dll";
+    private const string DLL_NAME = "shader_toolkit_c";
 
     [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
     static extern IntPtr create_compiler();

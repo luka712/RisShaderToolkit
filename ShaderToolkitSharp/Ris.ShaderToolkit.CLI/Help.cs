@@ -13,10 +13,10 @@ internal static class Help
     internal static void PrintHelp()
     {
         StringBuilder stringBuilder = new();
-        stringBuilder.AppendLine("ris-shader-toolkit - A command line interface for 'RisShaderToolkit'.");
+        stringBuilder.AppendLine("ris-shader-toolkit-cli - A command line interface for 'RisShaderToolkit'.");
         stringBuilder.AppendLine();
         stringBuilder.AppendLine("Usage:");
-        stringBuilder.AppendLine("  ris-shader-toolkit [options]");
+        stringBuilder.AppendLine("  ris-shader-toolkit-cli [options]");
         stringBuilder.AppendLine();
         stringBuilder.AppendLine("Options:");
         stringBuilder.AppendLine("  -j, --json <json>             Load from JSON file.");

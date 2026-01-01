@@ -73,6 +73,9 @@
     <None Update="Libs\Windows\x64\slangi.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="platforms\linux_x64\libshader_toolkit_c.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

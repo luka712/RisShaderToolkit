@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Ris Shader Toolkit
+Exec=ris-shader-toolkit-cli
+Icon=icon
+Type=Application
+Categories=Development
+Terminal=true
+StartupNotify=true
+PrefersNonDefaultGPU=false

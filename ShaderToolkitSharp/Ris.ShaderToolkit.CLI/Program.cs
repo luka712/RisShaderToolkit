@@ -3,7 +3,7 @@ using Ris.ShaderToolkit;
 
 Compiler compiler = new Compiler();
 
-string? json = ArgHelper.GetArgumentValue(args, "--json") ?? ArgHelper.GetArgumentValue(args, "--j") ?? "D:\\Projects\\ShaderToolkitSharp\\ShaderToolkitSharp\\ShaderToolkit.Tests\\Data\\compile.json";
+string? json = ArgHelper.GetArgumentValue(args, "--json") ?? ArgHelper.GetArgumentValue(args, "--j");
 
 if (json is null)
 {
