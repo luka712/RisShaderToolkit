@@ -104,3 +104,4 @@ This will create `RisShaderToolkit.AppDir/AppRun-x86_64.AppImage` (or similar) i
 ---
 
 ✅ Your application is now packaged as a portable AppImage that can run on most Linux distributions without installation.
+
