@@ -2,8 +2,7 @@
 
 using Avalonia;
 
-namespace 
-    .UI.Desktop;
+namespace RisGameFramework.ShaderToolkit.Client.Desktop;
 
 class Program
 {

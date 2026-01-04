@@ -3,10 +3,10 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 
-using ShaderToolkitSharp.UI.ViewModels;
-using ShaderToolkitSharp.UI.Views;
+using RisGameFramework.ShaderToolkit.Client.ViewModels;
+using RisGameFramework.ShaderToolkit.Client.Views;
 
-namespace ShaderToolkitSharp.UI;
+namespace RisGameFramework.ShaderToolkit.Client;
 
 public partial class App : Application
 {

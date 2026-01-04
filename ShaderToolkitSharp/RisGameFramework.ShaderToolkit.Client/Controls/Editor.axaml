@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="clr-namespace:RisGameFramework.ShaderToolkit.Client.ViewModels"
+			 xmlns:AvaloniaEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+			 x:DataType="vm:EditorViewModel"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 x:Class="RisGameFramework.ShaderToolkit.Client.Controls.Editor">
+
+	<Design.DataContext>
+		<vm:EditorViewModel />
+	</Design.DataContext>
+
+	<AvaloniaEdit:TextEditor x:Name="ShaderEditorInstance" 
+							 ShowLineNumbers="True"
+							 FontFamily="Cascadia Code, Consolas, Menlo, monospace"
+							 FontSize="14"
+							 Background="#1E1E1E"
+							 Foreground="#D4D4D4"
+							 WordWrap="True"
+							 HorizontalScrollBarVisibility="Auto"
+							 VerticalScrollBarVisibility="Auto" />
+</UserControl>

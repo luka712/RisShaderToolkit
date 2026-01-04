@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace ShaderToolkit.UI.ViewModels;
+namespace RisGameFramework.ShaderToolkit.Client.ViewModels;
 
 public class ViewModelBase : ObservableObject
 {

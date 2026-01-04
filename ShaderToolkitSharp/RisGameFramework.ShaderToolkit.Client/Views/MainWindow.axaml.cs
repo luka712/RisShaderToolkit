@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 
-namespace ShaderToolkitSharp.UI.Views;
+namespace RisGameFramework.ShaderToolkit.Client.Views;
 
 public partial class MainWindow : Window
 {

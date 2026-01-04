@@ -1,4 +1,4 @@
-﻿namespace ShaderToolkit.UI.ViewModels;
+﻿namespace RisGameFramework.ShaderToolkit.Client.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
