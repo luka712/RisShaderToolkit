@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RisGameFramework.ShaderTool
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RisGameFramework.ShaderToolkit.Client.Desktop", "RisGameFramework.ShaderToolkit.Client.Desktop\RisGameFramework.ShaderToolkit.Client.Desktop.csproj", "{680809C6-7DFD-2ED1-F324-6E1C0E4FD2CC}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "RisGameFramework.ShaderToolkit.Installer.Win", "RisGameFramework.ShaderToolkit.Installer.Win\RisGameFramework.ShaderToolkit.Installer.Win.vdproj", "{18A7FE38-F890-A9FB-000F-F1C716C92F4B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,8 @@ Global
 		{680809C6-7DFD-2ED1-F324-6E1C0E4FD2CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{680809C6-7DFD-2ED1-F324-6E1C0E4FD2CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{680809C6-7DFD-2ED1-F324-6E1C0E4FD2CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18A7FE38-F890-A9FB-000F-F1C716C92F4B}.Debug|Any CPU.ActiveCfg = Debug
+		{18A7FE38-F890-A9FB-000F-F1C716C92F4B}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
