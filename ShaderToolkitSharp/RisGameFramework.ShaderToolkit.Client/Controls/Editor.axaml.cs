@@ -1,8 +1,10 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using AvaloniaEdit;
 using AvaloniaEdit.TextMate;
 using RisGameFramework.ShaderToolkit.Client.ViewModels;
+using System;
 using TextMateSharp.Grammars;
 using static AvaloniaEdit.TextMate.TextMate;
 
@@ -15,7 +17,6 @@ public partial class Editor : UserControl
 {
     private const string HLSL_GRAMMAR_EXTENSION = ".hlsl";
 
-    private EditorViewModel _viewModel = new();
     private RegistryOptions _registryOptions;
     private Installation _textMateInstallation;
 
@@ -32,7 +33,36 @@ public partial class Editor : UserControl
         Language language = _registryOptions.GetLanguageByExtension(HLSL_GRAMMAR_EXTENSION);
         _textMateInstallation.SetGrammar(_registryOptions.GetScopeByLanguageId(_registryOptions.GetLanguageByExtension(HLSL_GRAMMAR_EXTENSION).Id));
 
-        DataContext = _viewModel;
-        ShaderEditorInstance.Text = _viewModel.ShaderCode;
+        ShaderEditorInstance.TextChanged += (s, e) =>
+        {
+            SetValue(SourceProperty, ShaderEditorInstance.Text);
+            SourceChanged?.Invoke(this, e);
+        };
+    }
+
+    /// <summary>
+    /// Invoked whenever source text is changed.
+    /// </summary>
+    public event EventHandler SourceChanged;
+
+    /// <summary>
+    /// The source property.
+    /// </summary>
+    public static readonly StyledProperty<string> SourceProperty = AvaloniaProperty.Register<Editor, string>(nameof(Source), "");
+
+    /// <summary>
+    /// The source shader text.
+    /// </summary>
+    public string Source
+    {
+        get
+        {
+            return GetValue(SourceProperty);
+        }
+        set
+        {
+            SetValue(SourceProperty, value);
+            ShaderEditorInstance?.Text = value;
+        }
     }
 }

@@ -111,6 +111,46 @@ namespace ris_shader_toolkit {
 		return SlangCompileResult(true, code);
 	}
 
+	SlangCompileResult SlangSession::compileFromSourceCode(
+		const std::string& sourceCodeStr,
+		SlangCompileTarget compileTarget,
+		const std::string& profile,
+		SlangStage stage,
+		const std::string& entryPoint)
+	{
+		ComPtr<slang::ICompileRequest> request;
+		session->createCompileRequest(request.writeRef());
+
+		// Add your Slang source file.
+		int translationUnitIndex = request->addTranslationUnit(SLANG_SOURCE_LANGUAGE_SLANG, nullptr);
+		request->addTranslationUnitSourceString(translationUnitIndex, "__temp__.slang", sourceCodeStr.c_str());
+
+		// Add target
+		int targetIndex = request->addCodeGenTarget(compileTarget);
+		SlangProfileID profileID = session->findProfile(profile.c_str());
+		if (profileID == SLANG_PROFILE_UNKNOWN)
+		{
+			return SlangCompileResult(false, "", "Failed to find profile: " + profile);
+		}
+		request->setTargetProfile(targetIndex, profileID); // shader model
+
+		request->addEntryPoint(translationUnitIndex, entryPoint.c_str(), stage); // for VS
+
+		SlangResult res = request->compile();
+		if (SLANG_FAILED(res)) {
+			std::string error = request->getDiagnosticOutput();
+			return SlangCompileResult(false, "", error);
+		}
+
+		ComPtr<ISlangBlob> blob;
+		request->getEntryPointCodeBlob(0, 0, blob.writeRef());
+
+		std::string code = std::string((const char*)blob->getBufferPointer(), blob->getBufferSize());
+
+		//std::cout << "Compilation succeeded!\n";
+		return SlangCompileResult(true, code);
+	}
+
 	SlangCompileResult SlangSession::compile(
 		const std::string& filePath,
 		SlangCompileTarget compileTarget,
@@ -154,6 +194,49 @@ namespace ris_shader_toolkit {
 		return SlangCompileResult(true, code);
 	}
 
+	SlangCompileResult SlangSession::compileFromSourceCode(
+		const std::string& slangSourceCode,
+		SlangCompileTarget compileTarget,
+		const std::string& profile,
+		std::vector<SlangStage> stages,
+		std::vector<std::string> entryPoints)
+	{
+		ComPtr<slang::ICompileRequest> request;
+		session->createCompileRequest(request.writeRef());
+
+		// Add your Slang source file.
+		int translationUnitIndex = request->addTranslationUnit(SLANG_SOURCE_LANGUAGE_SLANG, nullptr);
+		request->addTranslationUnitSourceString(translationUnitIndex, "__temp__.slang", slangSourceCode.c_str());
+
+		// Add target
+		int targetIndex = request->addCodeGenTarget(compileTarget);
+		SlangProfileID profileID = session->findProfile(profile.c_str());
+		if (profileID == SLANG_PROFILE_UNKNOWN)
+		{
+			return SlangCompileResult(false, "", "Failed to find profile: " + profile);
+		}
+		request->setTargetProfile(targetIndex, profileID); // shader model
+
+		for (size_t i = 0; i < stages.size(); i++)
+		{
+			request->addEntryPoint(translationUnitIndex, entryPoints[i].c_str(), stages[i]);
+		}
+
+		SlangResult res = request->compile();
+		if (SLANG_FAILED(res)) {
+			std::string error = request->getDiagnosticOutput();
+			return SlangCompileResult(false, "", error);
+		}
+
+		ComPtr<ISlangBlob> blob;
+		request->getEntryPointCodeBlob(0, 0, blob.writeRef());
+
+		std::string code = std::string((const char*)blob->getBufferPointer(), blob->getBufferSize());
+
+		//std::cout << "Compilation succeeded!\n";
+		return SlangCompileResult(true, code);
+	}
+
 	SlangCompileResult SlangSession::compileToGlsl(
 		const std::string& filePath,
 		ShaderStage stage,
@@ -165,6 +248,24 @@ namespace ris_shader_toolkit {
 
 		return compile(
 			filePath,
+			SLANG_GLSL,
+			glslProfile,
+			slangStage,
+			entryPoint
+		);
+	}
+
+	SlangCompileResult SlangSession::compileSourceCodeToGlsl(
+		const std::string& slangSourceCode,
+		ShaderStage stage,
+		const std::string& entryPoint,
+		GlslProfile profile)
+	{
+		SlangStage slangStage = shaderStageMap[stage];
+		std::string glslProfile = glslProfileMap[profile];
+
+		return compileFromSourceCode(
+			slangSourceCode,
 			SLANG_GLSL,
 			glslProfile,
 			slangStage,
@@ -247,6 +348,30 @@ namespace ris_shader_toolkit {
 
 		return compile(
 			filePath,
+			SLANG_SPIRV,
+			"spirv_1_0",
+			slangStages,
+			entryPoints
+		);
+	}
+
+	SlangCompileResult SlangSession::compileSourceCodeToSpirV(
+		const std::string& slangSourceCode,
+		std::vector<ShaderStage> stages,
+		std::vector<std::string> entryPoints,
+		SpirVProfile profile
+	)
+	{
+		std::vector<SlangStage> slangStages;
+		for (const auto& stage : stages)
+		{
+			slangStages.push_back(shaderStageMap[stage]);
+		}
+
+		std::string metalProfile = spirvProfileMap[profile];
+
+		return compileFromSourceCode(
+			slangSourceCode,
 			SLANG_SPIRV,
 			"spirv_1_0",
 			slangStages,

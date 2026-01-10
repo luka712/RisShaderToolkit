@@ -5,7 +5,8 @@
 			 xmlns:vm="clr-namespace:RisGameFramework.ShaderToolkit.Client.ViewModels"
 			 xmlns:AvaloniaEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
 			 xmlns:c="clr-namespace:RisGameFramework.ShaderToolkit.Client.Controls"
-			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 mc:Ignorable="d" 
+			 d:DesignWidth="800" d:DesignHeight="450"
 			 x:Class="RisGameFramework.ShaderToolkit.Client.Views.MainView"
 			 x:DataType="vm:MainViewModel">
 	<Design.DataContext>
@@ -14,10 +15,13 @@
 		<vm:MainViewModel />
 	</Design.DataContext>
 
-	<StackPanel>
-		<c:Editor/>
-		<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+	<DockPanel>
+		<c:Editor DockPanel.Dock="Left"
+				  Source="{Binding SourceShaderCode, Mode=TwoWay}"
+				  />
+		<c:Editor DockPanel.Dock="Right"
+				  Source="{Binding TargetShaderCode}"/>
 
-	</StackPanel>
+	</DockPanel>
 
 </UserControl>

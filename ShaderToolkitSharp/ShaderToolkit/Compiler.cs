@@ -184,6 +184,4 @@ public class Compiler : IDisposable
     {
         free_compiler(NativePtr);
     }
-
-
 }

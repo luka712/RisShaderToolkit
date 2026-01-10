@@ -179,9 +179,46 @@ bool create_spirv_shader_multistage()
 	return result.isSuccess();
 }
 
+bool create_glsl_from_source_code()
+{
+	ris_shader_toolkit::SlangSession session;
+	if (!session.initialize())
+	{
+		return false;
+	}
+
+	const char* sourceCode = R"(
+struct VSOut {
+    float4 position : SV_Position;
+};
+
+VSOut main(uint vertexID : SV_VertexID) {
+    // Fullscreen triangle
+    float2 pos = float2(
+        (vertexID == 2) ? 3.0 : -1.0,
+        (vertexID == 1) ? 3.0 : -1.0
+    );
+
+    VSOut o;
+    o.position = float4(pos, 0.0, 1.0);
+    return o;
+}
+)";
+
+
+
+	SlangCompileResult result = session.compileFromSourceCode(
+		sourceCode,
+		SLANG_GLSL,
+		"glsl_450",
+		SLANG_STAGE_VERTEX,
+		"main");
+	return result.isSuccess();
+}
+
 TEST_CASE("slang tests", "[create_slang_session],\
  [create_hlsl_shader_low_level], [create_hlsl_shader_high_level], \
- [create_glsl_shader_low_level], [create_glsl_shader_high_level], [create_glsl_es_shader_low_level], \
+ [create_glsl_shader_low_level], [create_glsl_shader_high_level], [create_glsl_es_shader_low_level], [create_glsl_from_source_code] \
 [create_metal_shader_low_level], [create_metal_shader_high_level], [create_metal_shader_low_level_multistage], [create_metal_shader_high_level_multistage] \
 [create_spirv_shader_low_level], [create_spirv_shader_multistage]"
 ) {
@@ -190,6 +227,7 @@ TEST_CASE("slang tests", "[create_slang_session],\
 	REQUIRE(create_hlsl_shader_high_level());
 	REQUIRE(create_glsl_shader_low_level());
 	REQUIRE(create_glsl_shader_high_level());
+	REQUIRE(create_glsl_from_source_code());
 	REQUIRE(create_metal_shader_low_level());
 	REQUIRE(create_metal_shader_high_level());
 	REQUIRE(create_metal_shader_low_level_multistage());
