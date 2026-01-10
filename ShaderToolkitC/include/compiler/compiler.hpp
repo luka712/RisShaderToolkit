@@ -34,7 +34,7 @@ namespace ris_shader_toolkit {
         //! @return A CompileResult object containing the result of the compilation.
         //! The result includes success status and source code if successful, or an error message if failed. 
         //! It does not include the output file path.
-        CompileResult compileSlangSourceToSpirV(
+        CompileResult compileSlangSourceCodeToSpirV(
             const std::string& slangSourceCode,
             ShaderStage shaderStage = ShaderStage::Vertex,
             SpirVProfile profile = SpirVProfile::SPIRV_1_2,
@@ -99,7 +99,7 @@ namespace ris_shader_toolkit {
         //! @param inputRule An optional rule to replace stage input names.
 		//! @param outputRule An optional rule to replace stage output names.
         //! @return A CompileResult object containing the result of the compilation.
-        CompileResult compileSlangSourceToGlsl(
+        CompileResult compileSlangSourceCodeToGlsl(
 			const std::string& slangSource,
 			GlslProfile profile = GlslProfile::GLSL_450,
 			ShaderStage shaderStage = ShaderStage::Vertex,

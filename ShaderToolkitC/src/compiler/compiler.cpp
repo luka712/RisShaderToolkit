@@ -57,7 +57,7 @@ namespace ris_shader_toolkit {
 		return CompileResult::successResult("", spirvCode);
 	}
 
-	CompileResult Compiler::compileSlangSourceToSpirV(
+	CompileResult Compiler::compileSlangSourceCodeToSpirV(
 		const std::string& slangSourceCode,
 		ShaderStage shaderStage,
 		SpirVProfile profile,
@@ -148,7 +148,7 @@ namespace ris_shader_toolkit {
 		return CompileResult::successResult(outputFilePath, "");
 	}
 
-	CompileResult Compiler::compileSlangSourceToGlsl(
+	CompileResult Compiler::compileSlangSourceCodeToGlsl(
 		const std::string& slangSourceCode,
 		GlslProfile profile,
 		ShaderStage shaderStage,
@@ -166,7 +166,7 @@ namespace ris_shader_toolkit {
 			|| profile == GlslProfile::GLES_320
 			) {
 			spdlog::info("Need to compile via SPIR-V for GLES profile first.");
-			CompileResult spirvResult = compileSlangSourceToSpirV(
+			CompileResult spirvResult = compileSlangSourceCodeToSpirV(
 				slangSourceCode,
 				shaderStage,
 				SpirVProfile::SPIRV_1_5,

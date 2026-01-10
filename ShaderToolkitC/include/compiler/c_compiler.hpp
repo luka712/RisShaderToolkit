@@ -29,8 +29,19 @@ extern "C" {
 		c_ReplaceStageOutputNameRule* outputRule
 	);
 
-     //! Frees the Compiler instance.
-        //! @param compilerPtr A pointer to the Compiler instance to free.
+	API_EXPORT
+	void* compile_slang_source_code_to_glsl(
+	void* compilerPtr,
+	const char* slangSourceCode,
+	int profile,           // GlslProfile as int
+	int shaderStage,       // ShaderStage as int
+	const char* entryPoint,
+	c_ReplaceStageInputNameRule* inputRule,
+	c_ReplaceStageOutputNameRule* outputRule
+);
+
+    //! Frees the Compiler instance.
+    //! @param compilerPtr A pointer to the Compiler instance to free.
     API_EXPORT
 	void free_compiler(void* compilerPtr);
 }
