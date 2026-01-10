@@ -101,4 +101,21 @@ public class CompilerTests
             Assert.True(result.Success);
         }
     }
+
+    /// <summary>
+    /// Compile from source code.
+    /// </summary>
+    [Fact]
+    public void TestCompileSourceCodeSlangToGlsl()
+    {
+        // Arrange
+        Compiler compiler = new Compiler();
+        string slangSourceCode = File.ReadAllText("Data/sprite.slang");
+        GlslProfile glslProfile = GlslProfile.GLES_300;
+        ShaderStage shaderStage = ShaderStage.VERTEX;
+        string entryPoint = "main_vs";
+        // Act
+        CompileResult result = compiler.CompileSlangSourceCodeToGlsl(slangSourceCode, glslProfile, shaderStage, entryPoint);
+        Assert.True(result.Success);
+    }
 }

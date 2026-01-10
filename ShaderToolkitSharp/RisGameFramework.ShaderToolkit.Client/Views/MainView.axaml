@@ -19,8 +19,8 @@
 		<c:Editor DockPanel.Dock="Left"
 				  Source="{Binding SourceShaderCode, Mode=TwoWay}"
 				  />
-		<c:Editor DockPanel.Dock="Right"
-				  Source="{Binding TargetShaderCode}"/>
+		<c:TextViewer DockPanel.Dock="Right"
+				  Text="{Binding TargetShaderCode, Mode=OneWay}"/>
 
 	</DockPanel>
 

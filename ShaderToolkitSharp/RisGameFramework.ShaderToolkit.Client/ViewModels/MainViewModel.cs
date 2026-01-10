@@ -26,6 +26,10 @@ public partial class MainViewModel : ViewModelBase
 
     partial void OnSourceShaderCodeChanged(string value)
     {
-        _compiler.CompileSlangToGlsl()
+       var result = _compiler.CompileSlangSourceCodeToGlsl(value, GlslProfile.GLES_300, ShaderStage.VERTEX, "main_vs");
+        if (result != null && result.Success)
+        {
+            TargetShaderCode = result.SourceCode!;
+        }
     }
 }

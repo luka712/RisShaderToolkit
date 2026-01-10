@@ -198,7 +198,7 @@ namespace ris_shader_toolkit {
 			return CompileResult::errorResult("Failed to initialize Slang session.");
 		}
 
-		SlangCompileResult slangResult = slangSession.compileToGlsl(
+		SlangCompileResult slangResult = slangSession.compileSourceCodeToGlsl(
 			slangSourceCode,
 			shaderStage,
 			entryPoint,
