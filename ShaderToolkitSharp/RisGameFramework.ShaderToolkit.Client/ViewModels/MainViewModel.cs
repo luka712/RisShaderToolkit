@@ -1,7 +1,6 @@
-﻿using AvaloniaEdit;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Ris.ShaderToolkit;
-using System;
+using System.Collections.Generic;
 
 namespace RisGameFramework.ShaderToolkit.Client.ViewModels;
 
@@ -19,17 +18,52 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string _targetShaderCode = "";
 
+    internal List<ProfileType> ProfileTypes { get; } = [
+        ProfileType.GLSL,
+        ProfileType.SLANG,
+        ProfileType.HLSL
+    ];
+
+    internal List<GlslProfile> GlslProfiles { get; } = [
+        GlslProfile.GLSL_330,
+        GlslProfile.GLSL_400,
+        GlslProfile.GLSL_410,
+        GlslProfile.GLSL_420,
+        GlslProfile.GLSL_430,
+        GlslProfile.GLSL_450,
+        GlslProfile.GLSL_460,
+        GlslProfile.GLES_300,
+        GlslProfile.GLES_310,
+        GlslProfile.GLES_320,
+    ];
+
+    [ObservableProperty]
+    private ProfileType _targetProfileType = ProfileType.GLSL;
+
+    [ObservableProperty]
+    private GlslProfile _glslProfile = GlslProfile.GLES_300;
+
     public MainViewModel()
     {
 
     }
 
+    public void Build()
+    {
+        CompileResult? compileResult = null;
+        if(TargetProfileType == ProfileType.GLSL)
+        {
+            compileResult = _compiler.CompileSlangSourceCodeToGlsl(SourceShaderCode, this.GlslProfile, ShaderStage.VERTEX, "main_vs");
+        }
+
+        if (compileResult?.Success == true)
+        {
+            TargetShaderCode = compileResult.SourceCode!;
+        }
+    }
+
     partial void OnSourceShaderCodeChanged(string value)
     {
-       var result = _compiler.CompileSlangSourceCodeToGlsl(value, GlslProfile.GLES_300, ShaderStage.VERTEX, "main_vs");
-        if (result != null && result.Success)
-        {
-            TargetShaderCode = result.SourceCode!;
-        }
+        Build();
     }
 }

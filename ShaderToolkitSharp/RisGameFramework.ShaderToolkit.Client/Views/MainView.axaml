@@ -5,7 +5,7 @@
 			 xmlns:vm="clr-namespace:RisGameFramework.ShaderToolkit.Client.ViewModels"
 			 xmlns:AvaloniaEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
 			 xmlns:c="clr-namespace:RisGameFramework.ShaderToolkit.Client.Controls"
-			 mc:Ignorable="d" 
+			 mc:Ignorable="d"
 			 d:DesignWidth="800" d:DesignHeight="450"
 			 x:Class="RisGameFramework.ShaderToolkit.Client.Views.MainView"
 			 x:DataType="vm:MainViewModel">
@@ -16,12 +16,27 @@
 	</Design.DataContext>
 
 	<DockPanel>
-		<c:Editor DockPanel.Dock="Left"
-				  Source="{Binding SourceShaderCode, Mode=TwoWay}"
-				  />
-		<c:TextViewer DockPanel.Dock="Right"
-				  Text="{Binding TargetShaderCode, Mode=OneWay}"/>
+		<DockPanel DockPanel.Dock="Top">
+			<!-- TARGET OPTIONS -->
+			<Border DockPanel.Dock="Right">
+				<StackPanel  Orientation="Horizontal" Margin="10,10,10,10">
+					<ComboBox ItemsSource="{Binding ProfileTypes}"
+							  SelectedItem="{Binding TargetProfileType, Mode=TwoWay}"
+							  Margin="5,5,5,5"
+							  />
+					<ComboBox ItemsSource="{Binding GlslProfiles}"
+							  SelectedItem="{Binding GlslProfile}"
+							  Margin="5,5,5,5"
+							  />
+					<Button Margin="5,5,5,5">Compile</Button>
+				</StackPanel>
+			</Border>
+		</DockPanel>
 
+		<Grid ColumnDefinitions="*, 4, *">
+			<c:Editor Source="{Binding SourceShaderCode, Mode=TwoWay}"/>
+			<GridSplitter Grid.Column="1" Background="Black" ResizeDirection="Columns"/>
+			<c:TextViewer Grid.Column="2" Text="{Binding TargetShaderCode, Mode=OneWay}"/>
+		</Grid>
 	</DockPanel>
-
 </UserControl>
