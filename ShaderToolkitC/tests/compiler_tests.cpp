@@ -101,11 +101,54 @@ bool compile_slang_to_glsl_es_formatted()
 	return result.isSuccess();
 }
 
+bool compile_slang_to_wgsl_formatted()
+{
+	Compiler compiler;
+
+	ReplaceStageInputNameRule vertexInputRule;
+
+	ReplaceStageOutputNameRule vertexOutputRule;
+	vertexOutputRule.setPrefix("f_");
+	vertexOutputRule.setTrimEntryPointName(true);
+
+	CompileResult result = compiler.compileSlangSourceCodeToWgsl(
+		"test_files/sprite.slang",
+		ShaderStage::Vertex,
+		"main_vs",
+		&vertexInputRule,
+		&vertexOutputRule
+	);
+
+	if (!result.isSuccess()) {
+		std::cout << "Error: " << result.getErrorMessage() << std::endl;
+		return false;
+	}
+
+	// Now do the fragment shader as well
+	ReplaceStageInputNameRule fragmentInputRule;
+	fragmentInputRule.setPrefix("f_");
+
+	ReplaceStageOutputNameRule fragmentOutputRule;
+	fragmentOutputRule.setPrefix("o_");
+	fragmentOutputRule.setTrimEntryPointName(true);
+
+	result = compiler.compileSlangToWgsl(
+		"test_files/sprite.slang",
+		ShaderStage::Fragment,
+		"main_fs",
+		&fragmentInputRule,
+		&fragmentOutputRule
+	);
+
+	return result.isSuccess();
+}
 
 TEST_CASE("compiler tests", "[compile_slang_vs_to_fxc, compile_slang_ps_to_fxc, \
-	compile_slang_to_glsl_es, compile_slang_to_glsl_es_formatted]") {
+	compile_slang_to_glsl_es, compile_slang_to_glsl_es_formatted] \
+	[compile_slang_to_wgsl_formatted]") {
     REQUIRE(compile_slang_vs_to_fxc());
 	REQUIRE(compile_slang_ps_to_fxc());
 	REQUIRE(compile_slang_to_glsl_es());
 	REQUIRE(compile_slang_to_glsl_es_formatted());
+	REQUIRE(compile_slang_to_wgsl_formatted());
 }

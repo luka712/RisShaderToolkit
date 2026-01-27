@@ -5,6 +5,7 @@
 #include "fxc/fxc_compiler.hpp"
 #include "compiler/compile_result.hpp"
 #include "rules.hpp"
+#include <map>
 
 namespace ris_shader_toolkit {
     class Compiler {
@@ -108,8 +109,38 @@ namespace ris_shader_toolkit {
 			ReplaceStageOutputNameRule* outputRule = nullptr
 		);
 
+        //! Compiles a Slang shader file to WGSL source code.
+        //! @param inputFilePath The path to the input Slang shader file.
+        //! @param shaderStage The shader stage (e.g., ShaderStage::Vertex). Default is ShaderStage::Vertex.
+        //! @param entryPoint The entry point function name (default is "main").
+        //! @param inputRule An optional rule to replace stage input names.
+		//! @param outputRule An optional rule to replace stage output names.
+        //! @return A CompileResult object containing the result of the compilation.
+        CompileResult compileSlangToWgsl(
+			const std::string& inputFilePath,
+			ShaderStage shaderStage = ShaderStage::Vertex,
+			const std::string& entryPoint = "main",
+            ReplaceStageInputNameRule* inputRule = nullptr,
+			ReplaceStageOutputNameRule* outputRule = nullptr
+		);
+
+        //! Compiles a Slang shader file to WGSL source code.
+        //! @param slangSource The slang shader source code.
+        //! @param shaderStage The shader stage (e.g., ShaderStage::Vertex). Default is ShaderStage::Vertex.
+        //! @param entryPoint The entry point function name (default is "main").
+        //! @param inputRule An optional rule to replace stage input names.
+		//! @param outputRule An optional rule to replace stage output names.
+        //! @return A CompileResult object containing the result of the compilation.
+        CompileResult compileSlangSourceCodeToWgsl(
+			const std::string& slangSource,
+			ShaderStage shaderStage = ShaderStage::Vertex,
+			const std::string& entryPoint = "main",
+            ReplaceStageInputNameRule* inputRule = nullptr,
+			ReplaceStageOutputNameRule* outputRule = nullptr
+		);
+
         private:
-          FxcCompiler fxcCompiler;
+          FxcCompiler _fxcCompiler;
 
 		  //! Creates a file with the specified content.
 		  //! @param filePath The path to the file to create.

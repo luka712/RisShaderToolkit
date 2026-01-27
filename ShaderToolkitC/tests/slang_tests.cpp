@@ -216,11 +216,80 @@ VSOut main(uint vertexID : SV_VertexID) {
 	return result.isSuccess();
 }
 
+bool create_wgsl_shader_low_level()
+{
+	ris_shader_toolkit::SlangSession session;
+	if (!session.initialize())
+	{
+		return false;
+	}
+
+	SlangCompileResult result = session.compile(
+		"test_files/sprite.slang",
+		SLANG_WGSL,
+		"",
+		SLANG_STAGE_VERTEX,
+		"main_vs"
+	);
+	return result.isSuccess();
+}
+
+bool create_wgsl_shader_low_level_multistage()
+{
+	ris_shader_toolkit::SlangSession session;
+	if (!session.initialize())
+	{
+		return false;
+	}
+
+	SlangCompileResult result = session.compile(
+		"test_files/sprite.slang",
+		SLANG_WGSL,
+		"",
+		{ SLANG_STAGE_VERTEX, SLANG_STAGE_FRAGMENT },
+		{ "main_vs", "main_fs" }
+	);
+	return result.isSuccess();
+}
+
+bool create_wgsl_shader_high_level()
+{
+	ris_shader_toolkit::SlangSession session;
+	if (!session.initialize())
+	{
+		return false;
+	}
+
+	SlangCompileResult result = session.compileToWgsl(
+		"test_files/sprite.slang",
+		ShaderStage::Vertex,
+		"main_vs"
+	);
+	return result.isSuccess();
+}
+
+bool create_wgsl_shader_high_level_multistage()
+{
+	ris_shader_toolkit::SlangSession session;
+	if (!session.initialize())
+	{
+		return false;
+	}
+
+	SlangCompileResult result = session.compileToWgsl(
+		"test_files/sprite.slang",
+		{ ShaderStage::Vertex, ShaderStage::Fragment },
+		{ "main_vs", "main_fs" }
+	);
+	return result.isSuccess();
+}
+
 TEST_CASE("slang tests", "[create_slang_session],\
  [create_hlsl_shader_low_level], [create_hlsl_shader_high_level], \
  [create_glsl_shader_low_level], [create_glsl_shader_high_level], [create_glsl_es_shader_low_level], [create_glsl_from_source_code] \
 [create_metal_shader_low_level], [create_metal_shader_high_level], [create_metal_shader_low_level_multistage], [create_metal_shader_high_level_multistage] \
-[create_spirv_shader_low_level], [create_spirv_shader_multistage]"
+[create_spirv_shader_low_level], [create_spirv_shader_multistage] \
+ [create_wgsl_shader_low_level], [create_wgsl_shader_low_level_multistage], [create_wgsl_shader_high_level], [create_wgsl_shader_high_level_multistage]"
 ) {
 	REQUIRE(create_slang_session());
 	REQUIRE(create_hlsl_shader_low_level());
@@ -234,4 +303,6 @@ TEST_CASE("slang tests", "[create_slang_session],\
 	REQUIRE(create_metal_shader_high_level_multistage());
 	REQUIRE(create_spirv_shader_low_level());
 	REQUIRE(create_spirv_shader_multistage());
+    REQUIRE(create_wgsl_shader_low_level());
+	REQUIRE(create_wgsl_shader_low_level_multistage());
 }

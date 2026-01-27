@@ -32,13 +32,13 @@ namespace ris_shader_toolkit {
 		//! This is low-level function that directly uses the Slang API.
 		//! @param filePath The path to the Slang shader file.
 		//! @param compileTarget The target to compile to (e.g., SLANG_HLSL).
-		//! @param profile The profile to compile to (e.g., "sm_5_0").
+		//! @param profile The profile to compile to (e.g., "sm_5_0"). Can be empty string when compiling to shader targets that do not require profile such as WGSL.
 		//! @param stage The shader stage (e.g., SLANG_STAGE_VERTEX). Default is SLANG_STAGE_VERTEX.
 		//! @param entryPoint The entry point function name (default is "main").
 		SlangCompileResult compile(
 			const std::string& filePath,
 			SlangCompileTarget compileTarget,
-			const std::string& profile,
+			const std::string& profile = "",
 			SlangStage stage = SLANG_STAGE_VERTEX,
 			const std::string& entryPoint = "main"
 		);
@@ -47,13 +47,13 @@ namespace ris_shader_toolkit {
 		//! This is low-level function that directly uses the Slang API.
 		//! @param sourceStr The source code string.
 		//! @param compileTarget The target to compile to (e.g., SLANG_HLSL).
-		//! @param profile The profile to compile to (e.g., "sm_5_0").
+		//! @param profile The profile to compile to (e.g., "sm_5_0"). Can be empty string when compiling to shader targets that do not require profile such as WGSL.
 		//! @param stage The shader stage (e.g., SLANG_STAGE_VERTEX). Default is SLANG_STAGE_VERTEX.
 		//! @param entryPoint The entry point function name (default is "main").
 		SlangCompileResult compileFromSourceCode(
 			const std::string& sourceStr,
 			SlangCompileTarget compileTarget,
-			const std::string& profile,
+			const std::string& profile = "",
 			SlangStage stage = SLANG_STAGE_VERTEX,
 			const std::string& entryPoint = "main"
 		);
@@ -62,7 +62,7 @@ namespace ris_shader_toolkit {
 		//! This is low-level function that directly uses the Slang API.
 		//! @param filePath The path to the Slang shader file.
 		//! @param compileTarget The target to compile to (e.g., SLANG_HLSL).
-		//! @param profile The profile to compile to (e.g., "sm_5_0").
+		//! @param profile The profile to compile to (e.g., "sm_5_0"). Can be empty string when compiling to shader targets that do not require profile such as WGSL.
 		//! @param stages The shader stages (e.g., SLANG_STAGE_VERTEX).
 		//! @param entryPoints The entry points info function name. Must match the stages count.
 		SlangCompileResult compile(
@@ -77,7 +77,7 @@ namespace ris_shader_toolkit {
 		//! This is low-level function that directly uses the Slang API.
 		//! @param slangSourceCode The Slang shader source code.
 		//! @param compileTarget The target to compile to (e.g., SLANG_HLSL).
-		//! @param profile The profile to compile to (e.g., "sm_5_0").
+		//! @param profile The profile to compile to (e.g., "sm_5_0"). Can be empty string when compiling to shader targets that do not require profile such as WGSL.
 		//! @param stages The shader stages (e.g., SLANG_STAGE_VERTEX).
 		//! @param entryPoints The entry points info function name. Must match the stages count.
 		SlangCompileResult compileFromSourceCode(
@@ -145,6 +145,27 @@ namespace ris_shader_toolkit {
 			std::vector<std::string> entryPoints,
 			MetalProfile profile = MetalProfile::MSL_2_0
 		);
+
+        //! Compiles a WGSL shader file to the specified stage.
+		//! @param filePath The path to the Metal shader file.
+		//! @param stage The shader stage (e.g., ShaderStage::Vertex). By default, it is ShaderStage::Vertex.
+		//! @param entryPoint The entry point function name (default is "main").
+		SlangCompileResult compileToWgsl(
+			const std::string& filePath,
+			ShaderStage stage = ShaderStage::Vertex,
+			const std::string& entryPoint = "main"
+		);
+
+        //! Compiles a WGSL shader file to the specified stages.
+		//! @param filePath The path to the Metal shader file.
+		//! @param stages The shader stages (e.g., ShaderStage::Vertex).
+		//! @param entryPoints The entry points info function name. Must match the stages count.
+		//! @return A SlangCompileResult object containing the result of the compilation.
+		SlangCompileResult compileToWgsl(
+			const std::string& filePath,
+			std::vector<ShaderStage> stages,
+			std::vector<std::string> entryPoints
+        );
 
 		//! Compiles a ASlang shader to the SPIR-V shader file.
 		//! @param filePath The path to the Slang shader file.

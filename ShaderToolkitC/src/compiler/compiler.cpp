@@ -6,9 +6,8 @@
 #include <spdlog/spdlog.h>
 
 namespace ris_shader_toolkit {
-	Compiler::Compiler() : fxcCompiler() {}
-
-
+	Compiler::Compiler() : _fxcCompiler() {
+		}
 
 	bool Compiler::createFile(
 		const std::string& filePath,
@@ -135,7 +134,7 @@ namespace ris_shader_toolkit {
 		createFile(tempHlslPath, hlslSourceCode);
 
 		// Now, compile the HLSL source code to binary using FxcCompiler
-		FxcCompileResult fxcResult = fxcCompiler.compile(
+		FxcCompileResult fxcResult = _fxcCompiler.compile(
 			tempHlslPath,
 			outputFilePath,
 			shaderStage,
@@ -270,6 +269,63 @@ namespace ris_shader_toolkit {
 		);
 		if (!slangResult.isSuccess()) {
 			return CompileResult::errorResult("Slang compilation to GLSL failed: " + slangResult.getErrorMessage());
+		}
+		std::string glslSourceCode = slangResult.getSourceCode();
+		return CompileResult::successResult("", glslSourceCode);
+	}
+
+	CompileResult Compiler::compileSlangSourceCodeToWgsl(
+		const std::string& slangSourceCode,
+		ShaderStage shaderStage,
+		const std::string& entryPoint,
+		ReplaceStageInputNameRule* replaceStageInputNameRule,
+		ReplaceStageOutputNameRule* replaceStageOutputNameRule
+	)
+	{
+		spdlog::info("Compiling Slang shader to WGSL: {}", slangSourceCode);
+
+		SlangSession slangSession;
+		if (!slangSession.initialize()) {
+			return CompileResult::errorResult("Failed to initialize Slang session.");
+		}
+
+		SlangCompileResult slangResult = slangSession.compileToWgsl(
+			slangSourceCode,
+			shaderStage,
+			entryPoint
+		);
+		
+		if (!slangResult.isSuccess()) 
+		{
+			return CompileResult::errorResult("Slang compilation to WGSL failed: " + slangResult.getErrorMessage());
+		}
+		std::string glslSourceCode = slangResult.getSourceCode();
+		return CompileResult::successResult("", glslSourceCode);
+	}
+
+	CompileResult Compiler::compileSlangToWgsl(
+		const std::string& inputFilePath,
+		ShaderStage shaderStage,
+		const std::string& entryPoint,
+		ReplaceStageInputNameRule* replaceStageInputNameRule,
+		ReplaceStageOutputNameRule* replaceStageOutputNameRule
+	)
+	{
+		spdlog::info("Compiling Slang shader to WGSL: {}", inputFilePath);
+		// First we need to determine if we can use Slang directly to GLSL or if we need to go through SPIR-V
+
+		SlangSession slangSession;
+		if (!slangSession.initialize()) {
+			return CompileResult::errorResult("Failed to initialize Slang session.");
+		}
+
+		SlangCompileResult slangResult = slangSession.compileToWgsl(
+			inputFilePath,
+			shaderStage,
+			entryPoint
+		);
+		if (!slangResult.isSuccess()) {
+			return CompileResult::errorResult("Slang compilation to WGSL failed: " + slangResult.getErrorMessage());
 		}
 		std::string glslSourceCode = slangResult.getSourceCode();
 		return CompileResult::successResult("", glslSourceCode);

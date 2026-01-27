@@ -87,13 +87,17 @@ namespace ris_shader_toolkit {
 
 		// Add target
 		int targetIndex = request->addCodeGenTarget(compileTarget);
-		SlangProfileID profileID = session->findProfile(profile.c_str());
-		if(profileID == SLANG_PROFILE_UNKNOWN)
-		{
-			return SlangCompileResult(false, "", "Failed to find profile: " + profile);
-		}
-		request->setTargetProfile(targetIndex, profileID); // shader model
 
+		// Set profile if it's defiend.
+		if (!profile.empty())
+		{
+			SlangProfileID profileID = session->findProfile(profile.c_str());
+			if (profileID == SLANG_PROFILE_UNKNOWN)
+			{
+				return SlangCompileResult(false, "", "Failed to find profile: " + profile);
+			}
+			request->setTargetProfile(targetIndex, profileID); // shader model
+		}
 		request->addEntryPoint(translationUnitIndex, entryPoint.c_str(), stage); // for VS
 
 		SlangResult res = request->compile();
@@ -101,6 +105,7 @@ namespace ris_shader_toolkit {
 			std::string error = request->getDiagnosticOutput();
 			return SlangCompileResult(false, "", error);
 		}
+
 
 		ComPtr<ISlangBlob> blob;
 		request->getEntryPointCodeBlob(0, 0, blob.writeRef());
@@ -127,13 +132,17 @@ namespace ris_shader_toolkit {
 
 		// Add target
 		int targetIndex = request->addCodeGenTarget(compileTarget);
-		SlangProfileID profileID = session->findProfile(profile.c_str());
-		if (profileID == SLANG_PROFILE_UNKNOWN)
-		{
-			return SlangCompileResult(false, "", "Failed to find profile: " + profile);
-		}
-		request->setTargetProfile(targetIndex, profileID); // shader model
 
+		// Set profile if it's defiend.
+		if (!profile.empty())
+		{
+			SlangProfileID profileID = session->findProfile(profile.c_str());
+			if (profileID == SLANG_PROFILE_UNKNOWN)
+			{
+				return SlangCompileResult(false, "", "Failed to find profile: " + profile);
+			}
+			request->setTargetProfile(targetIndex, profileID); // shader model
+		}
 		request->addEntryPoint(translationUnitIndex, entryPoint.c_str(), stage); // for VS
 
 		SlangResult res = request->compile();
@@ -167,13 +176,17 @@ namespace ris_shader_toolkit {
 
 		// Add target
 		int targetIndex = request->addCodeGenTarget(compileTarget);
-		SlangProfileID profileID = session->findProfile(profile.c_str());
-		if(profileID == SLANG_PROFILE_UNKNOWN)
-		{
-			return SlangCompileResult(false, "", "Failed to find profile: " + profile);
-		}
-		request->setTargetProfile(targetIndex, profileID); // shader model
 
+		// Set profile if it's defiend.
+		if (!profile.empty())
+		{
+			SlangProfileID profileID = session->findProfile(profile.c_str());
+			if (profileID == SLANG_PROFILE_UNKNOWN)
+			{
+				return SlangCompileResult(false, "", "Failed to find profile: " + profile);
+			}
+			request->setTargetProfile(targetIndex, profileID); // shader model
+		}
 		for (size_t i = 0; i < stages.size(); i++)
 		{
 			request->addEntryPoint(translationUnitIndex, entryPoints[i].c_str(), stages[i]);
@@ -210,12 +223,15 @@ namespace ris_shader_toolkit {
 
 		// Add target
 		int targetIndex = request->addCodeGenTarget(compileTarget);
-		SlangProfileID profileID = session->findProfile(profile.c_str());
-		if (profileID == SLANG_PROFILE_UNKNOWN)
+		if (!profile.empty())
 		{
-			return SlangCompileResult(false, "", "Failed to find profile: " + profile);
+			SlangProfileID profileID = session->findProfile(profile.c_str());
+			if (profileID == SLANG_PROFILE_UNKNOWN)
+			{
+				return SlangCompileResult(false, "", "Failed to find profile: " + profile);
+			}
+			request->setTargetProfile(targetIndex, profileID); // shader model
 		}
-		request->setTargetProfile(targetIndex, profileID); // shader model
 
 		for (size_t i = 0; i < stages.size(); i++)
 		{
@@ -326,6 +342,42 @@ namespace ris_shader_toolkit {
 			filePath,
 			SLANG_METAL,
 			metalProfile,
+			slangStages,
+			entryPoints
+		);
+	}
+
+	SlangCompileResult SlangSession::compileToWgsl(
+		const std::string& filePath,
+		ShaderStage stage,
+		const std::string& entryPoint)
+	{
+		SlangStage slangStage = shaderStageMap[stage];
+
+		return compile(
+			filePath,
+			SLANG_WGSL,
+			"",
+			slangStage,
+			entryPoint
+		);
+	}
+
+	SlangCompileResult SlangSession::compileToWgsl(
+		const std::string& filePath,
+		std::vector<ShaderStage> stages,
+		std::vector<std::string> entryPoints)
+	{
+		std::vector<SlangStage> slangStages;
+		for (const auto& stage : stages)
+		{
+			slangStages.push_back(shaderStageMap[stage]);
+		}
+
+		return compile(
+			filePath,
+			SLANG_METAL,
+			"",
 			slangStages,
 			entryPoints
 		);
