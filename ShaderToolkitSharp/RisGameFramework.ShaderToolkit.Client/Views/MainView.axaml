@@ -5,6 +5,7 @@
 			 xmlns:vm="clr-namespace:RisGameFramework.ShaderToolkit.Client.ViewModels"
 			 xmlns:AvaloniaEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
 			 xmlns:c="clr-namespace:RisGameFramework.ShaderToolkit.Client.Controls"
+			 xmlns:uc="using:RisGameFramework.ShaderToolkit.UserControls"
 			 mc:Ignorable="d"
 			 d:DesignWidth="800" d:DesignHeight="450"
 			 x:Class="RisGameFramework.ShaderToolkit.Client.Views.MainView"
@@ -14,20 +15,18 @@
 		to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
 		<vm:MainViewModel />
 	</Design.DataContext>
-
+	
 	<DockPanel>
+
 		<DockPanel DockPanel.Dock="Top">
 			<!-- TARGET OPTIONS -->
 			<Border DockPanel.Dock="Right">
 				<StackPanel  Orientation="Horizontal" Margin="10,10,10,10">
 					<ComboBox ItemsSource="{Binding ProfileTypes}"
-							  SelectedItem="{Binding TargetProfileType, Mode=TwoWay}"
+							  SelectedItem="{Binding SourceProfileType, Mode=TwoWay}"
 							  Margin="5,5,5,5"
 							  />
-					<ComboBox ItemsSource="{Binding GlslProfiles}"
-							  SelectedItem="{Binding GlslProfile}"
-							  Margin="5,5,5,5"
-							  />
+					<uc:TargetWidget />
 					<Button Margin="5,5,5,5">Compile</Button>
 				</StackPanel>
 			</Border>

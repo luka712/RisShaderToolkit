@@ -1,0 +1,39 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:RisGameFramework.ShaderToolkit.UserControls"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="using:RisGameFramework.ShaderToolkit.Client.ViewModels"
+			 xmlns:c="using:RisGameFramework.ShaderToolkit.UserControls"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 x:DataType="vm:MainViewModel"
+			 x:Class="RisGameFramework.ShaderToolkit.UserControls.TargetWidget">
+	
+	<Design.PreviewWith>
+		<c:TargetWidget>
+			<c:TargetWidget.DataContext>
+				<vm:MainViewModel></vm:MainViewModel>
+			</c:TargetWidget.DataContext>
+		</c:TargetWidget>
+	</Design.PreviewWith>
+	
+	<Border BorderBrush="{StaticResource Color.BorderColor}" 
+	        BorderThickness="1" 
+	        CornerRadius="15" 
+	        Background="{StaticResource Color.BackgroundColor}">
+		<StackPanel Orientation="Horizontal" Margin="5, 5, 5, 5">
+			<ComboBox ItemsSource="{Binding ProfileTypes}"
+					  SelectedItem="{Binding TargetProfileType, Mode=TwoWay}"
+					  Margin="5,5,5,5"
+					  />
+			<ComboBox ItemsSource="{Binding GlslProfiles}"
+					  SelectedItem="{Binding TargetGlslProfile}"
+					  Margin="5,5,5,5"
+					  />
+			<ComboBox ItemsSource="{Binding ShaderStages}"
+					  SelectedItem="{Binding TargetShaderStage}"
+					  Margin="5,5,5,5"
+					  />
+		</StackPanel>
+	</Border>
+</UserControl>

@@ -37,11 +37,23 @@ public partial class MainViewModel : ViewModelBase
         GlslProfile.GLES_320,
     ];
 
+    internal List<ShaderStage> ShaderStages { get; } = [
+        ShaderStage.VERTEX,
+        ShaderStage.FRAGMENT,
+        ShaderStage.COMPUTE,
+    ];
+
+    [ObservableProperty]
+    private ProfileType _sourceProfileType = ProfileType.SLANG;
+
     [ObservableProperty]
     private ProfileType _targetProfileType = ProfileType.GLSL;
 
     [ObservableProperty]
-    private GlslProfile _glslProfile = GlslProfile.GLES_300;
+    private GlslProfile _targetGlslProfile = GlslProfile.GLES_300;
+
+    [ObservableProperty]
+    private ShaderStage _targetShaderStage = ShaderStage.VERTEX;
 
     public MainViewModel()
     {
@@ -51,9 +63,9 @@ public partial class MainViewModel : ViewModelBase
     public void Build()
     {
         CompileResult? compileResult = null;
-        if(TargetProfileType == ProfileType.GLSL)
+        if(SourceProfileType == ProfileType.SLANG && TargetProfileType == ProfileType.GLSL)
         {
-            compileResult = _compiler.CompileSlangSourceCodeToGlsl(SourceShaderCode, this.GlslProfile, ShaderStage.VERTEX, "main_vs");
+            compileResult = _compiler.CompileSlangSourceCodeToGlsl(SourceShaderCode, TargetGlslProfile, ShaderStage.VERTEX, "main_vs");
         }
 
         if (compileResult?.Success == true)

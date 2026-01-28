@@ -4,6 +4,7 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <RootNamespace>RisGameFramework.ShaderToolkit</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,5 +26,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Ris.ShaderToolkit.CLI\Ris.ShaderToolkit.CLI.csproj" />
     <ProjectReference Include="..\ShaderToolkit\Ris.ShaderToolkit.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Styles\AppTheme.axaml" />
   </ItemGroup>
 </Project>
