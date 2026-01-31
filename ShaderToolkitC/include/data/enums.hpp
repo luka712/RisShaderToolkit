@@ -79,6 +79,13 @@ namespace ris_shader_toolkit {
         watchOS = 3,
         iOS_Simulator = 4,
     };
+
+	//! The type of shader binding.
+    enum class BindingType {
+        UniformBuffer,
+        Resource,
+        SamplerState,
+    };
 }
 
 #endif //ENUMS_H

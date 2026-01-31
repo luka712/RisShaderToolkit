@@ -53,7 +53,7 @@ namespace ris_shader_toolkit {
 		std::string spirvCode = slangResult.getSourceCode();
 
 		spdlog::info("Successfully compiled Slang shader to SPIR-V.");
-		return CompileResult::successResult("", spirvCode);
+		return CompileResult::successResult("", spirvCode, ShaderReflection());
 	}
 
 	CompileResult Compiler::compileSlangSourceCodeToSpirV(
@@ -86,7 +86,7 @@ namespace ris_shader_toolkit {
 		std::string spirvCode = slangResult.getSourceCode();
 
 		spdlog::info("Successfully compiled Slang shader to SPIR-V.");
-		return CompileResult::successResult("", spirvCode);
+		return CompileResult::successResult("", spirvCode, ShaderReflection());
 	}
 
 	CompileResult Compiler::compileSlangToHlsl(
@@ -111,7 +111,7 @@ namespace ris_shader_toolkit {
 		}
 		std::string hlslSourceCode = slangResult.getSourceCode();
 
-		return CompileResult::successResult("", hlslSourceCode);
+		return CompileResult::successResult("", hlslSourceCode, ShaderReflection());
 	}
 
 	CompileResult Compiler::compileSlangToFxc(
@@ -144,7 +144,7 @@ namespace ris_shader_toolkit {
 		if (!fxcResult.isSuccess()) {
 			return CompileResult::errorResult("FXC compilation failed: " + fxcResult.getErrorMessage());
 		}
-		return CompileResult::successResult(outputFilePath, "");
+		return CompileResult::successResult(outputFilePath, "", ShaderReflection());
 	}
 
 	CompileResult Compiler::compileSlangSourceCodeToGlsl(
@@ -189,7 +189,7 @@ namespace ris_shader_toolkit {
 			}
 
 			spdlog::info("Successfully compiled Slang shader to GLSL via SPIR-V.");
-			return CompileResult::successResult("", glslResult.getSourceCode());
+			return CompileResult::successResult("", glslResult.getSourceCode(), ShaderReflection());
 		}
 
 		SlangSession slangSession;
@@ -207,7 +207,7 @@ namespace ris_shader_toolkit {
 			return CompileResult::errorResult("Slang compilation to GLSL failed: " + slangResult.getErrorMessage());
 		}
 		std::string glslSourceCode = slangResult.getSourceCode();
-		return CompileResult::successResult("", glslSourceCode);
+		return CompileResult::successResult("", glslSourceCode, ShaderReflection());
 	}
 
 
@@ -253,7 +253,7 @@ namespace ris_shader_toolkit {
 			}
 
 			spdlog::info("Successfully compiled Slang shader to GLSL via SPIR-V.");
-			return CompileResult::successResult("", glslResult.getSourceCode());
+			return CompileResult::successResult("", glslResult.getSourceCode(), ShaderReflection());
 		}
 
 		SlangSession slangSession;
@@ -271,7 +271,7 @@ namespace ris_shader_toolkit {
 			return CompileResult::errorResult("Slang compilation to GLSL failed: " + slangResult.getErrorMessage());
 		}
 		std::string glslSourceCode = slangResult.getSourceCode();
-		return CompileResult::successResult("", glslSourceCode);
+		return CompileResult::successResult("", glslSourceCode, ShaderReflection());
 	}
 
 	CompileResult Compiler::compileSlangSourceCodeToWgsl(
@@ -300,7 +300,7 @@ namespace ris_shader_toolkit {
 			return CompileResult::errorResult("Slang compilation to WGSL failed: " + slangResult.getErrorMessage());
 		}
 		std::string glslSourceCode = slangResult.getSourceCode();
-		return CompileResult::successResult("", glslSourceCode);
+		return CompileResult::successResult("", glslSourceCode, ShaderReflection());
 	}
 
 	CompileResult Compiler::compileSlangToWgsl(
@@ -328,6 +328,6 @@ namespace ris_shader_toolkit {
 			return CompileResult::errorResult("Slang compilation to WGSL failed: " + slangResult.getErrorMessage());
 		}
 		std::string glslSourceCode = slangResult.getSourceCode();
-		return CompileResult::successResult("", glslSourceCode);
+		return CompileResult::successResult("", glslSourceCode, ShaderReflection());
 	}
 }

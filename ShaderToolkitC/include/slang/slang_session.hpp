@@ -8,6 +8,7 @@
 #include "slang/slang_compile_result.hpp"
 #include "data/enums.hpp"
 #include <vector>
+#include <compiler/compile_result.hpp>
 
 using Slang::ComPtr;
 
@@ -26,7 +27,7 @@ namespace ris_shader_toolkit {
 
 		//! Gets the Slang global session.
 		//! @return The Slang global session.
-		ComPtr<slang::IGlobalSession> getSession() const { return session; }
+		ComPtr<slang::IGlobalSession> getGlobalSession() const { return _globalSession; }
 
 		//! Compiles a Slang shader file to the specified target and profile. 
 		//! This is low-level function that directly uses the Slang API.
@@ -195,13 +196,18 @@ namespace ris_shader_toolkit {
 
 
 	private:
-		ComPtr<slang::IGlobalSession> session;
+		ComPtr<slang::IGlobalSession> _globalSession;
 
 		std::map<ShaderStage, SlangStage> shaderStageMap;
 		std::map<HlslProfile, std::string> hlslProfileMap;
 		std::map<GlslProfile, std::string> glslProfileMap;
 		std::map<MetalProfile, std::string> metalProfileMap;
 		std::map<SpirVProfile, std::string> spirvProfileMap;
+
+		std::map< slang::TypeReflection::Kind, BindingType> _bindingTypeMap;
+
+		//! Updates the shader code before compilation if needed.
+		void modifyShader(slang::ICompileRequest* request, ShaderReflection* reflection);
 	};
 };
 

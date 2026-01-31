@@ -7,18 +7,30 @@ namespace ris_shader_toolkit
 		const std::string& outputFilePath,
 		const std::string& sourceCode,
 		const std::string& error)
-		: success(success),
-		sourceCode(sourceCode),
-		outputFilePath(outputFilePath),
-		errorMessage(error)
+		: _success(success),
+		_sourceCode(sourceCode),
+		_outputFilePath(outputFilePath),
+		_errorMessage(error)
 	{
+	}
+
+	CompileResult::CompileResult(
+		const std::string& outputFilePath,
+		const std::string& sourceCode,
+		ShaderReflection reflection)
+		: _success(true),
+		_sourceCode(sourceCode),
+		_outputFilePath(outputFilePath) {
+		_reflectionData = reflection;
 	}
 
 	CompileResult CompileResult::successResult(
 		const std::string& outputFilePath,
-		const std::string& sourceCode)
+		const std::string& sourceCode,
+		ShaderReflection reflection
+	)
 	{
-		return CompileResult(true, outputFilePath, sourceCode);
+		return CompileResult(outputFilePath, sourceCode, reflection);
 	}
 
 	CompileResult CompileResult::errorResult(
