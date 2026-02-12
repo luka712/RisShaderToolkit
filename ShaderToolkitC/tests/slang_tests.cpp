@@ -234,6 +234,24 @@ bool create_wgsl_shader_low_level()
 	return result.isSuccess();
 }
 
+bool create_wgsl_shader_low_level_compute()
+{
+	ris_shader_toolkit::SlangSession session;
+	if (!session.initialize())
+	{
+		return false;
+	}
+
+	SlangCompileResult result = session.compile(
+		"test_files/nn_downsample.slang",
+		SLANG_WGSL,
+		"",
+		SLANG_STAGE_COMPUTE,
+		"main_cs"
+	);
+	return result.isSuccess();
+}
+
 bool create_wgsl_shader_low_level_multistage()
 {
 	ris_shader_toolkit::SlangSession session;
@@ -287,9 +305,10 @@ bool create_wgsl_shader_high_level_multistage()
 TEST_CASE("slang tests", "[create_slang_session],\
  [create_hlsl_shader_low_level], [create_hlsl_shader_high_level], \
  [create_glsl_shader_low_level], [create_glsl_shader_high_level], [create_glsl_es_shader_low_level], [create_glsl_from_source_code] \
-[create_metal_shader_low_level], [create_metal_shader_high_level], [create_metal_shader_low_level_multistage], [create_metal_shader_high_level_multistage] \
-[create_spirv_shader_low_level], [create_spirv_shader_multistage] \
- [create_wgsl_shader_low_level], [create_wgsl_shader_low_level_multistage], [create_wgsl_shader_high_level], [create_wgsl_shader_high_level_multistage]"
+ [create_metal_shader_low_level], [create_metal_shader_high_level], [create_metal_shader_low_level_multistage], [create_metal_shader_high_level_multistage] \
+ [create_spirv_shader_low_level], [create_spirv_shader_multistage] \
+ [create_wgsl_shader_low_level], [create_wgsl_shader_low_level_compute], [create_wgsl_shader_low_level_multistage], \
+ [create_wgsl_shader_high_level, create_wgsl_shader_high_level_multistage]"
 ) {
 	REQUIRE(create_slang_session());
 	REQUIRE(create_hlsl_shader_low_level());
@@ -304,5 +323,8 @@ TEST_CASE("slang tests", "[create_slang_session],\
 	REQUIRE(create_spirv_shader_low_level());
 	REQUIRE(create_spirv_shader_multistage());
     REQUIRE(create_wgsl_shader_low_level());
+    REQUIRE(create_wgsl_shader_low_level_compute());
 	REQUIRE(create_wgsl_shader_low_level_multistage());
+    REQUIRE(create_wgsl_shader_high_level());
+    REQUIRE(create_wgsl_shader_high_level_multistage());
 }
