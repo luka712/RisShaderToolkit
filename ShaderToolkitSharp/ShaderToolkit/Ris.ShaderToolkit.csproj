@@ -15,10 +15,7 @@
   <!-- This enables native assets to be automatically copied when the project is referenced -->
   <!-- Works during build, publish, and when packed as NuGet -->
   <ItemGroup>
-    <None Include="runtimes\**\*"
-          Pack="true"
-          PackagePath="runtimes\"
-          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="runtimes\**\*" Pack="true" PackagePath="runtimes\" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

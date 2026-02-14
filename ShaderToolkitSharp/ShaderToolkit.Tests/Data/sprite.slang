@@ -1,34 +1,35 @@
 struct VSInput
-{
-    float3 position : POSITION;
-    float2 texCoord: TEXCOORD0;
-    float4 color: COLOR0;
+{ 
+	float3 position : POSITION;
+	float2 texCoord : TEXCOORD0;
+	float4 color : COLOR0;
 }
 
 struct VSOutput
 {
-    float4 position : SV_POSITION;
-    float2 texCoord: TEXCOORD0;
-    float4 color: COLOR0;
+	float4 position : SV_POSITION;
+	float2 texCoord : TEXCOORD0;
+	float4 color : COLOR0;
 }
 
-ConstantBuffer<float4x4> viewProjection : register(b0);
+ConstantBuffer<float4x4> viewProjection : register(b0, space0);
 
-[shader("vertex")] VSOutput main_vs(VSInput input)
+[shader("vertex")]
+VSOutput main_vs(VSInput input)
 {
-    VSOutput output;
-    output.position = mul(viewProjection, float4(input.position, 1.0));
-    output.texCoord = input.texCoord;
-    output.color = input.color;
-    return output;
+	VSOutput output;
+	output.position = mul(viewProjection, float4(input.position, 1.0));
+	output.texCoord = input.texCoord;
+	output.color = input.color;
+	return output;
 }
 
-Texture2D diffuseTexture;
-SamplerState diffuseTexSampler;
+Texture2D diffuseTexture: register(t0, space1);
+SamplerState diffuseTexSampler : register(s1, space1);
 
 [shader("fragment")]
 float4 main_fs(VSOutput input) : SV_TARGET
 {
-    float4 textureColor = diffuseTexture.Sample(diffuseTexSampler, input.texCoord);
-    return textureColor * input.color;
+	float4 textureColor = diffuseTexture.Sample(diffuseTexSampler, input.texCoord);
+	return textureColor * input.color;
 }

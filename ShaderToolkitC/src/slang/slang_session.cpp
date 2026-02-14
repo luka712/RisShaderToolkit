@@ -254,7 +254,7 @@ namespace ris_shader_toolkit {
 			}
 			request->setTargetProfile(targetIndex, profileID); // shader model
 		}
-		for (size_t i = 0; i < stages.size(); i++)
+		for (size_t i = 0; i < entryPoints.size(); i++)
 		{
 			request->addEntryPoint(translationUnitIndex, entryPoints[i].c_str(), stages[i]);
 		}
@@ -300,7 +300,7 @@ namespace ris_shader_toolkit {
 			request->setTargetProfile(targetIndex, profileID); // shader model
 		}
 
-		for (size_t i = 0; i < stages.size(); i++)
+		for (size_t i = 0; i < entryPoints.size(); i++)
 		{
 			request->addEntryPoint(translationUnitIndex, entryPoints[i].c_str(), stages[i]);
 		}
@@ -449,6 +449,27 @@ namespace ris_shader_toolkit {
 			entryPoints
 		);
 	}
+
+        SlangCompileResult SlangSession::compileSourceCodeToWgsl(
+			const std::string& slangSourceCode,
+			std::vector<ShaderStage> stages,
+			std::vector<std::string> entryPoints
+        ) {
+
+          std::vector<SlangStage> slangStages;
+		for (const auto& stage : stages)
+		{
+			slangStages.push_back(shaderStageMap[stage]);
+		}
+
+		return compileFromSourceCode(
+			slangSourceCode,
+			SLANG_WGSL,
+			"",
+			slangStages,
+			entryPoints
+		);
+          }
 
 	SlangCompileResult SlangSession::compileToSpirV(
 		const std::string& filePath,

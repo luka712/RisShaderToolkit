@@ -33,11 +33,11 @@
         /// <summary>
         /// The shader stage used for the compilation.
         /// </summary>
-        public ShaderStage? ShaderStage { get; set; }
+        public ShaderStage[]? ShaderStages { get; set; }
 
         /// <summary>
         /// The entry point of the shader.
         /// </summary>
-        public string? EntryPoint { get; set; }
+        public string[]? EntryPoints { get; set; }
     }
 }
