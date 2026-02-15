@@ -74,6 +74,7 @@ public class Compiler : IDisposable
     /// </summary>
     public Compiler()
     {
+        NativeResolver.Setup();
         NativePtr = create_compiler();
         if (NativePtr == IntPtr.Zero)
         {

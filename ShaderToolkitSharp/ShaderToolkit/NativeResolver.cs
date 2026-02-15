@@ -1,0 +1,56 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Ris.ShaderToolkit
+{
+    public static class NativeResolver
+    {
+        private const string BaseName = "shader_toolkit_c";
+
+        // Call this once at startup before any native calls
+        public static void Setup()
+        {
+            NativeLibrary.SetDllImportResolver(typeof(NativeResolver).Assembly, Resolve);
+        }
+
+        private static IntPtr Resolve(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+        {
+            if (libraryName != BaseName)
+                return IntPtr.Zero; // only handle our library
+
+            string rid = GetRuntimeIdentifier();
+            string ext = OperatingSystem.IsWindows() ? ".dll" :
+                         OperatingSystem.IsMacOS() ? ".dylib" : ".so";
+
+            string path = Path.Combine(AppContext.BaseDirectory, "runtimes", rid, "native", BaseName + ext);
+
+            if (!File.Exists(path))
+                throw new DllNotFoundException($"Native library not found: {path}");
+
+            return NativeLibrary.Load(path);
+        }
+
+        private static string GetRuntimeIdentifier()
+        {
+            string os = OperatingSystem.IsWindows() ? "win" :
+                        OperatingSystem.IsLinux() ? "linux" :
+                        OperatingSystem.IsMacOS() ? "osx" : throw new PlatformNotSupportedException();
+
+            string arch = RuntimeInformation.ProcessArchitecture switch
+            {
+                Architecture.X64 => "x64",
+                Architecture.X86 => "x86",
+                Architecture.Arm64 => "arm64",
+                Architecture.Arm => "arm",
+                _ => "unknown"
+            };
+
+            return $"{os}-{arch}";
+        }
+    }
+}
