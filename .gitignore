@@ -404,3 +404,8 @@ ShaderToolkitC/cmake-build-debug
 ShaderToolkitC/cmake-build-debugvisualstudio
 ShaderToolkitC/vcpkg_installed
 ShaderToolkitC/cmake-build-debug-macos-xcode
+ShaderToolkitC/cmake-build-release/
+
+ShaderToolkitC/.idea/
+
+.idea/

@@ -151,9 +151,7 @@ bool compile_slang_to_wgsl_formatted()
 	CompileResult result = compiler.compileSlangSourceCodeToWgsl(
 		"test_files/sprite.slang",
 		ShaderStage::Vertex,
-		"main_vs",
-		&vertexInputRule,
-		&vertexOutputRule
+		"main_vs"
 	);
 
 	if (!result.isSuccess()) {

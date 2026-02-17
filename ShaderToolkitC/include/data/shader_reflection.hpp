@@ -5,6 +5,7 @@
 #include <string>
 #include "data/enums.hpp"
 #include <vector>
+#include <cstdint>
 
 namespace ris_shader_toolkit {
 
