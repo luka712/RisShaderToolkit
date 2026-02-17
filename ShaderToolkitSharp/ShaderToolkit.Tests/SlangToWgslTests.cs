@@ -1,8 +1,6 @@
-﻿
+﻿using Ris.ShaderToolkit;
 
-using Ris.ShaderToolkit;
-
-namespace ShaderToolkit.Tests
+namespace RisShaderToolkit.Tests
 {
     /// <summary>
     /// Tests for compiling Slang shaders to WGSL.
@@ -18,7 +16,7 @@ namespace ShaderToolkit.Tests
             // Arrange
             Compiler compiler = new Compiler();
             string inputFilePath = "Data/sprite.slang";
-            ShaderStage[] shaderStages = new[] { ShaderStage.VERTEX, ShaderStage.FRAGMENT };
+            ShaderStage[] shaderStages = [ShaderStage.VERTEX, ShaderStage.FRAGMENT];
             // Act
             CompileResult result = compiler.CompileSlangToWgsl(inputFilePath, shaderStages, []);
             Assert.True(result.Success);
@@ -40,7 +38,7 @@ namespace ShaderToolkit.Tests
 
         /// <summary>
         /// Compiles shaders from a JSON file. 
-        /// Tests Slang to Wgsl json compilation.
+        /// Tests Slang to Wgsl JSON compilation.
         /// </summary>
         [Fact]
         public void TestCompileWgslJson()
