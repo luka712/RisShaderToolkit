@@ -160,10 +160,22 @@ namespace ris_shader_toolkit {
         //! Compiles a WGSL shader file to the specified stages.
 		//! @param filePath The path to the Metal shader file.
 		//! @param stages The shader stages (e.g., ShaderStage::Vertex).
-		//! @param entryPoints The entry points info function name. Must match the stages count.
+		//! @param entryPoints The entry points info function name. Can be empty if Slang source code is decorated with @entryPoint attributes.
 		//! @return A SlangCompileResult object containing the result of the compilation.
 		SlangCompileResult compileToWgsl(
 			const std::string& filePath,
+			std::vector<ShaderStage> stages,
+			std::vector<std::string> entryPoints
+        );
+
+        //! Compiles an Slang shader to the wgsl shader.
+		//! @param slangSourceCode The Slang shader source code.
+		//! @param stage The shader stages.
+        //! At least one stage must be provided. If multiple stages are provided, the Slang source code must be decorated with
+        //! @entryPoint attributes to specify the entry point for each stage or the entryPoints parameter must be provided to specify the entry point for each stage.
+		//! @param entryPoint The entry point function name. Can be empty if Slang source code is decorated with @entryPoint attributes.
+		SlangCompileResult compileSourceCodeToWgsl(
+			const std::string& slangSourceCode,
 			std::vector<ShaderStage> stages,
 			std::vector<std::string> entryPoints
         );

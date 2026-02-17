@@ -4,6 +4,42 @@
 
 using namespace ris_shader_toolkit;
 
+const std::string SOURCE_CODE = R"(struct VSInput
+{ 
+	float3 position : POSITION;
+	float2 texCoord : TEXCOORD0;
+	float4 color : COLOR0;
+}
+
+struct VSOutput
+{
+	float4 position : SV_POSITION;
+	float2 texCoord : TEXCOORD0;
+	float4 color : COLOR0;
+}
+
+ConstantBuffer<float4x4> viewProjection : register(b0, space0);
+
+[shader("vertex")]
+VSOutput main_vs(VSInput input)
+{
+	VSOutput output;
+	output.position = mul(viewProjection, float4(input.position, 1.0));
+	output.texCoord = input.texCoord;
+	output.color = input.color;
+	return output;
+}
+
+Texture2D diffuseTexture: register(t0, space1);
+SamplerState diffuseTexSampler : register(s1, space1);
+
+[shader("fragment")]
+float4 main_fs(VSOutput input) : SV_TARGET
+{
+	float4 textureColor = diffuseTexture.Sample(diffuseTexSampler, input.texCoord);
+	return textureColor * input.color;
+})";
+
 bool create_slang_session()
 {
 	ris_shader_toolkit::SlangSession session;
@@ -234,6 +270,24 @@ bool create_wgsl_shader_low_level()
 	return result.isSuccess();
 }
 
+bool create_wgsl_shader_low_level_compute()
+{
+	ris_shader_toolkit::SlangSession session;
+	if (!session.initialize())
+	{
+		return false;
+	}
+
+	SlangCompileResult result = session.compile(
+		"test_files/nn_downsample.slang",
+		SLANG_WGSL,
+		"",
+		SLANG_STAGE_COMPUTE,
+		"main_cs"
+	);
+	return result.isSuccess();
+}
+
 bool create_wgsl_shader_low_level_multistage()
 {
 	ris_shader_toolkit::SlangSession session;
@@ -284,12 +338,28 @@ bool create_wgsl_shader_high_level_multistage()
 	return result.isSuccess();
 }
 
+bool compile_wgsl_from_source_code()
+{
+	ris_shader_toolkit::SlangSession session;
+	if (!session.initialize())
+	{
+		return false;
+	}
+	SlangCompileResult result = session.compileSourceCodeToWgsl(
+		SOURCE_CODE,
+		{ ShaderStage::Vertex, ShaderStage::Fragment },
+		{ }
+	);
+	return result.isSuccess();
+}
+
 TEST_CASE("slang tests", "[create_slang_session],\
  [create_hlsl_shader_low_level], [create_hlsl_shader_high_level], \
  [create_glsl_shader_low_level], [create_glsl_shader_high_level], [create_glsl_es_shader_low_level], [create_glsl_from_source_code] \
-[create_metal_shader_low_level], [create_metal_shader_high_level], [create_metal_shader_low_level_multistage], [create_metal_shader_high_level_multistage] \
-[create_spirv_shader_low_level], [create_spirv_shader_multistage] \
- [create_wgsl_shader_low_level], [create_wgsl_shader_low_level_multistage], [create_wgsl_shader_high_level], [create_wgsl_shader_high_level_multistage]"
+ [create_metal_shader_low_level], [create_metal_shader_high_level], [create_metal_shader_low_level_multistage], [create_metal_shader_high_level_multistage] \
+ [create_spirv_shader_low_level], [create_spirv_shader_multistage] \
+ [create_wgsl_shader_low_level], [create_wgsl_shader_low_level_compute], [create_wgsl_shader_low_level_multistage], \
+ [create_wgsl_shader_high_level, create_wgsl_shader_high_level_multistage, compile_wgsl_from_source_code]"
 ) {
 	REQUIRE(create_slang_session());
 	REQUIRE(create_hlsl_shader_low_level());
@@ -304,5 +374,9 @@ TEST_CASE("slang tests", "[create_slang_session],\
 	REQUIRE(create_spirv_shader_low_level());
 	REQUIRE(create_spirv_shader_multistage());
     REQUIRE(create_wgsl_shader_low_level());
+    REQUIRE(create_wgsl_shader_low_level_compute());
 	REQUIRE(create_wgsl_shader_low_level_multistage());
+    REQUIRE(create_wgsl_shader_high_level());
+    REQUIRE(create_wgsl_shader_high_level_multistage());
+	REQUIRE(compile_wgsl_from_source_code());
 }
