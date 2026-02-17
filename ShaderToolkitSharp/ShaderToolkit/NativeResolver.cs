@@ -1,33 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Ris.ShaderToolkit
 {
     public static class NativeResolver
     {
         private const string BaseName = "shader_toolkit_c";
+        private static bool _isResolved;
 
         // Call this once at startup before any native calls
         public static void Setup()
         {
+            if (_isResolved)
+            {
+                return;
+            }
+            
             NativeLibrary.SetDllImportResolver(typeof(NativeResolver).Assembly, Resolve);
+            _isResolved = true;
         }
 
         private static IntPtr Resolve(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
         {
             if (libraryName != BaseName)
                 return IntPtr.Zero; // only handle our library
+            
+            string prefix = OperatingSystem.IsWindows() ? "" : "lib";
 
             string rid = GetRuntimeIdentifier();
             string ext = OperatingSystem.IsWindows() ? ".dll" :
                          OperatingSystem.IsMacOS() ? ".dylib" : ".so";
 
-            string path = Path.Combine(AppContext.BaseDirectory, "runtimes", rid, "native", BaseName + ext);
+            string path = Path.Combine(AppContext.BaseDirectory, "runtimes", rid, "native", prefix + BaseName + ext);
 
             if (!File.Exists(path))
                 throw new DllNotFoundException($"Native library not found: {path}");
