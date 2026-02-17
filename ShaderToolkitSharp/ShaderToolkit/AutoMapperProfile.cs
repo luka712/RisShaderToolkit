@@ -8,11 +8,11 @@ namespace Ris.ShaderToolkit
 {
     internal class AutoMapperProfile : Profile
     {
-        private static AnyProfile ResolveProfile(string profileStr)
+        private static AnyProfile? ResolveProfile(string? profileStr)
         {
-            if (string.IsNullOrEmpty(profileStr))
+            if (String.IsNullOrEmpty(profileStr))
             {
-                throw new InvalidOperationException("Profile string cannot be null or empty.");
+                return null;
             }
 
             if (Enum.TryParse<AnyProfile>(profileStr, ignoreCase: true, out AnyProfile value))

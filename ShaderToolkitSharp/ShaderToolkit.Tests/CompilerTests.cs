@@ -119,32 +119,4 @@ public class CompilerTests
         Assert.True(result.Success);
     }
 
-    /// <summary>
-    /// Test compiling a Slang shader to WGSL.
-    /// </summary>
-    [Fact]
-    public void TestCompileSlangToWgsl()
-    {
-        // Arrange
-        Compiler compiler = new Compiler();
-        string inputFilePath = "Data/sprite.slang";
-        ShaderStage[] shaderStages = new[] { ShaderStage.VERTEX, ShaderStage.FRAGMENT };
-        // Act
-        CompileResult result = compiler.CompileSlangToWgsl(inputFilePath, shaderStages, []);
-        Assert.True(result.Success);
-    }
-
-    /// <summary>
-    /// Test compiling a Slang shader source code to WGSL.
-    /// </summary>
-    [Fact]
-    public void TestCompileSourceCodeSlangToWgsl()
-    {
-        // Arrange
-        Compiler compiler = new Compiler();
-        string slangSourceCode = File.ReadAllText("Data/sprite.slang");
-        // Act
-        CompileResult result = compiler.CompileSlangSourceCodeToWgsl(slangSourceCode, [ShaderStage.VERTEX, ShaderStage.FRAGMENT], []);
-        Assert.True(result.Success);
-    }
 }

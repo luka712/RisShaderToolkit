@@ -18,14 +18,14 @@ internal record ShaderCompileTaskDto
     public string? OutputFilePath { get; set; }
 
     /// <summary>
-    /// The entry point of the shader. If not specified, defaults to "main".
+    /// The entry point of the shader.
     /// </summary>
-    public string EntryPoint { get; set; } = "main";
+    public string[]? EntryPoints { get; set; }
 
     /// <summary>
-    /// The stage of the shader to compile. If not specified, defaults to <see cref="ShaderStage.VERTEX"/>.
+    /// The stage of the shader to compile.
     /// </summary>
-    public ShaderStage Stage { get; set; } = ShaderStage.VERTEX;
+    public ShaderStage[]? Stages { get; set; }
 
     /// <summary>
     /// The target profile for the shader.
@@ -35,7 +35,7 @@ internal record ShaderCompileTaskDto
     /// <summary>
     /// The source profile of the shader.
     /// </summary>
-    public AnyProfile SourceProfile { get; set; }
+    public AnyProfile? SourceProfile { get; set; }
 
     /// <summary>
     /// The input name rule to apply to the shader.

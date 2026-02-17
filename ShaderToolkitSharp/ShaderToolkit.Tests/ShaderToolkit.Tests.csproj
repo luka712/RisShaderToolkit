@@ -28,6 +28,9 @@
     <None Update="Data\compile.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Data\compile_slang_to_wgsl.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Data\sprite.slang">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -12,9 +12,16 @@ namespace Ris.ShaderToolkit
     {
         private const string BaseName = "shader_toolkit_c";
 
+        private static bool _isSetup = false;
+
         // Call this once at startup before any native calls
         public static void Setup()
         {
+            if (_isSetup)
+            {
+                return; // already set up
+            }
+            _isSetup = true;
             NativeLibrary.SetDllImportResolver(typeof(NativeResolver).Assembly, Resolve);
         }
 

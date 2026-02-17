@@ -443,7 +443,7 @@ namespace ris_shader_toolkit {
 
 		return compile(
 			filePath,
-			SLANG_METAL,
+			SLANG_WGSL,
 			"",
 			slangStages,
 			entryPoints

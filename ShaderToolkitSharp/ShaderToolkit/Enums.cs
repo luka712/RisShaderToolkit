@@ -41,6 +41,7 @@ public enum ProfileType
     HLSL = 1,
     GLSL = 2,
     MSL = 3,
+    WGSL = 4
 }
 
 /// <summary>
@@ -64,6 +65,7 @@ internal enum AnyProfile
     GLES_300,
     GLES_310,
     GLES_320,
+    WGSL
 }
 
 internal class ProfileResolver

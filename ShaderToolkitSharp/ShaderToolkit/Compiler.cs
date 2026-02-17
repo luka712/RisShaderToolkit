@@ -84,21 +84,43 @@ public class Compiler : IDisposable
 
     private void WriteGlslShaderToFile(ShaderCompileTaskDto task, CompileResult result, GlslProfile glslProfile)
     {
+        throw new InvalidOperationException("hello");
+
+        //if (!result.Success)
+        //{
+        //    return;
+        //}
+
+        //string? outputFilePath = task.OutputFilePath;
+        //if (string.IsNullOrEmpty(outputFilePath))
+        //{
+        //    string[] split = task.InputFilePath.Split('.');
+        //    split = split[..^1]; // Remove extension
+
+        //    string name = String.Join("", split);
+        //    outputFilePath = $"{name}_{_shortStageName[task.Stage.Value]}_{glslProfile.ToString().ToLower()}.glsl";
+        //}
+
+        //if (result.Success && result.SourceCode != null)
+        //{
+        //    File.WriteAllText(outputFilePath, result.SourceCode);
+        //}
+    }
+
+    private void WriteWgslShaderToFile(ShaderCompileTaskDto task, CompileResult result)
+    {
         if (!result.Success)
         {
             return;
         }
-
         string? outputFilePath = task.OutputFilePath;
         if (string.IsNullOrEmpty(outputFilePath))
         {
             string[] split = task.InputFilePath.Split('.');
             split = split[..^1]; // Remove extension
-
             string name = String.Join("", split);
-            outputFilePath = $"{name}_{_shortStageName[task.Stage]}_{glslProfile.ToString().ToLower()}.glsl";
+            outputFilePath = $"{name}.wgsl";
         }
-
         if (result.Success && result.SourceCode != null)
         {
             File.WriteAllText(outputFilePath, result.SourceCode);
@@ -117,18 +139,29 @@ public class Compiler : IDisposable
         List<CompileResult> results = new List<CompileResult>();
         foreach (ShaderCompileTaskDto compileTask in compileTasks)
         {
-            if (compileTask.SourceProfile == AnyProfile.SLANG && ProfileResolver.IsGlslProfile(compileTask.Profile, out GlslProfile glslProfile))
+            if(compileTask.Profile == AnyProfile.WGSL)
             {
-                CompileResult result = CompileSlangToGlsl(
-                  compileTask.InputFilePath,
-                  glslProfile,
-                  compileTask.Stage,
-                  compileTask.EntryPoint,
-                  compileTask.InputNameRule,
-                  compileTask.OutputNameRule);
-
+                CompileResult result = CompileSlangToWgsl(
+                    compileTask.InputFilePath,
+                    compileTask.Stages ?? [ShaderStage.VERTEX, ShaderStage.FRAGMENT],
+                    compileTask.EntryPoints ?? []);
                 results.Add(result);
-                WriteGlslShaderToFile(compileTask, result, glslProfile);
+                
+                WriteWgslShaderToFile(compileTask, result);
+            }
+
+            else if (compileTask.SourceProfile == AnyProfile.SLANG && ProfileResolver.IsGlslProfile(compileTask.Profile, out GlslProfile glslProfile))
+            {
+                //CompileResult result = CompileSlangToGlsl(
+                //  compileTask.InputFilePath,
+                //  glslProfile,
+                //  compileTask.Stage.Value,
+                //  compileTask.EntryPoint,
+                //  compileTask.InputNameRule,
+                //  compileTask.OutputNameRule);
+
+                //results.Add(result);
+                //WriteGlslShaderToFile(compileTask, result, glslProfile);
             }
             else
             {

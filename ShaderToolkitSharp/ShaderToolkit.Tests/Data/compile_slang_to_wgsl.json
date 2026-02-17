@@ -1,0 +1,10 @@
+﻿{
+  "compiler_verson": "0.0.1",
+  "shaders": [
+    {
+      "name": "sprite.slang",
+      "profile": "wgsl",
+      "output_file": "sprite.wgsl"
+    }
+  ]
+}
