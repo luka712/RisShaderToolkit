@@ -20,39 +20,30 @@ public class ShaderCompiler : IDisposable
     [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
     static extern void free_compiler(IntPtr compiler);
 
-    [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-    static unsafe extern IntPtr compile_slang_to_glsl(
-        IntPtr compilerPtr,
-        IntPtr inputFilePath,
-        GlslProfile glslProfile,
-        ShaderStage shaderStage,
-        IntPtr entryPoint,
-        IntPtr inputRule,
-        IntPtr outputRule);
+    //[DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+    //static unsafe extern IntPtr compile_slang_to_glsl(
+    //    IntPtr compilerPtr,
+    //    IntPtr inputFilePath,
+    //    GlslProfile glslProfile,
+    //    ShaderStage shaderStage,
+    //    IntPtr entryPoint,
+    //    IntPtr inputRule,
+    //    IntPtr outputRule);
 
-    [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-    static unsafe extern IntPtr compile_slang_source_code_to_glsl(
-        IntPtr compilerPtr,
-        IntPtr slangSourceCode,
-        GlslProfile glslProfile,
-        ShaderStage shaderStage,
-        IntPtr entryPoint,
-        IntPtr inputRule,
-        IntPtr outputRule);
+    //[DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+    //static unsafe extern IntPtr compile_slang_source_code_to_glsl(
+    //    IntPtr compilerPtr,
+    //    IntPtr slangSourceCode,
+    //    GlslProfile glslProfile,
+    //    ShaderStage shaderStage,
+    //    IntPtr entryPoint,
+    //    IntPtr inputRule,
+    //    IntPtr outputRule);
 
     [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
     static unsafe extern IntPtr compile_slang_to_wgsl(
       IntPtr compilerPtr,
-      IntPtr inputFilePath,
-      ShaderStage* shaderStages,
-      uint shaderStagesCount,
-      IntPtr* entryPoints,
-      uint entryPointsCount);
-
-    [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-    static unsafe extern IntPtr compile_slang_source_code_to_wgsl(
-        IntPtr compilerPtr,
-      IntPtr slangSourceCode,
+      IntPtr sourceCode,
       ShaderStage* shaderStages,
       uint shaderStagesCount,
       IntPtr* entryPoints,
@@ -139,14 +130,16 @@ public class ShaderCompiler : IDisposable
         List<CompileResult> results = new List<CompileResult>();
         foreach (ShaderCompileTaskDto compileTask in compileTasks)
         {
-            if(compileTask.Profile == AnyProfile.WGSL)
+            if (compileTask.Profile == AnyProfile.WGSL)
             {
+                string sourceCode = File.ReadAllText(compileTask.InputFilePath);
+
                 CompileResult result = CompileSlangToWgsl(
-                    compileTask.InputFilePath,
+                    sourceCode,
                     compileTask.Stages ?? [ShaderStage.VERTEX, ShaderStage.FRAGMENT],
                     compileTask.EntryPoints ?? []);
                 results.Add(result);
-                
+
                 WriteWgslShaderToFile(compileTask, result);
             }
 
@@ -184,63 +177,63 @@ public class ShaderCompiler : IDisposable
     /// <param name="outputNameRule">The optional <see cref="ReplaceStageOutputNameRule"/>.</param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public CompileResult CompileSlangToGlsl(
-        string inputFilePath,
-        GlslProfile glslProfile,
-        ShaderStage shaderStage,
-        string entryPoint = "main",
-        ReplaceStageInputNameRule? inputNameRule = null,
-        ReplaceStageOutputNameRule? outputNameRule = null
-        )
-    {
-        IntPtr inputFilePathPtr = Marshal.StringToHGlobalAnsi(inputFilePath);
-        IntPtr entryPointPtr = Marshal.StringToHGlobalAnsi(entryPoint);
-        IntPtr inputRulePtr = CReplaceStageInputNameRule.AllocNative(inputNameRule);
-        IntPtr outputRulePtr = CReplaceStageOutputNameRule.AllocNative(outputNameRule);
-        try
-        {
-            IntPtr resultPtr = compile_slang_to_glsl(
-                NativePtr,
-                inputFilePathPtr,
-                glslProfile,
-                shaderStage,
-                entryPointPtr,
-                inputRulePtr,
-                outputRulePtr);
+    //public CompileResult CompileSlangToGlsl(
+    //    string inputFilePath,
+    //    GlslProfile glslProfile,
+    //    ShaderStage shaderStage,
+    //    string entryPoint = "main",
+    //    ReplaceStageInputNameRule? inputNameRule = null,
+    //    ReplaceStageOutputNameRule? outputNameRule = null
+    //    )
+    //{
+    //    IntPtr inputFilePathPtr = Marshal.StringToHGlobalAnsi(inputFilePath);
+    //    IntPtr entryPointPtr = Marshal.StringToHGlobalAnsi(entryPoint);
+    //    IntPtr inputRulePtr = CReplaceStageInputNameRule.AllocNative(inputNameRule);
+    //    IntPtr outputRulePtr = CReplaceStageOutputNameRule.AllocNative(outputNameRule);
+    //    try
+    //    {
+    //        IntPtr resultPtr = compile_slang_to_glsl(
+    //            NativePtr,
+    //            inputFilePathPtr,
+    //            glslProfile,
+    //            shaderStage,
+    //            entryPointPtr,
+    //            inputRulePtr,
+    //            outputRulePtr);
 
-            if (resultPtr == IntPtr.Zero)
-            {
-                throw new InvalidOperationException("Compilation failed: No result returned.");
-            }
+    //        if (resultPtr == IntPtr.Zero)
+    //        {
+    //            throw new InvalidOperationException("Compilation failed: No result returned.");
+    //        }
 
-            CCompileResult cCompileResult = Marshal.PtrToStructure<CCompileResult>(resultPtr);
+    //        CCompileResult cCompileResult = Marshal.PtrToStructure<CCompileResult>(resultPtr);
 
-            CompileResult result = new CompileResult
-            {
-                Success = cCompileResult.Success,
-                SourceCode = cCompileResult.Success
-                    ? Marshal.PtrToStringAnsi(cCompileResult.SourceCode) ?? string.Empty
-                    : null,
-                ErrorMessage = cCompileResult.Success
-                    ? null
-                    : Marshal.PtrToStringAnsi(cCompileResult.ErrorMessage) ?? "Unknown error.",
-                EntryPoints = [entryPoint],
-                InputFilePath = inputFilePath,
-                GlslProfile = glslProfile,
-                ShaderStages = [shaderStage]
-            };
-            cCompileResult.Dispose();
-            return result;
+    //        CompileResult result = new CompileResult
+    //        {
+    //            Success = cCompileResult.Success,
+    //            SourceCode = cCompileResult.Success
+    //                ? Marshal.PtrToStringAnsi(cCompileResult.SourceCode) ?? string.Empty
+    //                : null,
+    //            ErrorMessage = cCompileResult.Success
+    //                ? null
+    //                : Marshal.PtrToStringAnsi(cCompileResult.ErrorMessage) ?? "Unknown error.",
+    //            EntryPoints = [entryPoint],
+    //            InputFilePath = inputFilePath,
+    //            GlslProfile = glslProfile,
+    //            ShaderStages = [shaderStage]
+    //        };
+    //        cCompileResult.Dispose();
+    //        return result;
 
-        }
-        finally
-        {
-            Marshal.FreeHGlobal(inputFilePathPtr);
-            Marshal.FreeHGlobal(entryPointPtr);
-            CReplaceStageInputNameRule.FreeNative(inputRulePtr);
-            CReplaceStageOutputNameRule.FreeNative(outputRulePtr);
-        }
-    }
+    //    }
+    //    finally
+    //    {
+    //        Marshal.FreeHGlobal(inputFilePathPtr);
+    //        Marshal.FreeHGlobal(entryPointPtr);
+    //        CReplaceStageInputNameRule.FreeNative(inputRulePtr);
+    //        CReplaceStageOutputNameRule.FreeNative(outputRulePtr);
+    //    }
+    //}
 
     /// <summary>
     /// Transpiles the given Slang shader to GLSL.
@@ -253,80 +246,80 @@ public class ShaderCompiler : IDisposable
     /// <param name="outputNameRule">The optional <see cref="ReplaceStageOutputNameRule"/>.</param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public CompileResult CompileSlangSourceCodeToGlsl(
-        string slangSourceCode,
-        GlslProfile glslProfile,
-        ShaderStage shaderStage,
-        string entryPoint = "main",
-        ReplaceStageInputNameRule? inputNameRule = null,
-        ReplaceStageOutputNameRule? outputNameRule = null
-        )
-    {
-        IntPtr slangSourceCodePtr = Marshal.StringToHGlobalAnsi(slangSourceCode);
-        IntPtr entryPointPtr = Marshal.StringToHGlobalAnsi(entryPoint);
-        IntPtr inputRulePtr = CReplaceStageInputNameRule.AllocNative(inputNameRule);
-        IntPtr outputRulePtr = CReplaceStageOutputNameRule.AllocNative(outputNameRule);
-        try
-        {
-            IntPtr resultPtr = compile_slang_source_code_to_glsl(
-                NativePtr,
-                slangSourceCodePtr,
-                glslProfile,
-                shaderStage,
-                entryPointPtr,
-                inputRulePtr,
-                outputRulePtr);
+    //public CompileResult CompileSlangSourceCodeToGlsl(
+    //    string slangSourceCode,
+    //    GlslProfile glslProfile,
+    //    ShaderStage shaderStage,
+    //    string entryPoint = "main",
+    //    ReplaceStageInputNameRule? inputNameRule = null,
+    //    ReplaceStageOutputNameRule? outputNameRule = null
+    //    )
+    //{
+    //    IntPtr slangSourceCodePtr = Marshal.StringToHGlobalAnsi(slangSourceCode);
+    //    IntPtr entryPointPtr = Marshal.StringToHGlobalAnsi(entryPoint);
+    //    IntPtr inputRulePtr = CReplaceStageInputNameRule.AllocNative(inputNameRule);
+    //    IntPtr outputRulePtr = CReplaceStageOutputNameRule.AllocNative(outputNameRule);
+    //    try
+    //    {
+    //        IntPtr resultPtr = compile_slang_source_code_to_glsl(
+    //            NativePtr,
+    //            slangSourceCodePtr,
+    //            glslProfile,
+    //            shaderStage,
+    //            entryPointPtr,
+    //            inputRulePtr,
+    //            outputRulePtr);
 
-            if (resultPtr == IntPtr.Zero)
-            {
-                throw new InvalidOperationException("Compilation failed: No result returned.");
-            }
+    //        if (resultPtr == IntPtr.Zero)
+    //        {
+    //            throw new InvalidOperationException("Compilation failed: No result returned.");
+    //        }
 
-            CCompileResult cCompileResult = Marshal.PtrToStructure<CCompileResult>(resultPtr);
+    //        CCompileResult cCompileResult = Marshal.PtrToStructure<CCompileResult>(resultPtr);
 
-            CompileResult result = new CompileResult
-            {
-                Success = cCompileResult.Success,
-                SourceCode = cCompileResult.Success
-                    ? Marshal.PtrToStringAnsi(cCompileResult.SourceCode) ?? string.Empty
-                    : null,
-                ErrorMessage = cCompileResult.Success
-                    ? null
-                    : Marshal.PtrToStringAnsi(cCompileResult.ErrorMessage) ?? "Unknown error.",
-                EntryPoints = [entryPoint],
-                InputFilePath = slangSourceCode,
-                GlslProfile = glslProfile,
-                ShaderStages = [shaderStage]
-            };
-            cCompileResult.Dispose();
-            return result;
+    //        CompileResult result = new CompileResult
+    //        {
+    //            Success = cCompileResult.Success,
+    //            SourceCode = cCompileResult.Success
+    //                ? Marshal.PtrToStringAnsi(cCompileResult.SourceCode) ?? string.Empty
+    //                : null,
+    //            ErrorMessage = cCompileResult.Success
+    //                ? null
+    //                : Marshal.PtrToStringAnsi(cCompileResult.ErrorMessage) ?? "Unknown error.",
+    //            EntryPoints = [entryPoint],
+    //            InputFilePath = slangSourceCode,
+    //            GlslProfile = glslProfile,
+    //            ShaderStages = [shaderStage]
+    //        };
+    //        cCompileResult.Dispose();
+    //        return result;
 
-        }
-        finally
-        {
-            Marshal.FreeHGlobal(slangSourceCodePtr);
-            Marshal.FreeHGlobal(entryPointPtr);
-            CReplaceStageInputNameRule.FreeNative(inputRulePtr);
-            CReplaceStageOutputNameRule.FreeNative(outputRulePtr);
-        }
-    }
+    //    }
+    //    finally
+    //    {
+    //        Marshal.FreeHGlobal(slangSourceCodePtr);
+    //        Marshal.FreeHGlobal(entryPointPtr);
+    //        CReplaceStageInputNameRule.FreeNative(inputRulePtr);
+    //        CReplaceStageOutputNameRule.FreeNative(outputRulePtr);
+    //    }
+    // }
 
 
     /// <summary>
-    /// Transpiles the given Slang shader to WGSL.
+    /// Compiles the given Slang shader to WGSL.
     /// </summary>
-    /// <param name="inputFilePath">The input file path.</param>
+    /// <param name="slangSourceCode">The slang source code.</param>
     /// <param name="shaderStage">The <see cref="ShaderStage"/>.</param>
     /// <param name="entryPoint">The entry point.</param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
     public CompileResult CompileSlangToWgsl(
-        string inputFilePath,
+        string slangSourceCode,
         ShaderStage[] shaderStages,
-        string[] entryPoints
+        params string[] entryPoints
         )
     {
-        IntPtr inputFilePathPtr = Marshal.StringToHGlobalAnsi(inputFilePath);
+        IntPtr slangSourceCodePtr = Marshal.StringToHGlobalAnsi(slangSourceCode);
 
         CCompileResult compileResult = default;
         unsafe
@@ -346,82 +339,6 @@ public class ShaderCompiler : IDisposable
             try
             {
                 IntPtr resultPtr = compile_slang_to_wgsl(
-                    NativePtr,
-                    inputFilePathPtr,
-                    shaderStagesPtr, (uint)shaderStages.Length,
-                    entryPointsPtr, (uint)entryPoints.Length);
-
-                if (resultPtr == IntPtr.Zero)
-                {
-                    throw new InvalidOperationException("Compilation failed: No result returned.");
-                }
-
-                compileResult = Marshal.PtrToStructure<CCompileResult>(resultPtr);
-
-                CompileResult result = new CompileResult
-                {
-                    Success = compileResult.Success,
-                    SourceCode = compileResult.Success
-                        ? Marshal.PtrToStringAnsi(compileResult.SourceCode) ?? string.Empty
-                        : null,
-                    ErrorMessage = compileResult.Success
-                        ? null
-                        : Marshal.PtrToStringAnsi(compileResult.ErrorMessage) ?? "Unknown error.",
-                    EntryPoints = entryPoints.ToArray(),
-                    InputFilePath = inputFilePath,
-                    ShaderStages = shaderStages
-                };
-                compileResult.Dispose();
-                return result;
-
-            }
-            finally
-            {
-                Marshal.FreeHGlobal(inputFilePathPtr);
-                for (int i = 0; i < entryPoints.Length; i++)
-                {
-                    Marshal.FreeHGlobal(entryPointsPtr[i]);
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// Transpiles the given Slang shader to WGSL.
-    /// </summary>
-    /// <param name="slangSourceCode">The Slang source code.</param>
-    /// <param name="shaderStage">The <see cref="ShaderStage"/>.</param>
-    /// <param name="entryPoint">The entry point.</param>
-    /// <param name="inputNameRule">The optional <see cref="ReplaceStageInputNameRule"/>.</param>
-    /// <param name="outputNameRule">The optional <see cref="ReplaceStageOutputNameRule"/>.</param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    public CompileResult CompileSlangSourceCodeToWgsl(
-        string slangSourceCode,
-        ShaderStage[] shaderStages,
-        string[] entryPoints
-        )
-    {
-        IntPtr slangSourceCodePtr = Marshal.StringToHGlobalAnsi(slangSourceCode);
-
-        CCompileResult compileResult = default;
-        unsafe
-        {
-            ShaderStage* shaderStagesPtr = stackalloc ShaderStage[shaderStages.Length];
-            for (int i = 0; i < shaderStages.Length; i++)
-            {
-                shaderStagesPtr[i] = shaderStages[i];
-            }
-
-            IntPtr* entryPointsPtr = stackalloc IntPtr[entryPoints.Length];
-            for (int i = 0; i < entryPoints.Length; i++)
-            {
-                entryPointsPtr[i] = Marshal.StringToHGlobalAnsi(entryPoints[i]);
-            }
-
-            try
-            {
-                IntPtr resultPtr = compile_slang_source_code_to_wgsl(
                     NativePtr,
                     slangSourceCodePtr,
                     shaderStagesPtr, (uint)shaderStages.Length,
