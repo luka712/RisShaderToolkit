@@ -113,6 +113,7 @@ namespace ris_shader_toolkit {
 		slang::SessionDesc sessionDesc;
 		sessionDesc.targets = &targetDesc;
 		sessionDesc.targetCount = 1;
+		sessionDesc.defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR;
 
 		if (!profile.empty())
 		{
