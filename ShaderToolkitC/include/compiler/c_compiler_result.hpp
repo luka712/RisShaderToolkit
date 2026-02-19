@@ -2,7 +2,7 @@
 #define COMPILER_RESULT_C_H
 
 #include "compiler/compile_result.hpp"
-#include "compiler/macros.hpp"
+#include "macros.hpp"
 
 extern "C" {
 

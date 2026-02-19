@@ -2,7 +2,7 @@
 #define C_RULES_H
 
 #include "compiler/rules.hpp"
-#include "compiler/macros.hpp"
+#include "macros.hpp"
 
 extern "C" {
 	API_EXPORT

@@ -1,12 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Ris.ShaderToolkit;
+using RisShaderToolkit;
 using System.Collections.Generic;
 
 namespace RisGameFramework.ShaderToolkit.Client.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
-    private readonly Compiler _compiler = new Compiler();
+    private readonly ShaderCompiler _compiler = new ShaderCompiler();
 
     [ObservableProperty]
     private string _sourceShaderCode = @"

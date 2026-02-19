@@ -1,7 +1,7 @@
 ﻿
-using Ris.ShaderToolkit;
+using RisShaderToolkit;
 
-Compiler compiler = new Compiler();
+ShaderCompiler compiler = new ShaderCompiler();
 
 string? json = ArgHelper.GetArgumentValue(args, "--json") ?? ArgHelper.GetArgumentValue(args, "--j");
 

@@ -24,8 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ris.ShaderToolkit.CLI\Ris.ShaderToolkit.CLI.csproj" />
-    <ProjectReference Include="..\ShaderToolkit\Ris.ShaderToolkit.csproj" />
+    <ProjectReference Include="..\RisShaderToolkit.CLI\RisShaderToolkit.CLI.csproj" />
+    <ProjectReference Include="..\ShaderToolkit\RisShaderToolkit.csproj" />
   </ItemGroup>
 
   <ItemGroup>

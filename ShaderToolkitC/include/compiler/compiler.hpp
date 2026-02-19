@@ -20,12 +20,12 @@ namespace ris_shader_toolkit {
 		//! @return A CompileResult object containing the result of the compilation.
 		//! The result includes success status and source code if successful, or an error message if failed. 
 		//! It does not include the output file path.
-		CompileResult compileSlangToSpirV(
+	/*	CompileResult compileSlangToSpirV(
 			const std::string& inputFilePath,
 			ShaderStage shaderStage = ShaderStage::Vertex,
 			SpirVProfile profile = SpirVProfile::SPIRV_1_2,
 			const std::string& entryPoint = "main"
-		);
+		);*/
 
 		//! Compiles a Slang shader file to Spir-V source code.
 		//! @param slangSourceCode The Slang source code.
@@ -35,12 +35,12 @@ namespace ris_shader_toolkit {
 		//! @return A CompileResult object containing the result of the compilation.
 		//! The result includes success status and source code if successful, or an error message if failed. 
 		//! It does not include the output file path.
-		CompileResult compileSlangSourceCodeToSpirV(
+		/*CompileResult compileSlangSourceCodeToSpirV(
 			const std::string& slangSourceCode,
 			ShaderStage shaderStage = ShaderStage::Vertex,
 			SpirVProfile profile = SpirVProfile::SPIRV_1_2,
 			const std::string& entryPoint = "main"
-		);
+		);*/
 
 		//! Compiles a Slang shader file to HLSL source code.
 		//! @param inputFilePath The path to the input Slang shader file.
@@ -50,12 +50,12 @@ namespace ris_shader_toolkit {
 		//! @return A CompileResult object containing the result of the compilation.
 		//! The result includes success status and source code if successful, or an error message if failed. 
 		//! It does not include the output file path.
-		CompileResult compileSlangToHlsl(
+		/*CompileResult compileSlangToHlsl(
 			const std::string& inputFilePath,
 			ShaderStage shaderStage = ShaderStage::Vertex,
 			HlslProfile profile = HlslProfile::SM_5_0,
 			const std::string& entryPoint = "main"
-		);
+		);*/
 
 		//! Compiles a Slang shader file to a binary using fxc.exe.
 		//! @param inputFilePath The path to the input Slang shader file.
@@ -66,14 +66,14 @@ namespace ris_shader_toolkit {
 		//! @param columnMajorOrder Whether to use column-major order for matrices (default is true).
 		//! @return A CompileResult object containing the result of the compilation. 
 		//! The result includes success status, output file path, and error message if any. It does not include the source code.
-		CompileResult compileSlangToFxc(
+		/*CompileResult compileSlangToFxc(
 			const std::string& inputFilePath,
 			const std::string& outputFilePath,
 			ShaderStage shaderStage = ShaderStage::Vertex,
 			HlslProfile profile = HlslProfile::SM_5_0,
 			const std::string& entryPoint = "main",
 			bool columnMajorOrder = true
-		);
+		);*/
 
 		//! Compiles a Slang shader file to GLSL source code.
 		//! @param inputFilePath The path to the input Slang shader file.
@@ -83,14 +83,14 @@ namespace ris_shader_toolkit {
 		//! @param inputRule An optional rule to replace stage input names.
 		//! @param outputRule An optional rule to replace stage output names.
 		//! @return A CompileResult object containing the result of the compilation.
-		CompileResult compileSlangToGlsl(
+		/*CompileResult compileSlangToGlsl(
 			const std::string& inputFilePath,
 			GlslProfile profile = GlslProfile::GLSL_450,
 			ShaderStage shaderStage = ShaderStage::Vertex,
 			const std::string& entryPoint = "main",
 			ReplaceStageInputNameRule* inputRule = nullptr,
 			ReplaceStageOutputNameRule* outputRule = nullptr
-		);
+		);*/
 
 		//! Compiles a Slang shader file to GLSL source code.
 		//! @param slangSource The slang shader source code..
@@ -100,50 +100,32 @@ namespace ris_shader_toolkit {
 		//! @param inputRule An optional rule to replace stage input names.
 		//! @param outputRule An optional rule to replace stage output names.
 		//! @return A CompileResult object containing the result of the compilation.
-		CompileResult compileSlangSourceCodeToGlsl(
+		/*CompileResult compileSlangSourceCodeToGlsl(
 			const std::string& slangSource,
 			GlslProfile profile = GlslProfile::GLSL_450,
 			ShaderStage shaderStage = ShaderStage::Vertex,
 			const std::string& entryPoint = "main",
 			ReplaceStageInputNameRule* inputRule = nullptr,
 			ReplaceStageOutputNameRule* outputRule = nullptr
-		);
+		);*/
 
 		//! Compiles a Slang shader file to WGSL source code.
-		//! @param inputFilePath The path to the input Slang shader file.
+		//! @param sourceCode The Slang shader source code.
 		//! @param shaderStages Thee shader stages.
 		//! @param entryPoints The entry points for each shader stage. Must be the same size as shaderStages parameter or empty (in which case 'shader' attribute entry point names will be used).
 		CompileResult compileSlangToWgsl(
-			const std::string& inputFilePath,
+			const std::string& sourceCode,
 			std::vector<ShaderStage> stages,
 			std::vector<std::string> entryPoints
 		);
 
 		//! Compiles a Slang shader file to WGSL source code.
-		//! @param inputFilePath The path to the input Slang shader file.
+		//! @param sourceCode The Slang shader source code.
 		//! @param shaderStages Thee shader stages.
 		//! @param entryPoints The entry points for each shader stage. Must be the same size as shaderStages parameter or empty (in which case 'shader' attribute entry point names will be used).
 		CompileResult compileSlangToWgsl(
-			const std::string& inputFilePath,
+			const std::string& sourceCode,
 			std::vector<ShaderStage> stages
-		);
-
-		//! Compiles a Slang shader file to WGSL source code. Slang shader must 'shader' attribute all stages specified in the shaderStages parameter.
-	    //! @param slangSource The slang shader source code.
-	    //! @param shaderStages Thee shader stages.
-		CompileResult compileSlangSourceCodeToWgsl(
-			const std::string& slangSource,
-			std::vector<ShaderStage> stages
-		);
-
-		//! Compiles a Slang shader file to WGSL source code.
-		//! @param slangSource The slang shader source code.
-		//! @param shaderStages Thee shader stages.
-		//! @param entryPoints The entry points for each shader stage. Must be the same size as shaderStages parameter or empty (in which case 'shader' attribute entry point names will be used).
-		CompileResult compileSlangSourceCodeToWgsl(
-			const std::string& slangSource,
-			std::vector<ShaderStage> stages,
-			std::vector<std::string> entryPoints
 		);
 
 	private:
@@ -152,7 +134,7 @@ namespace ris_shader_toolkit {
 		//! Creates a file with the specified content.
 		//! @param filePath The path to the file to create.
 		//! @param content The content to write to the file.
-		bool createFile(const std::string& filePath, const std::string& content);
+		// bool createFile(const std::string& filePath, const std::string& content);
 	};
 }
 

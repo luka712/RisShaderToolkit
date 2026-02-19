@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ShaderToolkit\Ris.ShaderToolkit.csproj" />
+    <ProjectReference Include="..\ShaderToolkit\RisShaderToolkit.csproj" />
   </ItemGroup>
 
 </Project>

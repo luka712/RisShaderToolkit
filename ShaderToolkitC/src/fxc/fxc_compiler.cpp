@@ -59,6 +59,7 @@ namespace ris_shader_toolkit {
 		return "";
 	}
 
+
 	FxcCompileResult FxcCompiler::compile(
 		const std::string& inputFilePath,
 		const std::string& outputFilePath,

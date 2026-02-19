@@ -1,4 +1,4 @@
-﻿namespace Ris.ShaderToolkit;
+﻿namespace RisShaderToolkit;
 
 /// <summary>
 /// Tool helper for command line argument parsing.

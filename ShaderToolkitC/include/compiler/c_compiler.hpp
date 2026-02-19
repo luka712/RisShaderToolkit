@@ -1,7 +1,7 @@
 #include "compiler/compiler.hpp"
 #include "compiler/c_compiler_result.hpp"
 #include "compiler/c_rules.hpp"
-#include "compiler/macros.hpp"
+#include "macros.hpp"
 
 extern "C" {
 
@@ -18,43 +18,33 @@ extern "C" {
     API_EXPORT
 	char* get_last_error_message();
 
-    API_EXPORT
-	void* compile_slang_to_glsl(
-		void* compilerPtr,
-		const char* inputFilePath,
-		int profile,           // GlslProfile as int
-		int shaderStage,       // ShaderStage as int
-		const char* entryPoint,
-		c_ReplaceStageInputNameRule* inputRule,
-		c_ReplaceStageOutputNameRule* outputRule
-	);
+ //   API_EXPORT
+	//void* compile_slang_to_glsl(
+	//	void* compilerPtr,
+	//	const char* inputFilePath,
+	//	int profile,           // GlslProfile as int
+	//	int shaderStage,       // ShaderStage as int
+	//	const char* entryPoint,
+	//	c_ReplaceStageInputNameRule* inputRule,
+	//	c_ReplaceStageOutputNameRule* outputRule
+	//);
 
-	API_EXPORT
-	void* compile_slang_source_code_to_glsl(
-	void* compilerPtr,
-	const char* slangSourceCode,
-	int profile,           // GlslProfile as int
-	int shaderStage,       // ShaderStage as int
-	const char* entryPoint,
-	c_ReplaceStageInputNameRule* inputRule,
-	c_ReplaceStageOutputNameRule* outputRule
-	);
+	//API_EXPORT
+	//void* compile_slang_source_code_to_glsl(
+	//void* compilerPtr,
+	//const char* slangSourceCode,
+	//int profile,           // GlslProfile as int
+	//int shaderStage,       // ShaderStage as int
+	//const char* entryPoint,
+	//c_ReplaceStageInputNameRule* inputRule,
+	//c_ReplaceStageOutputNameRule* outputRule
+	//);
 
 	API_EXPORT
 	void* compile_slang_to_wgsl(
 		void* compilerPtr,
-		const char* inputFilePath,
-		int32_t* shaderStages,       
-		uint32_t shaderStagesCount,
-		const char** entryPoints,
-		uint32_t entryPointsCount
-	);
-
-	API_EXPORT
-	void* compile_slang_source_code_to_wgsl(
-		void* compilerPtr,
 		const char* slangSourceCode,
-		int32_t* shaderStages,
+		int32_t* shaderStages,       
 		uint32_t shaderStagesCount,
 		const char** entryPoints,
 		uint32_t entryPointsCount

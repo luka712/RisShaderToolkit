@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace Ris.ShaderToolkit;
+namespace RisShaderToolkit;
 
 // <summary>
 /// The help message for the CLI.

@@ -79,6 +79,146 @@ namespace ris_shader_toolkit {
 		return true;
 	}
 
+	std::string SlangSession::readCompiledCode(ComPtr<slang::IComponentType> component, size_t entryPointCount)
+	{
+		std::string finalCode;
+		for (size_t i = 0; i < entryPointCount; i++)
+		{
+			ComPtr<slang::IBlob> shaderBlob = nullptr;
+			ComPtr<slang::IBlob> diagnosticBlob = nullptr;
+			SlangResult result = component->getEntryPointCode(i, 0, shaderBlob.writeRef(), diagnosticBlob.writeRef());
+			if (SLANG_SUCCEEDED(result)) {
+				std::string code = std::string((const char*)shaderBlob->getBufferPointer(), shaderBlob->getBufferSize());
+				finalCode += code + "\n";
+			}
+			else {
+				std::string error = diagnosticBlob ? std::string((const char*)diagnosticBlob->getBufferPointer(), diagnosticBlob->getBufferSize()) : "Unknown error";
+				spdlog::error("Failed to get compiled code for entry point index {}. {}", i, error);
+			}
+		}
+		return finalCode;
+	}
+
+	SlangCompileResult SlangSession::compile(
+		const std::string& sourceCode,
+		SlangCompileTarget compileTarget,
+		const std::string& profile,
+		std::vector<SlangStage> stages,
+		std::vector<std::string> entryPoints
+	) {
+		// 1. CREATE A SLANG SESSION
+		slang::TargetDesc targetDesc;
+		targetDesc.format = compileTarget;
+
+		slang::SessionDesc sessionDesc;
+		sessionDesc.targets = &targetDesc;
+		sessionDesc.targetCount = 1;
+
+		if (!profile.empty())
+		{
+			SlangProfileID profileID = _globalSession->findProfile(profile.c_str());
+			if (profileID == SLANG_PROFILE_UNKNOWN)
+			{
+				return SlangCompileResult(false, "", ShaderReflection(), "Failed to find profile: " + profile);
+			}
+			targetDesc.profile = profileID;
+		}
+
+		ComPtr<slang::ISession> session;
+		_globalSession->createSession(sessionDesc, session.writeRef());
+
+		std::vector<slang::IComponentType*> componentTypes;
+
+
+		// 2. CREATE A MODULE FROM SOURCE CODE
+		// This loads the Slang source code into a module, which can then be compiled. 
+		// The module represents the entire shader program, including all entry points and shared code.
+		ComPtr<slang::IBlob> diagnosticBlob = nullptr;
+		// Note that module parameter and path parameter are not relevant when compiling from source code.
+		slang::IModule* module = session->loadModuleFromSourceString(
+			"__temp__",
+			"__temp__.slang",
+			sourceCode.c_str(),
+			diagnosticBlob.writeRef());
+
+		if (!module)
+		{
+			if (diagnosticBlob.readRef())
+			{
+				std::string error = std::string((const char*)diagnosticBlob->getBufferPointer(), diagnosticBlob->getBufferSize());
+				return SlangCompileResult(false, "", ShaderReflection(), error);
+			}
+			else
+			{
+				return SlangCompileResult(false, "", ShaderReflection(), "Failed to load module from source string, and no diagnostics available.");
+			}
+		}
+		componentTypes.push_back(module);
+
+		// 3. LOOK UP ENTRY POINTS AND COMPILE
+
+		// If we have entry points, we will use that to read, otherwise we will simply lookup vertex stages.
+		std::vector<ComPtr<slang::IEntryPoint> > entryPointInterfaces;
+		if (entryPoints.size() > 0)
+		{
+			for (size_t i = 0; i < entryPoints.size(); i++)
+			{
+				std::string main = entryPoints[i];
+				ComPtr<slang::IEntryPoint> entryPoint = nullptr;
+				SlangResult result = module->findEntryPointByName(main.c_str(), entryPoint.writeRef());
+				if (SLANG_FAILED(result))
+				{
+					if (diagnosticBlob)
+					{
+						std::string error = std::string((const char*)diagnosticBlob->getBufferPointer(), diagnosticBlob->getBufferSize());
+						return SlangCompileResult(false, "", ShaderReflection(), "Failed to find entry point: " + entryPoints[i] + ". " + error);
+					}
+					else
+					{
+						return SlangCompileResult(false, "", ShaderReflection(), "Failed to find entry point: " + entryPoints[i] + ". No diagnostics available.");
+					}
+				}
+				entryPointInterfaces.push_back(entryPoint);
+				componentTypes.push_back(entryPoint.get());
+			}
+		}
+		// If we do not specify entry points, we will look up entry points based on stages.
+		// This requires the Slang source code to be decorated with @shader attributes to specify the stage for each entry point.
+		else
+		{
+			for (size_t i = 0; i < stages.size(); i++)
+			{
+				ComPtr<slang::IEntryPoint> entryPoint = nullptr;
+				SlangResult result = module->getDefinedEntryPoint(i, entryPoint.writeRef());
+
+				entryPointInterfaces.push_back(entryPoint);
+				componentTypes.push_back(entryPoint.get());
+			}
+		}
+
+		// 4. CREATE A COMPOSITE COMPONENT TYPE
+		// Link the module to a composite component type, which represents the final shader program that can be executed.
+		ComPtr<slang::IComponentType> program;
+		SlangResult result = session->createCompositeComponentType(
+			componentTypes.data(),
+			componentTypes.size(),
+			program.writeRef(),
+			diagnosticBlob.writeRef()
+		);
+
+		if (SLANG_FAILED(result))
+		{
+			std::string error = std::string((const char*)diagnosticBlob->getBufferPointer(), diagnosticBlob->getBufferSize());
+			return SlangCompileResult(false, "", ShaderReflection(), error);
+		}
+
+
+		// Get entry points.
+		size_t entryPointCount = entryPoints.size() == 0 ? stages.size() : entryPoints.size();
+		std::string code = readCompiledCode(program, entryPointCount);
+		return SlangCompileResult(true, code, ShaderReflection());
+	}
+
 	void SlangSession::modifyShader(slang::ICompileRequest* request, ShaderReflection* reflection)
 	{
 		slang::IComponentType* program = nullptr;
@@ -120,208 +260,8 @@ namespace ris_shader_toolkit {
 		}
 	}
 
-	SlangCompileResult SlangSession::compile(
-		const std::string& filePath,
-		SlangCompileTarget compileTarget,
-		const std::string& profile,
-		SlangStage stage,
-		const std::string& entryPoint)
-	{
-		ComPtr<slang::ICompileRequest> request;
-		_globalSession->createCompileRequest(request.writeRef());
-
-		// Add your Slang source file.
-		int translationUnitIndex = request->addTranslationUnit(SLANG_SOURCE_LANGUAGE_SLANG, entryPoint.c_str());
-		request->addTranslationUnitSourceFile(translationUnitIndex, filePath.c_str());
-
-		// Add target
-		int targetIndex = request->addCodeGenTarget(compileTarget);
-
-		// Set profile if it's defined.
-		if (!profile.empty())
-		{
-			SlangProfileID profileID = _globalSession->findProfile(profile.c_str());
-			if (profileID == SLANG_PROFILE_UNKNOWN)
-			{
-				return SlangCompileResult(false, "", ShaderReflection(), "Failed to find profile: " + profile);
-			}
-			request->setTargetProfile(targetIndex, profileID); // shader model
-		}
-
-		// Add entry point if not defined.
-		if (!entryPoint.empty())
-		{
-			request->addEntryPoint(translationUnitIndex, entryPoint.c_str(), stage); // for VS
-		}
-		else
-		{
-			spdlog::debug("SlangSession:compile: Compiling without explicit entry point. Shader must have [shader(vertex|fragment...)} attribute ");
-		}
-
-		SlangResult res = request->compile();
-		std::string diagnosticOutput = request->getDiagnosticOutput();
-		if (SLANG_FAILED(res))
-		{
-			return SlangCompileResult(false, "", ShaderReflection(), diagnosticOutput);
-		}
-		else if (!diagnosticOutput.empty())
-		{
-			// Log info
-			spdlog::info("Diagnostic output: ");
-			spdlog::info(diagnosticOutput);
-		}
-
-		ShaderReflection reflection;
-		modifyShader(request, &reflection);
-
-		ComPtr<ISlangBlob> blob;
-		request->getEntryPointCodeBlob(0, 0, blob.writeRef());
-
-		std::string code = std::string((const char*)blob->getBufferPointer(), blob->getBufferSize());
-
-		//std::cout << "Compilation succeeded!\n";
-		return SlangCompileResult(true, code, reflection);
-	}
-
-	SlangCompileResult SlangSession::compileFromSourceCode(
-		const std::string& sourceCodeStr,
-		SlangCompileTarget compileTarget,
-		const std::string& profile,
-		SlangStage stage,
-		const std::string& entryPoint)
-	{
-		ComPtr<slang::ICompileRequest> request;
-		_globalSession->createCompileRequest(request.writeRef());
-
-		// Add your Slang source file.
-		int translationUnitIndex = request->addTranslationUnit(SLANG_SOURCE_LANGUAGE_SLANG, nullptr);
-		request->addTranslationUnitSourceString(translationUnitIndex, "__temp__.slang", sourceCodeStr.c_str());
-
-		// Add target
-		int targetIndex = request->addCodeGenTarget(compileTarget);
-
-		// Set profile if it's defiend.
-		if (!profile.empty())
-		{
-			SlangProfileID profileID = _globalSession->findProfile(profile.c_str());
-			if (profileID == SLANG_PROFILE_UNKNOWN)
-			{
-				return SlangCompileResult(false, "", ShaderReflection(), "Failed to find profile: " + profile);
-			}
-			request->setTargetProfile(targetIndex, profileID); // shader model
-		}
-		request->addEntryPoint(translationUnitIndex, entryPoint.c_str(), stage); // for VS
-
-		SlangResult res = request->compile();
-		if (SLANG_FAILED(res)) {
-			std::string error = request->getDiagnosticOutput();
-			return SlangCompileResult(false, "", ShaderReflection(), error);
-		}
-
-		ComPtr<ISlangBlob> blob;
-		request->getEntryPointCodeBlob(0, 0, blob.writeRef());
-
-		std::string code = std::string((const char*)blob->getBufferPointer(), blob->getBufferSize());
-
-		//std::cout << "Compilation succeeded!\n";
-		return SlangCompileResult(true, code, ShaderReflection());
-	}
-
-	SlangCompileResult SlangSession::compile(
-		const std::string& filePath,
-		SlangCompileTarget compileTarget,
-		const std::string& profile,
-		std::vector<SlangStage> stages,
-		std::vector<std::string> entryPoints)
-	{
-		ComPtr<slang::ICompileRequest> request;
-		_globalSession->createCompileRequest(request.writeRef());
-
-		// Add your Slang source file.
-		int translationUnitIndex = request->addTranslationUnit(SLANG_SOURCE_LANGUAGE_SLANG, nullptr);
-		request->addTranslationUnitSourceFile(translationUnitIndex, filePath.c_str());
-
-		// Add target
-		int targetIndex = request->addCodeGenTarget(compileTarget);
-
-		// Set profile if it's defiend.
-		if (!profile.empty())
-		{
-			SlangProfileID profileID = _globalSession->findProfile(profile.c_str());
-			if (profileID == SLANG_PROFILE_UNKNOWN)
-			{
-				return SlangCompileResult(false, "", ShaderReflection(), "Failed to find profile: " + profile);
-			}
-			request->setTargetProfile(targetIndex, profileID); // shader model
-		}
-		for (size_t i = 0; i < entryPoints.size(); i++)
-		{
-			request->addEntryPoint(translationUnitIndex, entryPoints[i].c_str(), stages[i]);
-		}
-
-		SlangResult res = request->compile();
-		if (SLANG_FAILED(res)) {
-			std::string error = request->getDiagnosticOutput();
-			return SlangCompileResult(false, "", ShaderReflection(), error);
-		}
-
-		ComPtr<ISlangBlob> blob;
-		request->getEntryPointCodeBlob(0, 0, blob.writeRef());
-
-		std::string code = std::string((const char*)blob->getBufferPointer(), blob->getBufferSize());
-
-		//std::cout << "Compilation succeeded!\n";
-		return SlangCompileResult(true, code, ShaderReflection());
-	}
-
-	SlangCompileResult SlangSession::compileFromSourceCode(
+	/*SlangCompileResult SlangSession::compileSourceCodeToGlsl(
 		const std::string& slangSourceCode,
-		SlangCompileTarget compileTarget,
-		const std::string& profile,
-		std::vector<SlangStage> stages,
-		std::vector<std::string> entryPoints)
-	{
-		ComPtr<slang::ICompileRequest> request;
-		_globalSession->createCompileRequest(request.writeRef());
-
-		// Add your Slang source file.
-		int translationUnitIndex = request->addTranslationUnit(SLANG_SOURCE_LANGUAGE_SLANG, nullptr);
-		request->addTranslationUnitSourceString(translationUnitIndex, "__temp__.slang", slangSourceCode.c_str());
-
-		// Add target
-		int targetIndex = request->addCodeGenTarget(compileTarget);
-		if (!profile.empty())
-		{
-			SlangProfileID profileID = _globalSession->findProfile(profile.c_str());
-			if (profileID == SLANG_PROFILE_UNKNOWN)
-			{
-				return SlangCompileResult(false, "", ShaderReflection(), "Failed to find profile: " + profile);
-			}
-			request->setTargetProfile(targetIndex, profileID); // shader model
-		}
-
-		for (size_t i = 0; i < entryPoints.size(); i++)
-		{
-			request->addEntryPoint(translationUnitIndex, entryPoints[i].c_str(), stages[i]);
-		}
-
-		SlangResult res = request->compile();
-		if (SLANG_FAILED(res)) {
-			std::string error = request->getDiagnosticOutput();
-			return SlangCompileResult(false, "", ShaderReflection(), error);
-		}
-
-		ComPtr<ISlangBlob> blob;
-		request->getEntryPointCodeBlob(0, 0, blob.writeRef());
-
-		std::string code = std::string((const char*)blob->getBufferPointer(), blob->getBufferSize());
-
-		//std::cout << "Compilation succeeded!\n";
-		return SlangCompileResult(true, code, ShaderReflection());
-	}
-
-	SlangCompileResult SlangSession::compileToGlsl(
-		const std::string& filePath,
 		ShaderStage stage,
 		const std::string& entryPoint,
 		GlslProfile profile)
@@ -330,29 +270,11 @@ namespace ris_shader_toolkit {
 		std::string glslProfile = glslProfileMap[profile];
 
 		return compile(
-			filePath,
-			SLANG_GLSL,
-			glslProfile,
-			slangStage,
-			entryPoint
-		);
-	}
-
-	SlangCompileResult SlangSession::compileSourceCodeToGlsl(
-		const std::string& slangSourceCode,
-		ShaderStage stage,
-		const std::string& entryPoint,
-		GlslProfile profile)
-	{
-		SlangStage slangStage = shaderStageMap[stage];
-		std::string glslProfile = glslProfileMap[profile];
-
-		return compileFromSourceCode(
 			slangSourceCode,
 			SLANG_GLSL,
 			glslProfile,
-			slangStage,
-			entryPoint
+			{ slangStage },
+			{ entryPoint }
 		);
 	}
 
@@ -369,8 +291,8 @@ namespace ris_shader_toolkit {
 			filePath,
 			SLANG_HLSL,
 			hlslProfile,
-			slangStage,
-			entryPoint
+			{ slangStage },
+			{ entryPoint }
 		);
 	}
 
@@ -387,8 +309,8 @@ namespace ris_shader_toolkit {
 			filePath,
 			SLANG_METAL,
 			metalProfile,
-			slangStage,
-			entryPoint
+			{ slangStage },
+			{ entryPoint }
 		);
 	}
 	SlangCompileResult SlangSession::compileToMetal(
@@ -409,29 +331,13 @@ namespace ris_shader_toolkit {
 			filePath,
 			SLANG_METAL,
 			metalProfile,
-			slangStages,
-			entryPoints
+			{ slangStages },
+			{ entryPoints }
 		);
-	}
+	}*/
 
 	SlangCompileResult SlangSession::compileToWgsl(
-		const std::string& filePath,
-		ShaderStage stage,
-		const std::string& entryPoint)
-	{
-		SlangStage slangStage = shaderStageMap[stage];
-
-		return compile(
-			filePath,
-			SLANG_WGSL,
-			"",
-			slangStage,
-			entryPoint
-		);
-	}
-
-	SlangCompileResult SlangSession::compileToWgsl(
-		const std::string& filePath,
+		const std::string& sourceCode,
 		std::vector<ShaderStage> stages,
 		std::vector<std::string> entryPoints)
 	{
@@ -442,7 +348,7 @@ namespace ris_shader_toolkit {
 		}
 
 		return compile(
-			filePath,
+			sourceCode,
 			SLANG_WGSL,
 			"",
 			slangStages,
@@ -450,28 +356,7 @@ namespace ris_shader_toolkit {
 		);
 	}
 
-        SlangCompileResult SlangSession::compileSourceCodeToWgsl(
-			const std::string& slangSourceCode,
-			std::vector<ShaderStage> stages,
-			std::vector<std::string> entryPoints
-        ) {
-
-          std::vector<SlangStage> slangStages;
-		for (const auto& stage : stages)
-		{
-			slangStages.push_back(shaderStageMap[stage]);
-		}
-
-		return compileFromSourceCode(
-			slangSourceCode,
-			SLANG_WGSL,
-			"",
-			slangStages,
-			entryPoints
-		);
-          }
-
-	SlangCompileResult SlangSession::compileToSpirV(
+	/*SlangCompileResult SlangSession::compileToSpirV(
 		const std::string& filePath,
 		std::vector<ShaderStage> stages,
 		std::vector<std::string> entryPoints,
@@ -490,33 +375,33 @@ namespace ris_shader_toolkit {
 			filePath,
 			SLANG_SPIRV,
 			"spirv_1_0",
-			slangStages,
-			entryPoints
+			{ slangStages },
+			{ entryPoints }
 		);
-	}
+	}*/
 
-	SlangCompileResult SlangSession::compileSourceCodeToSpirV(
-		const std::string& slangSourceCode,
-		std::vector<ShaderStage> stages,
-		std::vector<std::string> entryPoints,
-		SpirVProfile profile
-	)
-	{
-		std::vector<SlangStage> slangStages;
-		for (const auto& stage : stages)
-		{
-			slangStages.push_back(shaderStageMap[stage]);
-		}
+	//SlangCompileResult SlangSession::compileSourceCodeToSpirV(
+	//	const std::string& slangSourceCode,
+	//	std::vector<ShaderStage> stages,
+	//	std::vector<std::string> entryPoints,
+	//	SpirVProfile profile
+	//)
+	//{
+	//	std::vector<SlangStage> slangStages;
+	//	for (const auto& stage : stages)
+	//	{
+	//		slangStages.push_back(shaderStageMap[stage]);
+	//	}
 
-		std::string metalProfile = spirvProfileMap[profile];
+	//	std::string metalProfile = spirvProfileMap[profile];
 
-		return compileFromSourceCode(
-			slangSourceCode,
-			SLANG_SPIRV,
-			"spirv_1_0",
-			slangStages,
-			entryPoints
-		);
+	//	return compile(
+	//		slangSourceCode,
+	//		SLANG_SPIRV,
+	//		"spirv_1_0",
+	//		{ slangStages },
+	//		{ entryPoints }
+	//	);
 
-	}
+	//}
 }

@@ -14,7 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RisGameFramework.ShaderToolkit.Client\RisGameFramework.ShaderToolkit.Client.csproj" />
-    <ProjectReference Include="..\ShaderToolkit\Ris.ShaderToolkit.csproj" />
+    <ProjectReference Include="..\ShaderToolkit\RisShaderToolkit.csproj" />
   </ItemGroup>
 </Project>
