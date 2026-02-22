@@ -29,10 +29,18 @@ namespace RisShaderToolkit
             string ext = OperatingSystem.IsWindows() ? ".dll" :
                          OperatingSystem.IsMacOS() ? ".dylib" : ".so";
 
+
             string path = Path.Combine(AppContext.BaseDirectory, "runtimes", rid, "native", BaseName + ext);
 
             if (!File.Exists(path))
+            {
+                path = Path.Combine(AppContext.BaseDirectory, "runtimes", rid, "native", "lib" + BaseName + ext);
+            }
+
+            if (!File.Exists(path))
+            {
                 throw new DllNotFoundException($"Native library not found: {path}");
+            }
 
             return NativeLibrary.Load(path);
         }
