@@ -50,6 +50,17 @@ extern "C" {
 		uint32_t entryPointsCount
 	);
 
+	API_EXPORT
+void* compile_slang_to_spirv(
+	void* compilerPtr,
+	const char* slangSourceCode,
+	int32_t* shaderStages,
+	uint32_t shaderStagesCount,
+	const char** entryPoints,
+	uint32_t entryPointsCount,
+    ris_shader_toolkit::SpirVProfile profile
+);
+
     //! Frees the Compiler instance.
     //! @param compilerPtr A pointer to the Compiler instance to free.
     API_EXPORT

@@ -38,6 +38,15 @@ namespace ris_shader_toolkit {
 		/// <returns>The concatinated target code.</returns>
 		std::string readCompiledCode(ComPtr<slang::IComponentType> component, size_t entryPointCount);
 
+		/// <summary>
+		/// Returns the final compiled code from the Slang compile request. 
+		/// It handles multiple entry points and concatenates the results if necessary.
+		/// </summary>
+		/// <param name="component">The component to read from.</param>
+		/// <param name="entryPointCount">The entry points count.</param>
+		/// <returns>The concatinated target code.</returns>
+		std::vector<uint8_t> readCompiledBinaryCode(ComPtr<slang::IComponentType> component, size_t entryPointCount);
+
 		//! Compiles a Slang shader file to the specified target and profile. 
 		//! This is low-level function that directly uses the Slang API.
 		//! @param sourceCode The Slang shader source code.
@@ -48,7 +57,7 @@ namespace ris_shader_toolkit {
 		SlangCompileResult compile(
 			const std::string& sourceCode,
 			SlangCompileTarget compileTarget,
-			const std::string& profile,
+			std::string profile,
 			std::vector<SlangStage> stages,
 			std::vector<std::string> entryPoints
 		);
@@ -64,89 +73,76 @@ namespace ris_shader_toolkit {
 			const std::string& entryPoint = "main",
 			HlslProfile profile = HlslProfile::SM_5_0);*/
 
-		//! Compiles an GLSL shader file to the specified profile and stage.
-		//! @param filePath The path to the GLSL shader file.
-		//! @param stage The shader stage (e.g., ShaderStage::Vertex). By default, it is ShaderStage::Vertex.
-		//! @param entryPoint The entry point function name (default is "main").
-		//! @param profile The GLSL profile to compile to (e.g., "450"). By default, it is GlslProfile::GL_450.
-	/*	SlangCompileResult compileToGlsl(
-			const std::string& filePath,
-			ShaderStage stage = ShaderStage::Vertex,
-			const std::string& entryPoint = "main",
-			GlslProfile profile = GlslProfile::GLSL_450);*/
+			//! Compiles an GLSL shader file to the specified profile and stage.
+			//! @param filePath The path to the GLSL shader file.
+			//! @param stage The shader stage (e.g., ShaderStage::Vertex). By default, it is ShaderStage::Vertex.
+			//! @param entryPoint The entry point function name (default is "main").
+			//! @param profile The GLSL profile to compile to (e.g., "450"). By default, it is GlslProfile::GL_450.
+		/*	SlangCompileResult compileToGlsl(
+				const std::string& filePath,
+				ShaderStage stage = ShaderStage::Vertex,
+				const std::string& entryPoint = "main",
+				GlslProfile profile = GlslProfile::GLSL_450);*/
 
-		//! Compiles an GLSL shader file to the specified profile and stage.
-		//! @param slangSourceCode The Slang shader source code.
-		//! @param stage The shader stage (e.g., ShaderStage::Vertex). By default, it is ShaderStage::Vertex.
-		//! @param entryPoint The entry point function name (default is "main").
-		//! @param profile The GLSL profile to compile to (e.g., "450"). By default, it is GlslProfile::GL_450.
-		//SlangCompileResult compileSourceCodeToGlsl(
-		//	const std::string& slangSourceCode,
-		//	ShaderStage stage = ShaderStage::Vertex,
-		//	const std::string& entryPoint = "main",
-		//	GlslProfile profile = GlslProfile::GLSL_450);
+				//! Compiles an GLSL shader file to the specified profile and stage.
+				//! @param slangSourceCode The Slang shader source code.
+				//! @param stage The shader stage (e.g., ShaderStage::Vertex). By default, it is ShaderStage::Vertex.
+				//! @param entryPoint The entry point function name (default is "main").
+				//! @param profile The GLSL profile to compile to (e.g., "450"). By default, it is GlslProfile::GL_450.
+				//SlangCompileResult compileSourceCodeToGlsl(
+				//	const std::string& slangSourceCode,
+				//	ShaderStage stage = ShaderStage::Vertex,
+				//	const std::string& entryPoint = "main",
+				//	GlslProfile profile = GlslProfile::GLSL_450);
 
-		//! Compiles a Metal shader file to the specified profile and stage.
-		//! @param filePath The path to the Metal shader file.
-		//! @param stage The shader stage (e.g., ShaderStage::Vertex). By default, it is ShaderStage::Vertex.
-		//! @param entryPoint The entry point function name (default is "main").
-		//! @param profile The Metal profile to compile to (e.g., "metal2.0"). By default, it is MetalProfile::MSL_2_0.
-		//SlangCompileResult compileToMetal(
-		//	const std::string& filePath,
-		//	ShaderStage stage = ShaderStage::Vertex,
-		//	const std::string& entryPoint = "main",
-		//	MetalProfile profile = MetalProfile::MSL_2_0
-		//);
+				//! Compiles a Metal shader file to the specified profile and stage.
+				//! @param filePath The path to the Metal shader file.
+				//! @param stage The shader stage (e.g., ShaderStage::Vertex). By default, it is ShaderStage::Vertex.
+				//! @param entryPoint The entry point function name (default is "main").
+				//! @param profile The Metal profile to compile to (e.g., "metal2.0"). By default, it is MetalProfile::MSL_2_0.
+				//SlangCompileResult compileToMetal(
+				//	const std::string& filePath,
+				//	ShaderStage stage = ShaderStage::Vertex,
+				//	const std::string& entryPoint = "main",
+				//	MetalProfile profile = MetalProfile::MSL_2_0
+				//);
 
-		//! Compiles a Metal shader file to the specified profile and stages.
-		//! @param filePath The path to the Metal shader file.
-		//! @param stages The shader stages (e.g., ShaderStage::Vertex).
-		//! @param entryPoints The entry points info function name. Must match the stages count.
-		//! @param profile The Metal profile to compile to (e.g., "metal2.0"). By default, it is MetalProfile::MSL_2_0.
-		//! @return A SlangCompileResult object containing the result of the compilation.
-		//SlangCompileResult compileToMetal(
-		//	const std::string& filePath,
-		//	std::vector<ShaderStage> stages,
-		//	std::vector<std::string> entryPoints,
-		//	MetalProfile profile = MetalProfile::MSL_2_0
-		//);
+				//! Compiles a Metal shader file to the specified profile and stages.
+				//! @param filePath The path to the Metal shader file.
+				//! @param stages The shader stages (e.g., ShaderStage::Vertex).
+				//! @param entryPoints The entry points info function name. Must match the stages count.
+				//! @param profile The Metal profile to compile to (e.g., "metal2.0"). By default, it is MetalProfile::MSL_2_0.
+				//! @return A SlangCompileResult object containing the result of the compilation.
+				//SlangCompileResult compileToMetal(
+				//	const std::string& filePath,
+				//	std::vector<ShaderStage> stages,
+				//	std::vector<std::string> entryPoints,
+				//	MetalProfile profile = MetalProfile::MSL_2_0
+				//);
 
-        //! Compiles a WGSL shader file to the specified stages.
-		//! @param slangSourceCode The Slang shader source code.
-		//! @param stages The shader stages (e.g., ShaderStage::Vertex).
-		//! @param entryPoints The entry points info function name. Can be empty if Slang source code is decorated with @entryPoint attributes.
-		//! @return A SlangCompileResult object containing the result of the compilation.
+				//! Compiles a WGSL shader file to the specified stages.
+				//! @param slangSourceCode The Slang shader source code.
+				//! @param stages The shader stages (e.g., ShaderStage::Vertex).
+				//! @param entryPoints The entry points info function name. Can be empty if Slang source code is decorated with @entryPoint attributes.
+				//! @return A SlangCompileResult object containing the result of the compilation.
 		SlangCompileResult compileToWgsl(
 			const std::string& slangSourceCode,
 			std::vector<ShaderStage> stages,
 			std::vector<std::string> entryPoints
-        );
+		);
 
 		//! Compiles a ASlang shader to the SPIR-V shader file.
 		//! @param filePath The path to the Slang shader file.
 		//! @param stages The shader stages (e.g., ShaderStage::Vertex).
 		//! @param entryPoints The entry points info function name. Must match the stages count.
-		//! @param profile The SpirV profile to compile to (e.g., "spirv_1_5"). By default, it is SpirVProfile::SPIRV_1_5.
+		//! @param profile The SpirV profile to compile to (e.g., "spirv_1_2"). By default, it is SpirVProfile::SPIRV_1_2.
 		//! @return A SlangCompileResult object containing the result of the compilation.
-	/*	SlangCompileResult compileToSpirV(
+		SlangCompileResult compileToSpirV(
 			const std::string& filePath,
 			std::vector<ShaderStage> stages,
 			std::vector<std::string> entryPoints,
-			SpirVProfile profile = SpirVProfile::SPIRV_1_5
-		);*/
-
-		//! Compiles a ASlang shader to the SPIR-V shader file.
-		//! @param sourceCode The Slang source code.
-		//! @param stages The shader stages (e.g., ShaderStage::Vertex).
-		//! @param entryPoints The entry points info function name. Must match the stages count.
-		//! @param profile The SpirV profile to compile to (e.g., "spirv_1_5"). By default, it is SpirVProfile::SPIRV_1_5.
-		//! @return A SlangCompileResult object containing the result of the compilation.
-		//SlangCompileResult compileSourceCodeToSpirV(
-		//	const std::string& sourceCode,
-		//	std::vector<ShaderStage> stages,
-		//	std::vector<std::string> entryPoints,
-		//	SpirVProfile profile = SpirVProfile::SPIRV_1_5
-		//);
+			SpirVProfile profile = SpirVProfile::SPIRV_1_2
+		);
 
 
 	private:

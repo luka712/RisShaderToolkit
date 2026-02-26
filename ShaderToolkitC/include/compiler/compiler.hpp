@@ -12,35 +12,6 @@ namespace ris_shader_toolkit {
 	public:
 		Compiler();
 
-		//! Compiles a Slang shader file to Spir-V source code.
-		//! @param inputFilePath The path to the input Slang shader file.
-		//! @param shaderStage The shader stage (e.g., ShaderStage::Vertex). Default is ShaderStage::Vertex.
-		//! @param profile The Spir-V profile to compile to (e.g., SpirVProfile::SPIRV_1_2). Default is SpirVProfile::SPIRV_1_2.
-		//! @param entryPoint The entry point function name (default is "main").
-		//! @return A CompileResult object containing the result of the compilation.
-		//! The result includes success status and source code if successful, or an error message if failed. 
-		//! It does not include the output file path.
-	/*	CompileResult compileSlangToSpirV(
-			const std::string& inputFilePath,
-			ShaderStage shaderStage = ShaderStage::Vertex,
-			SpirVProfile profile = SpirVProfile::SPIRV_1_2,
-			const std::string& entryPoint = "main"
-		);*/
-
-		//! Compiles a Slang shader file to Spir-V source code.
-		//! @param slangSourceCode The Slang source code.
-		//! @param shaderStage The shader stage (e.g., ShaderStage::Vertex). Default is ShaderStage::Vertex.
-		//! @param profile The Spir-V profile to compile to (e.g., SpirVProfile::SPIRV_1_2). Default is SpirVProfile::SPIRV_1_2.
-		//! @param entryPoint The entry point function name (default is "main").
-		//! @return A CompileResult object containing the result of the compilation.
-		//! The result includes success status and source code if successful, or an error message if failed. 
-		//! It does not include the output file path.
-		/*CompileResult compileSlangSourceCodeToSpirV(
-			const std::string& slangSourceCode,
-			ShaderStage shaderStage = ShaderStage::Vertex,
-			SpirVProfile profile = SpirVProfile::SPIRV_1_2,
-			const std::string& entryPoint = "main"
-		);*/
 
 		//! Compiles a Slang shader file to HLSL source code.
 		//! @param inputFilePath The path to the input Slang shader file.
@@ -108,6 +79,20 @@ namespace ris_shader_toolkit {
 			ReplaceStageInputNameRule* inputRule = nullptr,
 			ReplaceStageOutputNameRule* outputRule = nullptr
 		);*/
+
+		//! Compiles a Slang shader file to Spir-V source code.
+		//! @param sourceCode The Slang shader source code.
+		//! @param shaderStages Thee shader stages.
+		//! @param entryPoints The entry points for each shader stage. Must be the same size as shaderStages parameter or empty (in which case 'shader' attribute entry point names will be used).
+		//! @param profile The Spir-V profile to compile to (e.g., SpirVProfile::SPIRV_1_2). Default is SpirVProfile::SPIRV_1_2.
+		//! @return A CompileResult object containing the result of the compilation.
+		//! The result includes success status and source code if successful, or an error message if failed. 
+		CompileResult compileSlangToSpirV(
+			const std::string& sourceCode,
+			std::vector<ShaderStage> stages,
+			std::vector<std::string> entryPoints,
+			SpirVProfile profile = SpirVProfile::SPIRV_1_2
+		);
 
 		//! Compiles a Slang shader file to WGSL source code.
 		//! @param sourceCode The Slang shader source code.

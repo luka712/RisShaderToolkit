@@ -13,11 +13,20 @@ extern "C" {
         //! Indicates whether the compilation was successful.
         bool success;
 
+		///! The size of the compiled source code if the compilation was successful.
+		uint32_t sourceCodeSize;
+
+		//! The size of the compiled source code in binary format if the compilation was successful and format is binary.
+		uint32_t binaryCodeSize;
+
+		//! The size of the error message if the compilation failed.
+        uint32_t errorMessageSize;
+
         //! The compiled source code if the compilation was successful.
         const char* sourceCode;
 
-        //! The output file path if applicable.
-        const char* outputFilePath;
+		//! The compiled source code in binary format if the compilation was successful and format is binary.
+        const uint8_t* binaryCode;
 
         //! The error message if the compilation failed.
         const char* errorMessage;

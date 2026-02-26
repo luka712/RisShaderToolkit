@@ -2,18 +2,25 @@
 #include <slang.h>
 #include <slang-com-ptr.h>
 
-SlangResult slangCreateGlobalSession(slang::IGlobalSession* globalSessionPtr)
+SlangResult slang_create_global_session(slang::IGlobalSession** globalSessionPtr)
 {
-    slang::IGlobalSession *globalSession;
-    SlangResult res = slang::createGlobalSession(&globalSession);
-    globalSessionPtr = globalSession;
-    return res;
+	return slang::createGlobalSession(globalSessionPtr);
 }
 
-void slangReleaseGlobalSession(slang::IGlobalSession* globalSessionPtr)
+void slang_release_global_session(slang::IGlobalSession* globalSessionPtr)
 {
-    if (globalSessionPtr != nullptr)
-    {
-        globalSessionPtr->Release();
-    }
+	if (globalSessionPtr != nullptr)
+	{
+		globalSessionPtr->Release();
+	}
+}
+
+SlangProfileID slang_find_profile(slang::IGlobalSession* globalSessionPtr, const char* name)
+{
+	if (globalSessionPtr != nullptr)
+	{
+		slang::IGlobalSession* globalSession = static_cast<slang::IGlobalSession*>(globalSessionPtr);
+		return globalSession->findProfile(name);
+	}
+	return SLANG_PROFILE_UNKNOWN;
 }

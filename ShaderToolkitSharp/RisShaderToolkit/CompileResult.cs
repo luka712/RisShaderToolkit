@@ -16,6 +16,11 @@
         public string? SourceCode { get; set; } = null;
 
         /// <summary>
+        /// The compiled binary source code for formats that use binary, such as SPIR-V.
+        /// </summary>
+        public byte[]? BinarySourceCode { get; set; } = null;
+
+        /// <summary>
         /// The error message if the compilation failed.
         /// </summary>
         public string? ErrorMessage { get; set; } = null;
@@ -29,6 +34,11 @@
         /// The GLSL profile used for the compilation if it was compiled to GLSL.
         /// </summary>
         public GlslProfile? GlslProfile { get; set; } = null;
+
+        /// <summary>
+        /// The SPIR-V profile used for the compilation if it was compiled to SPIR-V.
+        /// </summary>
+        public SpirVProfile? SpirVProfile { get; set; } = null;
 
         /// <summary>
         /// The shader stage used for the compilation.

@@ -99,10 +99,35 @@ namespace ris_shader_toolkit {
 		return finalCode;
 	}
 
+
+	std::vector<uint8_t> SlangSession::readCompiledBinaryCode(ComPtr<slang::IComponentType> component, size_t entryPointCount)
+	{
+		std::vector<uint8_t> finalCode;
+		for (size_t i = 0; i < entryPointCount; i++)
+		{
+			ComPtr<slang::IBlob> shaderBlob = nullptr;
+			ComPtr<slang::IBlob> diagnosticBlob = nullptr;
+			SlangResult result = component->getEntryPointCode(i, 0, shaderBlob.writeRef(), diagnosticBlob.writeRef());
+			if (SLANG_SUCCEEDED(result)) {
+
+				auto ptr = (uint8_t*) shaderBlob->getBufferPointer();
+				for (size_t i = 0; i < shaderBlob->getBufferSize(); i++)
+				{
+					finalCode.push_back(ptr[i]);
+				}
+			}
+			else {
+				std::string error = diagnosticBlob ? std::string((const char*)diagnosticBlob->getBufferPointer(), diagnosticBlob->getBufferSize()) : "Unknown error";
+				spdlog::error("Failed to get compiled code for entry point index {}. {}", i, error);
+			}
+		}
+		return finalCode;
+	}
+
 	SlangCompileResult SlangSession::compile(
 		const std::string& sourceCode,
 		SlangCompileTarget compileTarget,
-		const std::string& profile,
+		std::string profile,
 		std::vector<SlangStage> stages,
 		std::vector<std::string> entryPoints
 	) {
@@ -213,11 +238,21 @@ namespace ris_shader_toolkit {
 			return SlangCompileResult(false, "", ShaderReflection(), error);
 		}
 
-
-		// Get entry points.
 		size_t entryPointCount = entryPoints.size() == 0 ? stages.size() : entryPoints.size();
-		std::string code = readCompiledCode(program, entryPointCount);
-		return SlangCompileResult(true, code, ShaderReflection());
+
+		// BINARY FORMATS
+		if (compileTarget == SlangCompileTarget::SLANG_SPIRV)
+		{
+			auto binary = readCompiledBinaryCode(program, entryPointCount);
+			return SlangCompileResult(true, binary, ShaderReflection());
+		}
+		else 
+		{
+			// Get entry points.
+	
+			std::string code = readCompiledCode(program, entryPointCount);
+			return SlangCompileResult(true, code, ShaderReflection());
+		}
 	}
 
 	void SlangSession::modifyShader(slang::ICompileRequest* request, ShaderReflection* reflection)
@@ -357,8 +392,8 @@ namespace ris_shader_toolkit {
 		);
 	}
 
-	/*SlangCompileResult SlangSession::compileToSpirV(
-		const std::string& filePath,
+	SlangCompileResult SlangSession::compileToSpirV(
+		const std::string& sourceCode,
 		std::vector<ShaderStage> stages,
 		std::vector<std::string> entryPoints,
 		SpirVProfile profile
@@ -370,39 +405,14 @@ namespace ris_shader_toolkit {
 			slangStages.push_back(shaderStageMap[stage]);
 		}
 
-		std::string metalProfile = spirvProfileMap[profile];
+		std::string spirVProfile = spirvProfileMap[profile];
 
 		return compile(
-			filePath,
+			sourceCode,
 			SLANG_SPIRV,
-			"spirv_1_0",
-			{ slangStages },
-			{ entryPoints }
+			spirVProfile,
+			slangStages,
+			entryPoints
 		);
-	}*/
-
-	//SlangCompileResult SlangSession::compileSourceCodeToSpirV(
-	//	const std::string& slangSourceCode,
-	//	std::vector<ShaderStage> stages,
-	//	std::vector<std::string> entryPoints,
-	//	SpirVProfile profile
-	//)
-	//{
-	//	std::vector<SlangStage> slangStages;
-	//	for (const auto& stage : stages)
-	//	{
-	//		slangStages.push_back(shaderStageMap[stage]);
-	//	}
-
-	//	std::string metalProfile = spirvProfileMap[profile];
-
-	//	return compile(
-	//		slangSourceCode,
-	//		SLANG_SPIRV,
-	//		"spirv_1_0",
-	//		{ slangStages },
-	//		{ entryPoints }
-	//	);
-
-	//}
+	}
 }

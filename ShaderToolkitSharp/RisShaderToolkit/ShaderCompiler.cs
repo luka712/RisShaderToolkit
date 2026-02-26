@@ -49,6 +49,17 @@ public class ShaderCompiler : IDisposable
       IntPtr* entryPoints,
       uint entryPointsCount);
 
+    [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+    static unsafe extern IntPtr compile_slang_to_spirv(
+      IntPtr compilerPtr,
+      IntPtr sourceCode,
+      ShaderStage* shaderStages,
+      uint shaderStagesCount,
+      IntPtr* entryPoints,
+      uint entryPointsCount,
+      SpirVProfile spirVProfile
+      );
+
     private readonly IntPtr NativePtr;
     private readonly JsonReader _jsonReader = new();
 
@@ -118,6 +129,49 @@ public class ShaderCompiler : IDisposable
         }
     }
 
+    private void WriteSpirVShaderToFile(ShaderCompileTaskDto task, CompileResult result)
+    {
+        if (!result.Success)
+        {
+            return;
+        }
+        string? outputFilePath = task.OutputFilePath;
+        if (string.IsNullOrEmpty(outputFilePath))
+        {
+            string[] split = task.InputFilePath.Split('.');
+            split = split[..^1]; // Remove extension
+            string name = String.Join("", split);
+            outputFilePath = $"{name}.spv";
+        }
+        if (result.Success && result.SourceCode != null)
+        {
+            File.WriteAllText(outputFilePath, result.SourceCode);
+        }
+    }
+
+
+    private bool HandleSpirVProfile(List<CompileResult> results, ShaderCompileTaskDto compileTask)
+    {
+        if (ProfileResolver.IsSpirVProfile(compileTask.Profile, out SpirVProfile spirVProfile))
+        {
+            string sourceCode = File.ReadAllText(compileTask.InputFilePath);
+
+            CompileResult result = CompileSlangToSpirV(
+                sourceCode,
+                compileTask.Stages ?? [ShaderStage.VERTEX, ShaderStage.FRAGMENT],
+                spirVProfile,
+                compileTask.EntryPoints ?? []
+                );
+            results.Add(result);
+
+            WriteSpirVShaderToFile(compileTask, result);
+
+            return true;
+        }
+
+        return false;
+    }
+
     /// <summary>
     /// Compiles shaders based on the given JSON file.
     /// </summary>
@@ -142,7 +196,10 @@ public class ShaderCompiler : IDisposable
 
                 WriteWgslShaderToFile(compileTask, result);
             }
-
+            else if(HandleSpirVProfile(results, compileTask))
+            {
+                continue;
+            }
             else if (compileTask.SourceProfile == AnyProfile.SLANG && ProfileResolver.IsGlslProfile(compileTask.Profile, out GlslProfile glslProfile))
             {
                 //CompileResult result = CompileSlangToGlsl(
@@ -309,10 +366,9 @@ public class ShaderCompiler : IDisposable
     /// Compiles the given Slang shader to WGSL.
     /// </summary>
     /// <param name="slangSourceCode">The slang source code.</param>
-    /// <param name="shaderStage">The <see cref="ShaderStage"/>.</param>
-    /// <param name="entryPoint">The entry point.</param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
+    /// <param name="shaderStages">The <see cref="ShaderStage"/>'s to compile.</param>
+    /// <param name="entryPoints">The optional entry points.</param>
+    /// <returns>The <see cref="CompileResult"/>.</returns>
     public CompileResult CompileSlangToWgsl(
         string slangSourceCode,
         ShaderStage[] shaderStages,
@@ -363,6 +419,89 @@ public class ShaderCompiler : IDisposable
                     EntryPoints = entryPoints.ToArray(),
                     ShaderStages = shaderStages
                 };
+                compileResult.Dispose();
+                return result;
+
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(slangSourceCodePtr);
+                for (int i = 0; i < entryPoints.Length; i++)
+                {
+                    Marshal.FreeHGlobal(entryPointsPtr[i]);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Compiles the given Slang shader to WGSL.
+    /// </summary>
+    /// <param name="slangSourceCode">The slang source code.</param>
+    /// <param name="shaderStages">The <see cref="ShaderStage"/>'s to compile.</param>
+    /// <param name="spirVProfile">The optional <see cref="SpirVProfile"/>. Default is SPIRV_1_2.</param>
+    /// <param name="entryPoints">The optional entry points.</param>
+    /// <returns>The <see cref="CompileResult"/>.</returns>
+    public CompileResult CompileSlangToSpirV(
+        string slangSourceCode,
+        ShaderStage[] shaderStages,
+        SpirVProfile spirVProfile = SpirVProfile.SPIRV_1_2,
+        params string[] entryPoints
+        )
+    {
+        IntPtr slangSourceCodePtr = Marshal.StringToHGlobalAnsi(slangSourceCode);
+
+        CCompileResult compileResult = default;
+        unsafe
+        {
+            ShaderStage* shaderStagesPtr = stackalloc ShaderStage[shaderStages.Length];
+            for (int i = 0; i < shaderStages.Length; i++)
+            {
+                shaderStagesPtr[i] = shaderStages[i];
+            }
+
+            IntPtr* entryPointsPtr = stackalloc IntPtr[entryPoints.Length];
+            for (int i = 0; i < entryPoints.Length; i++)
+            {
+                entryPointsPtr[i] = Marshal.StringToHGlobalAnsi(entryPoints[i]);
+            }
+
+            try
+            {
+                IntPtr resultPtr = compile_slang_to_spirv(
+                    NativePtr,
+                    slangSourceCodePtr,
+                    shaderStagesPtr, (uint)shaderStages.Length,
+                    entryPointsPtr, (uint)entryPoints.Length,
+                    spirVProfile);
+
+                if (resultPtr == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Compilation failed: No result returned.");
+                }
+
+                compileResult = Marshal.PtrToStructure<CCompileResult>(resultPtr);
+
+                CompileResult result = new CompileResult
+                {
+                    Success = compileResult.Success,
+                    SourceCode = compileResult.Success
+                        ? Marshal.PtrToStringAnsi(compileResult.SourceCode) ?? string.Empty
+                        : null,
+                    ErrorMessage = compileResult.Success
+                        ? null
+                        : Marshal.PtrToStringAnsi(compileResult.ErrorMessage) ?? "Unknown error.",
+                    EntryPoints = entryPoints.ToArray(),
+                    ShaderStages = shaderStages
+                };
+
+                byte[] bytes = new byte[compileResult.BinaryCodeLength];
+                for (int i = 0; i < compileResult.BinaryCodeLength; i++)
+                {
+                    bytes[i] = Marshal.ReadByte(compileResult.BinarySourceCode, i);
+                }
+                result.BinarySourceCode = bytes;
+
                 compileResult.Dispose();
                 return result;
 

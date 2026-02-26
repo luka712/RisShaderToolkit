@@ -22,65 +22,7 @@ namespace ris_shader_toolkit {
 
 	//	return false;
 	//}
-//
-//	CompileResult Compiler::compileSlangToSpirV(
-//		const std::string& inputFilePath,
-//		ShaderStage shaderStage,
-//		SpirVProfile profile,
-//		const std::string& entryPoint
-//	)
-//	{
-//		SlangSession slangSession;
-//		if (!slangSession.initialize()) {
-//			std::string errorMsg = "Failed to initialize Slang session.";
-//			spdlog::error(errorMsg);
-//			return CompileResult::errorResult(errorMsg);
-//		}
-//
-//		SlangCompileResult slangResult = slangSession.compileToSpirV(
-//			inputFilePath,
-//			{ shaderStage },
-//			{ entryPoint },
-//			profile
-//		);
-//		if (!slangResult.isSuccess()) {
-//			std::string errorMsg = "Slang compilation failed: " + slangResult.getErrorMessage();
-//			spdlog::error(errorMsg);
-//			return CompileResult::errorResult(errorMsg);
-//		}
-//		std::string spirvCode = slangResult.getSourceCode();
-//		return CompileResult::successResult("", spirvCode, ShaderReflection());
-//	}
-//
-//	CompileResult Compiler::compileSlangSourceCodeToSpirV(
-//		const std::string& slangSourceCode,
-//		ShaderStage shaderStage,
-//		SpirVProfile profile,
-//		const std::string& entryPoint
-//	)
-//	{
-//		SlangSession slangSession;
-//		if (!slangSession.initialize()) {
-//			std::string errorMsg = "Failed to initialize Slang session.";
-//			spdlog::error(errorMsg);
-//			return CompileResult::errorResult(errorMsg);
-//		}
-//
-//		SlangCompileResult slangResult = slangSession.compileSourceCodeToSpirV(
-//			slangSourceCode,
-//			{ shaderStage },
-//			{ entryPoint },
-//			profile
-//		);
-//		if (!slangResult.isSuccess()) {
-//			std::string errorMsg = "Slang compilation failed: " + slangResult.getErrorMessage();
-//			spdlog::error(errorMsg);
-//			return CompileResult::errorResult(errorMsg);
-//		}
-//		std::string spirvCode = slangResult.getSourceCode();
-//
-//		return CompileResult::successResult("", spirvCode, ShaderReflection());
-//	}
+
 //
 //	CompileResult Compiler::compileSlangToHlsl(
 //		const std::string& inputFilePath,
@@ -265,6 +207,35 @@ namespace ris_shader_toolkit {
 //		return CompileResult::successResult("", glslSourceCode, ShaderReflection());
 //	}
 //
+	CompileResult Compiler::compileSlangToSpirV(
+		const std::string& sourceCode,
+		std::vector<ShaderStage> shaderStages,
+		std::vector<std::string> entryPoints,
+		SpirVProfile profile
+	)
+	{
+		SlangSession slangSession;
+		if (!slangSession.initialize()) {
+			std::string errorMsg = "Failed to initialize Slang session.";
+			spdlog::error(errorMsg);
+			return CompileResult::errorResult(errorMsg);
+		}
+
+		SlangCompileResult slangResult = slangSession.compileToSpirV(
+			sourceCode,
+			shaderStages,
+			entryPoints,
+			profile
+		);
+		if (!slangResult.isSuccess()) {
+			std::string errorMsg = "Slang compilation failed: " + slangResult.getErrorMessage();
+			spdlog::error(errorMsg);
+			return CompileResult::errorResult(errorMsg);
+		}
+		auto& spirvCode = slangResult.getBinaryCode();
+		return CompileResult::successResult(spirvCode, ShaderReflection());
+	}
+
 	CompileResult Compiler::compileSlangToWgsl(
 		const std::string& sourceCode,
 		std::vector<ShaderStage> shaderStages,
@@ -281,7 +252,7 @@ namespace ris_shader_toolkit {
 			return CompileResult::errorResult("Slang compilation to WGSL failed: " + slangResult.getErrorMessage());
 		}
 		std::string glslSourceCode = slangResult.getSourceCode();
-		return CompileResult::successResult("", glslSourceCode, ShaderReflection());
+		return CompileResult::successResult(glslSourceCode, ShaderReflection());
 	}
 
 	CompileResult Compiler::compileSlangToWgsl(

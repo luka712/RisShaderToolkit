@@ -136,6 +136,45 @@ void* compile_slang_to_wgsl(
 	return c_to_cpp_CompileResult(result);
 }
 
+void* compile_slang_to_spirv(
+	void* compilerPtr,
+	const char* slangSourceCode,
+	int32_t* shaderStages,
+	uint32_t shaderStagesCount,
+	const char** entryPoints,
+	uint32_t entryPointsCount,
+	ris_shader_toolkit::SpirVProfile profile)
+{
+	if (compilerPtr == nullptr)
+	{
+		return errorResult("Compiler instance is null.");
+	}
+
+	ris_shader_toolkit::Compiler* compiler = static_cast<ris_shader_toolkit::Compiler*>(compilerPtr);
+
+	if (slangSourceCode == nullptr)
+	{
+		return errorResult("Slang source code is not defined.");
+	}
+
+	std::vector<ris_shader_toolkit::ShaderStage> stages;
+	for (uint32_t i = 0; i < shaderStagesCount; ++i)
+	{
+		stages.push_back(static_cast<ris_shader_toolkit::ShaderStage>(shaderStages[i]));
+	}
+
+	std::vector<std::string> entryPointNames;
+	for (uint32_t i = 0; i < entryPointsCount; ++i)
+	{
+		entryPointNames.push_back(std::string(entryPoints[i]));
+	}
+
+	ris_shader_toolkit::CompileResult result = compiler->compileSlangToSpirV(
+		std::string(slangSourceCode), stages, entryPointNames, profile);
+
+	return c_to_cpp_CompileResult(result);
+}
+
 void free_compiler(void* compilerPtr)
 {
 	ris_shader_toolkit::Compiler* compiler = static_cast<ris_shader_toolkit::Compiler*>(compilerPtr);
