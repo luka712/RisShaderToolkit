@@ -1,5 +1,6 @@
 ﻿
 
+using RisShaderToolkit.Slang.Structs;
 using System.Runtime.InteropServices;
 
 namespace RisShaderToolkit.Slang
@@ -18,10 +19,10 @@ namespace RisShaderToolkit.Slang
         static extern SlangResult slang_create_global_session(out IntPtr global_session);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static extern void slang_release_global_session(IntPtr global_session);
+        static extern SlangResult slang_create_session(IntPtr global_session, in SlangSessionDesc sessionDescription, out IntPtr session);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static extern SlangResult slang_create_session(IntPtr global_session, out IntPtr session);
+        static extern void slang_release_global_session(IntPtr global_session);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern SlangProfileID slang_find_profile(IntPtr global_session, IntPtr profile_name);
@@ -74,6 +75,33 @@ namespace RisShaderToolkit.Slang
             finally
             {
                 Marshal.FreeHGlobal(profileNamePtr);
+            }
+        }
+
+        public SlangSession CreateSession(SlangSessionDescription sessionDescription)
+        {
+            unsafe
+            {
+                SlangTargetDesc* cTargetDescs = stackalloc SlangTargetDesc[sessionDescription.Targets.Count];
+                for (int i = 0; i < sessionDescription.Targets.Count; i++)
+                {
+                    cTargetDescs[i] = sessionDescription.Targets[i].ToCStruct();
+                }
+
+                var cSessionDescription = new SlangSessionDesc
+                {
+                    TargetCount = (uint)sessionDescription.Targets.Count,
+                    Targets = cTargetDescs,
+                    DefaultMatrixLayoutMode = sessionDescription.DefaultMatrixLayoutMode
+                };
+
+                var result = slang_create_session(_globalSession, in cSessionDescription, out IntPtr sessionPtr);
+                if (result != SlangResult.SLANG_OK)
+                {
+                    Marshal.FreeHGlobal(sessionPtr);
+                    throw new InvalidOperationException("Failed to create Slang session.");
+                }
+                return new SlangSession(sessionPtr);
             }
         }
 
