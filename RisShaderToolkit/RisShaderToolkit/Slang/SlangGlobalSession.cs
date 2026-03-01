@@ -12,10 +12,16 @@ namespace RisShaderToolkit.Slang
         private const string DLL_NAME = "shader_toolkit_c";
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        static extern IntPtr slang_get_last_error_message(IntPtr global_session);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern SlangResult slang_create_global_session(out IntPtr global_session);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern void slang_release_global_session(IntPtr global_session);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        static extern SlangResult slang_create_session(IntPtr global_session, out IntPtr session);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         static extern SlangProfileID slang_find_profile(IntPtr global_session, IntPtr profile_name);
