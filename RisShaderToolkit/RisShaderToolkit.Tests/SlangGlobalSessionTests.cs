@@ -1,4 +1,6 @@
 ﻿using RisShaderToolkit.Slang;
+using RisShaderToolkit.Slang.Enums;
+using RisShaderToolkit.Slang.Structs;
 
 namespace RisShaderToolkit.Tests;
 
@@ -27,5 +29,27 @@ public class SlangGlobalSessionTests
         using var globalSession = new SlangGlobalSession();
         var profileId = globalSession.FindProfile("spirv_1_2");
         Assert.NotEqual(SlangProfileID.SLANG_PROFILE_UNKNOWN, profileId); // Assuming that a valid profile ID is non-zero.
+    }
+
+    /// <summary>
+    /// Create a session using the <see cref="SlangGlobalSession.CreateSession"/> method with a valid session description and verify that the session is created successfully.
+    /// </summary>
+    [Fact]
+    public void CreateSessionTest()
+    {
+        using var globalSession = new SlangGlobalSession();
+        var sessionDescription = new SlangSessionDescription()
+        {
+            Targets = [
+           new SlangTargetDescription
+            {
+                Format = SlangCompileTarget.SLANG_SPIRV,
+                Profile = globalSession.FindProfile("spirv_1_2")
+            }
+       ],
+            DefaultMatrixLayoutMode = SlangMatrixLayoutMode.ColumnMajor
+        };
+         var session = globalSession.CreateSession(sessionDescription);
+        Assert.NotNull(session); // If we got here, it means the session was created successfully.
     }
 }
