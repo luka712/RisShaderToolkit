@@ -1,4 +1,4 @@
-name: Publish NuGet Package
+name: Publish Preview NuGet Package
 
 permissions:
   contents: write  # needed to push tags and commits
@@ -7,7 +7,7 @@ permissions:
 on:
   push:
     branches:
-      - develop  # run on merge to develop (if you have a develop branch)
+      - development  # run on merge to develop (if you have a develop branch)
 
 jobs:
   build_and_publish:
@@ -56,7 +56,7 @@ jobs:
             git add "$csproj"
           done
           git commit -m "Bump preview version to $NEW_VERSION" || echo "No changes to commit"
-          git push origin develop || echo "Push failed (maybe no changes)"
+          git push origin development || echo "Push failed (maybe no changes)"
           echo "VERSION=$NEW_VERSION" >> "$GITHUB_ENV"
 
       # Build
