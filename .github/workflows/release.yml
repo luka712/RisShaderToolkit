@@ -1,4 +1,4 @@
-name: Publish NuGet Package
+name: Publish Release NuGet Package
 
 permissions:
   contents: write  # needed to push tags and commits
@@ -8,7 +8,6 @@ on:
   push:
     branches:
       - main  # run on merge to main
-      - develop  # run on merge to develop (if you have a develop branch)
 
 jobs:
   build_and_publish:
