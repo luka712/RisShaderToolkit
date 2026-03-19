@@ -47,50 +47,30 @@ namespace ris_shader_toolkit {
 		);*/
 
 		//! Compiles a Slang shader file to GLSL source code.
-		//! @param inputFilePath The path to the input Slang shader file.
+		//! @param sourceCode The Slang shader source code.
+		//! @param shaderStage Thee shader stage.
+		//! @param entryPoint The entry points for shader stage. Optional if slang source code is decorated with @shader attributes to specify entry point names. If not specified, 'main' will be used as the default entry point name.
 		//! @param profile The GLSL profile to compile to (e.g., GlslProfile::GLSL_450). Default is GlslProfile::GLSL_450.
-		//! @param shaderStage The shader stage (e.g., ShaderStage::Vertex). Default is ShaderStage::Vertex.
-		//! @param entryPoint The entry point function name (default is "main").
-		//! @param inputRule An optional rule to replace stage input names.
-		//! @param outputRule An optional rule to replace stage output names.
 		//! @return A CompileResult object containing the result of the compilation.
-		/*CompileResult compileSlangToGlsl(
-			const std::string& inputFilePath,
-			GlslProfile profile = GlslProfile::GLSL_450,
-			ShaderStage shaderStage = ShaderStage::Vertex,
-			const std::string& entryPoint = "main",
-			ReplaceStageInputNameRule* inputRule = nullptr,
-			ReplaceStageOutputNameRule* outputRule = nullptr
-		);*/
-
-		//! Compiles a Slang shader file to GLSL source code.
-		//! @param slangSource The slang shader source code..
-		//! @param profile The GLSL profile to compile to (e.g., GlslProfile::GLSL_450). Default is GlslProfile::GLSL_450.
-		//! @param shaderStage The shader stage (e.g., ShaderStage::Vertex). Default is ShaderStage::Vertex.
-		//! @param entryPoint The entry point function name (default is "main").
-		//! @param inputRule An optional rule to replace stage input names.
-		//! @param outputRule An optional rule to replace stage output names.
-		//! @return A CompileResult object containing the result of the compilation.
-		/*CompileResult compileSlangSourceCodeToGlsl(
-			const std::string& slangSource,
-			GlslProfile profile = GlslProfile::GLSL_450,
-			ShaderStage shaderStage = ShaderStage::Vertex,
-			const std::string& entryPoint = "main",
-			ReplaceStageInputNameRule* inputRule = nullptr,
-			ReplaceStageOutputNameRule* outputRule = nullptr
-		);*/
+		//! The result includes success status and source code if successful, or an error message if failed. 
+		CompileResult compileSlangToGlsl(
+			const std::string& sourceCode,
+			ShaderStage stage,
+			std::string entryPoint,
+			GlslProfile profile = GlslProfile::GLSL_450
+		);
 
 		//! Compiles a Slang shader file to Spir-V source code.
 		//! @param sourceCode The Slang shader source code.
-		//! @param shaderStages Thee shader stages.
-		//! @param entryPoints The entry points for each shader stage. Must be the same size as shaderStages parameter or empty (in which case 'shader' attribute entry point names will be used).
+		//! @param shaderStage Thee shader stage.
+		//! @param entryPoint The entry points for shader stage. Optional if slang source code is decorated with @shader attributes to specify entry point names. If not specified, 'main' will be used as the default entry point name.
 		//! @param profile The Spir-V profile to compile to (e.g., SpirVProfile::SPIRV_1_2). Default is SpirVProfile::SPIRV_1_2.
 		//! @return A CompileResult object containing the result of the compilation.
 		//! The result includes success status and source code if successful, or an error message if failed. 
 		CompileResult compileSlangToSpirV(
 			const std::string& sourceCode,
-			std::vector<ShaderStage> stages,
-			std::vector<std::string> entryPoints,
+			ShaderStage stage,
+			std::string entryPoint = "",
 			SpirVProfile profile = SpirVProfile::SPIRV_1_2
 		);
 
@@ -100,8 +80,8 @@ namespace ris_shader_toolkit {
 		//! @param entryPoints The entry points for each shader stage. Must be the same size as shaderStages parameter or empty (in which case 'shader' attribute entry point names will be used).
 		CompileResult compileSlangToWgsl(
 			const std::string& sourceCode,
-			std::vector<ShaderStage> stages,
-			std::vector<std::string> entryPoints
+			std::vector<ShaderStage>& stages,
+			std::vector<std::string>& entryPoints
 		);
 
 		//! Compiles a Slang shader file to WGSL source code.
@@ -110,7 +90,7 @@ namespace ris_shader_toolkit {
 		//! @param entryPoints The entry points for each shader stage. Must be the same size as shaderStages parameter or empty (in which case 'shader' attribute entry point names will be used).
 		CompileResult compileSlangToWgsl(
 			const std::string& sourceCode,
-			std::vector<ShaderStage> stages
+			std::vector<ShaderStage>& stages
 		);
 
 	private:

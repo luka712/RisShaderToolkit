@@ -100,26 +100,32 @@ namespace ris_shader_toolkit {
 	}
 
 
-	std::vector<uint8_t> SlangSession::readCompiledBinaryCode(ComPtr<slang::IComponentType> component, size_t entryPointCount)
+	std::vector<std::vector<uint32_t>> SlangSession::readCompiledBinaryCode(ComPtr<slang::IComponentType> component, size_t entryPointCount)
 	{
-		std::vector<uint8_t> finalCode;
+		std::vector<std::vector<uint32_t>> finalCode;
 		for (size_t i = 0; i < entryPointCount; i++)
 		{
+			std::vector<uint32_t> entryPointCode;
+
 			ComPtr<slang::IBlob> shaderBlob = nullptr;
 			ComPtr<slang::IBlob> diagnosticBlob = nullptr;
 			SlangResult result = component->getEntryPointCode(i, 0, shaderBlob.writeRef(), diagnosticBlob.writeRef());
 			if (SLANG_SUCCEEDED(result)) {
 
-				auto ptr = (uint8_t*) shaderBlob->getBufferPointer();
-				for (size_t i = 0; i < shaderBlob->getBufferSize(); i++)
+				auto* data = reinterpret_cast<const uint32_t*>(shaderBlob->getBufferPointer());
+				size_t wordCount = shaderBlob->getBufferSize() / sizeof(uint32_t);
+
+				for (size_t j = 0; j < wordCount; j++)
 				{
-					finalCode.push_back(ptr[i]);
+					entryPointCode.push_back(data[j]);
 				}
 			}
 			else {
 				std::string error = diagnosticBlob ? std::string((const char*)diagnosticBlob->getBufferPointer(), diagnosticBlob->getBufferSize()) : "Unknown error";
 				spdlog::error("Failed to get compiled code for entry point index {}. {}", i, error);
 			}
+
+			finalCode.push_back(entryPointCode);
 		}
 		return finalCode;
 	}
@@ -243,13 +249,21 @@ namespace ris_shader_toolkit {
 		// BINARY FORMATS
 		if (compileTarget == SlangCompileTarget::SLANG_SPIRV)
 		{
+			if(entryPointCount > 1)
+			{
+				std::string msg = "Multiple entry points detected. Binary output is only supported for single entry point compilation.";
+				spdlog::error(msg);
+				return SlangCompileResult::errorResult(msg);
+			}
+
+			// We can read multiple binary entry points, but for SPIR-V we only 
+			// ever support single entry point, so we will just read the first one.
 			auto binary = readCompiledBinaryCode(program, entryPointCount);
-			return SlangCompileResult(true, binary, ShaderReflection());
+			return SlangCompileResult(true, binary[0], ShaderReflection());
 		}
-		else 
+		else
 		{
 			// Get entry points.
-	
 			std::string code = readCompiledCode(program, entryPointCount);
 			return SlangCompileResult(true, code, ShaderReflection());
 		}
@@ -296,23 +310,7 @@ namespace ris_shader_toolkit {
 		}
 	}
 
-	/*SlangCompileResult SlangSession::compileSourceCodeToGlsl(
-		const std::string& slangSourceCode,
-		ShaderStage stage,
-		const std::string& entryPoint,
-		GlslProfile profile)
-	{
-		SlangStage slangStage = shaderStageMap[stage];
-		std::string glslProfile = glslProfileMap[profile];
-
-		return compile(
-			slangSourceCode,
-			SLANG_GLSL,
-			glslProfile,
-			{ slangStage },
-			{ entryPoint }
-		);
-	}
+	/*
 
 	SlangCompileResult SlangSession::compileToHlsl(
 		const std::string& filePath,
@@ -414,5 +412,30 @@ namespace ris_shader_toolkit {
 			slangStages,
 			entryPoints
 		);
+	}
+
+	SlangCompileResult SlangSession::compileToGlsl(
+		const std::string& sourceCode,
+		ShaderStage stages,
+		std::string entryPoint,
+		GlslProfile profile) {
+
+		SlangStage slangStage = shaderStageMap[stages];
+		std::string glslProfile = glslProfileMap[profile];
+
+		std::vector<std::string> entryPoints;
+		if (!entryPoint.empty())
+		{
+			entryPoints.push_back(entryPoint);
+		}
+
+		return compile(
+			sourceCode,
+			SLANG_GLSL,
+			glslProfile,
+			{ slangStage },
+			entryPoints
+		);
+
 	}
 }

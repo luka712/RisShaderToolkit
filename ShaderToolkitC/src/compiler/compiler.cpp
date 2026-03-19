@@ -81,156 +81,85 @@ namespace ris_shader_toolkit {
 //		}
 //		return CompileResult::successResult(outputFilePath, "", ShaderReflection());
 //	}
-//
-//	CompileResult Compiler::compileSlangSourceCodeToGlsl(
-//		const std::string& slangSourceCode,
-//		GlslProfile profile,
-//		ShaderStage shaderStage,
-//		const std::string& entryPoint,
-//		ReplaceStageInputNameRule* replaceStageInputNameRule,
-//		ReplaceStageOutputNameRule* replaceStageOutputNameRule
-//	)
-//	{
-//		spdlog::info("Compiling Slang shader to GLSL: {}", slangSourceCode);
-//		// First we need to determine if we can use Slang directly to GLSL or if we need to go through SPIR-V
-//
-//		// For GLES profiles, we need to go through SPIR-V
-//		if (profile == GlslProfile::GLES_300
-//			|| profile == GlslProfile::GLES_310
-//			|| profile == GlslProfile::GLES_320
-//			) {
-//			CompileResult spirvResult = compileSlangSourceCodeToSpirV(
-//				slangSourceCode,
-//				shaderStage,
-//				SpirVProfile::SPIRV_1_5,
-//				entryPoint
-//			);
-//			if (!spirvResult.isSuccess()) {
-//				return spirvResult;
-//			}
-//
-//			// Convert SPIR-V to GLSL using SpirVCrossCompiler
-//			std::vector<uint32_t> spirvBinary = stringToBinary<uint32_t>(spirvResult.getSourceCode());
-//			SpirVCrossCompiler spirvCompiler;
-//			SpirVCrossCompileResult glslResult = spirvCompiler.compile(
-//				spirvBinary,
-//				profile,
-//				replaceStageInputNameRule,
-//				replaceStageOutputNameRule
-//			);
-//			if (!glslResult.isSuccess()) {
-//				return CompileResult::errorResult("SPIR-V to GLSL compilation failed: " + glslResult.getErrorMessage());
-//			}
-//
-//			return CompileResult::successResult("", glslResult.getSourceCode(), ShaderReflection());
-//		}
-//
-//		SlangSession slangSession;
-//		if (!slangSession.initialize()) {
-//			return CompileResult::errorResult("Failed to initialize Slang session.");
-//		}
-//
-//		SlangCompileResult slangResult = slangSession.compileSourceCodeToGlsl(
-//			slangSourceCode,
-//			shaderStage,
-//			entryPoint,
-//			profile
-//		);
-//		if (!slangResult.isSuccess()) {
-//			return CompileResult::errorResult("Slang compilation to GLSL failed: " + slangResult.getErrorMessage());
-//		}
-//		std::string glslSourceCode = slangResult.getSourceCode();
-//		return CompileResult::successResult("", glslSourceCode, ShaderReflection());
-//	}
-//
-//
-//	CompileResult Compiler::compileSlangToGlsl(
-//		const std::string& inputFilePath,
-//		GlslProfile profile,
-//		ShaderStage shaderStage,
-//		const std::string& entryPoint,
-//		ReplaceStageInputNameRule* replaceStageInputNameRule,
-//		ReplaceStageOutputNameRule* replaceStageOutputNameRule
-//	)
-//	{
-//		spdlog::info("Compiling Slang shader to GLSL: {}", inputFilePath);
-//		// First we need to determine if we can use Slang directly to GLSL or if we need to go through SPIR-V
-//
-//		// For GLES profiles, we need to go through SPIR-V
-//		if (profile == GlslProfile::GLES_300
-//			|| profile == GlslProfile::GLES_310
-//			|| profile == GlslProfile::GLES_320
-//			) {
-//			spdlog::info("Need to compile via SPIR-V for GLES profile first.");
-//			CompileResult spirvResult = compileSlangToSpirV(
-//				inputFilePath,
-//				shaderStage,
-//				SpirVProfile::SPIRV_1_5,
-//				entryPoint
-//			);
-//			if (!spirvResult.isSuccess()) {
-//				return spirvResult;
-//			}
-//
-//			// Convert SPIR-V to GLSL using SpirVCrossCompiler
-//			std::vector<uint32_t> spirvBinary = stringToBinary<uint32_t>(spirvResult.getSourceCode());
-//			SpirVCrossCompiler spirvCompiler;
-//			SpirVCrossCompileResult glslResult = spirvCompiler.compile(
-//				spirvBinary,
-//				profile,
-//				replaceStageInputNameRule,
-//				replaceStageOutputNameRule
-//			);
-//			if (!glslResult.isSuccess()) {
-//				return CompileResult::errorResult("SPIR-V to GLSL compilation failed: " + glslResult.getErrorMessage());
-//			}
-//
-//			spdlog::info("Successfully compiled Slang shader to GLSL via SPIR-V.");
-//			return CompileResult::successResult("", glslResult.getSourceCode(), ShaderReflection());
-//		}
-//
-//		SlangSession slangSession;
-//		if (!slangSession.initialize()) {
-//			return CompileResult::errorResult("Failed to initialize Slang session.");
-//		}
-//
-//		SlangCompileResult slangResult = slangSession.compileToGlsl(
-//			inputFilePath,
-//			shaderStage,
-//			entryPoint,
-//			profile
-//		);
-//		if (!slangResult.isSuccess()) {
-//			return CompileResult::errorResult("Slang compilation to GLSL failed: " + slangResult.getErrorMessage());
-//		}
-//		std::string glslSourceCode = slangResult.getSourceCode();
-//		return CompileResult::successResult("", glslSourceCode, ShaderReflection());
-//	}
-//
+
+	CompileResult Compiler::compileSlangToGlsl(
+		const std::string& sourceCode,
+		ShaderStage stage,
+		std::string entryPoint,
+		GlslProfile profile)
+	{
+
+		// For GLES profiles, we need to go through SPIR-V
+		if (profile == GlslProfile::GLES_300
+			|| profile == GlslProfile::GLES_310
+			|| profile == GlslProfile::GLES_320
+			) {
+
+			CompileResult spirvResult = compileSlangToSpirV(
+				sourceCode,
+				stage,
+				entryPoint,
+				SpirVProfile::SPIRV_1_5);
+
+			if (!spirvResult.isSuccess()) {
+				return spirvResult;
+			}
+
+			// Convert SPIR-V to GLSL using SpirVCrossCompiler
+			SpirVCrossCompiler spirvCompiler;
+			SpirVCrossCompileResult glslResult = spirvCompiler.compile(
+				spirvResult.getBinaryCode(),
+				profile
+			);
+			if (!glslResult.isSuccess()) {
+				return CompileResult::errorResult("SPIR-V to GLSL compilation failed: " + glslResult.getErrorMessage());
+			}
+
+			return CompileResult::successResult(glslResult.getSourceCode(), ShaderReflection());
+		}
+
+		SlangSession slangSession;
+		if (!slangSession.initialize()) {
+			return CompileResult::errorResult("Failed to initialize Slang session.");
+		}
+
+		SlangCompileResult slangResult = slangSession.compileToGlsl(
+			sourceCode,
+			stage,
+			entryPoint,
+			profile
+		);
+		if (!slangResult.isSuccess()) {
+			return CompileResult::errorResult("Slang compilation to GLSL failed: " + slangResult.getErrorMessage());
+		}
+		std::string glslSourceCode = slangResult.getSourceCode();
+		return CompileResult::successResult(glslSourceCode, ShaderReflection());
+	}
+
 	CompileResult Compiler::compileSlangToSpirV(
 		const std::string& sourceCode,
-		std::vector<ShaderStage> shaderStages,
-		std::vector<std::string> entryPoints,
+		ShaderStage stage,
+		std::string entryPoint,
 		SpirVProfile profile
 	)
 	{
 		SlangSession slangSession;
 		if (!slangSession.initialize()) {
-			std::string errorMsg = "Failed to initialize Slang session.";
-			spdlog::error(errorMsg);
-			return CompileResult::errorResult(errorMsg);
+			return CompileResult::errorResult("Failed to initialize Slang session.");
 		}
 
+		std::vector<std::string> entryPoints;
+		if (!entryPoint.empty()) {
+			entryPoints.push_back(entryPoint);
+		}
 		SlangCompileResult slangResult = slangSession.compileToSpirV(
 			sourceCode,
-			shaderStages,
+			{stage},
 			entryPoints,
 			profile
 		);
 		if (!slangResult.isSuccess()) {
-			std::string errorMsg = "Slang compilation failed: " + slangResult.getErrorMessage();
-			spdlog::error(errorMsg);
-			return CompileResult::errorResult(errorMsg);
+			return CompileResult::errorResult("Slang compilation to GLSL failed: " + slangResult.getErrorMessage());
 		}
 		auto& spirvCode = slangResult.getBinaryCode();
 		return CompileResult::successResult(spirvCode, ShaderReflection());
@@ -238,8 +167,8 @@ namespace ris_shader_toolkit {
 
 	CompileResult Compiler::compileSlangToWgsl(
 		const std::string& sourceCode,
-		std::vector<ShaderStage> shaderStages,
-		std::vector<std::string> entryPoints
+		std::vector<ShaderStage>& shaderStages,
+		std::vector<std::string>& entryPoints
 	)
 	{
 		SlangSession slangSession;
@@ -257,8 +186,9 @@ namespace ris_shader_toolkit {
 
 	CompileResult Compiler::compileSlangToWgsl(
 		const std::string& sourceCode,
-		std::vector<ShaderStage> shaderStages)
+		std::vector<ShaderStage>& shaderStages)
 	{
-		return compileSlangToWgsl(sourceCode, shaderStages, {});
+		std::vector<std::string> entryPoints;
+		return compileSlangToWgsl(sourceCode, shaderStages, entryPoints);
 	}
 }

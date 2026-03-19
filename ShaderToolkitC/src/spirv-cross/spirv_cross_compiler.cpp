@@ -20,70 +20,6 @@ namespace ris_shader_toolkit {
 		};
 	}
 
-	void SpirVCrossCompiler::applyReplaceStageInputNameRule(
-		spirv_cross::CompilerGLSL& compiler,
-		spirv_cross::ShaderResources& shaderResources,
-		ReplaceStageInputNameRule* rule) {
-
-
-		// By default, names have "input_" prefix, we will remove it here
-		// Rename vertex inputs from "input_{name}" to just "{name}"
-		for (auto& input : shaderResources.stage_inputs)
-		{
-			std::string name = compiler.get_name(input.id);
-			std::string newName = name;
-
-			// Remove "input_" prefix if it exists
-			if (name.rfind("input.", 0) == 0) // starts with "input_"
-			{
-				newName = name.substr(6); // remove first 6 chars
-			}
-
-			if (rule != nullptr) {
-				// Apply prefix from rule
-				newName = rule->getPrefix() + newName;
-			}
-
-			compiler.set_name(input.id, newName);
-		}
-	}
-
-	void SpirVCrossCompiler::applyReplaceStageOutputNameRule(
-		spirv_cross::CompilerGLSL& compiler,
-		spirv_cross::ShaderResources& shaderResources,
-		ReplaceStageOutputNameRule* rule) {
-
-		// By default, names have "entryPointParam_" prefix, we will remove it here
-		// Rename vertex inputs from "entryPointParam_{entryName}.{name}" to just "{entryName}.{name}"
-		for (auto& input : shaderResources.stage_outputs)
-		{
-			std::string name = compiler.get_name(input.id);
-			std::string newName = name;
-
-			// Remove "input_" prefix if it exists
-			if (name.rfind("entryPointParam_", 0) == 0) // starts with "entryPointParam_"
-			{
-				newName = name.substr(16); // remove first 16 chars
-			}
-
-			if (rule != nullptr) {
-
-				if(rule->getTrimEntryPointName()) {
-					// Further trim entry point name if exists
-					size_t dotPos = newName.find('.');
-					if (dotPos != std::string::npos) {
-						newName = newName.substr(dotPos + 1); // remove up to and including the dot
-					}
-				}
-
-				// Apply prefix from rule
-				newName = rule->getPrefix() + newName;
-			}
-
-			compiler.set_name(input.id, newName);
-		}
-	}
-
 	void SpirVCrossCompiler::handleImageAndSamplersGlsl(
 		spirv_cross::CompilerGLSL& compiler,
 		spirv_cross::ShaderResources& shaderResources) {
@@ -105,55 +41,29 @@ namespace ris_shader_toolkit {
 		}
 	}
 
-	SpirVCrossCompileResult SpirVCrossCompiler::compile(
-		const std::string& filePath, GlslProfile profile,
-		ReplaceStageInputNameRule* replaceStageInputNameRule,
-		ReplaceStageOutputNameRule* replaceStageOutputNameRule
-	) {
-
-		// Load SPIR-V
-		std::vector<uint32_t> spirv = fileReader.readAsU32(filePath);
-		return compile(spirv, profile, replaceStageInputNameRule);
-	}
-
-	SpirVCrossCompileResult SpirVCrossCompiler::compile(
-		const std::vector<uint32_t>& spirv, GlslProfile profile,
-		ReplaceStageInputNameRule* replaceStageInputNameRule,
-		ReplaceStageOutputNameRule* replaceStageOutputNameRule
-	) {
+	SpirVCrossCompileResult SpirVCrossCompiler::compile(const std::vector<uint32_t>& spirv, GlslProfile profile) {
 		// Load SPIR-V
 		try {
-
-			spdlog::info("Compiling SPIR-V to GLSL using SPIRV-Cross.");
-
 			spirv_cross::CompilerGLSL compiler(spirv);
+
 			// Set GLSL options
 			spirv_cross::CompilerGLSL::Options options;
 			options.version = glslVersionMap[profile];
 			options.force_zero_initialized_variables = false;
 			if (profile == GlslProfile::GLES_300 || profile == GlslProfile::GLES_310 || profile == GlslProfile::GLES_320) {
-				spdlog::info("Using OpenGL ES profile for GLSL.");
 				options.es = true;
 			}
 
+			auto shaderResources = compiler.get_shader_resources();
+			handleImageAndSamplersGlsl(compiler, shaderResources);
 			compiler.set_common_options(options);
-
-			// Get shader resources
-			spirv_cross::ShaderResources resources = compiler.get_shader_resources();
-
-			applyReplaceStageInputNameRule(compiler, resources, replaceStageInputNameRule);
-			applyReplaceStageOutputNameRule(compiler, resources, replaceStageOutputNameRule);
-			handleImageAndSamplersGlsl(compiler, resources);
 
 			// Compile to GLSL
 			std::string glslSource = compiler.compile();
 
-			spdlog::info("Successfully compiled SPIR-V to GLSL.");
-
 			return SpirVCrossCompileResult(true, glslSource, "");
 		}
 		catch (const std::exception& e) {
-			
 			spdlog::error("SPIRV-Cross compilation failed: {}", e.what());
 			return SpirVCrossCompileResult(false, "", e.what());
 		}

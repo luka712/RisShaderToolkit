@@ -139,10 +139,8 @@ void* compile_slang_to_wgsl(
 void* compile_slang_to_spirv(
 	void* compilerPtr,
 	const char* slangSourceCode,
-	int32_t* shaderStages,
-	uint32_t shaderStagesCount,
-	const char** entryPoints,
-	uint32_t entryPointsCount,
+	int32_t shaderStage,
+	const char* entryPoint,
 	ris_shader_toolkit::SpirVProfile profile)
 {
 	if (compilerPtr == nullptr)
@@ -157,20 +155,15 @@ void* compile_slang_to_spirv(
 		return errorResult("Slang source code is not defined.");
 	}
 
-	std::vector<ris_shader_toolkit::ShaderStage> stages;
-	for (uint32_t i = 0; i < shaderStagesCount; ++i)
+	ris_shader_toolkit::ShaderStage stage = static_cast<ris_shader_toolkit::ShaderStage>(shaderStage);
+
+	std::string entryPointName = "";
+	if (entryPoint != nullptr)
 	{
-		stages.push_back(static_cast<ris_shader_toolkit::ShaderStage>(shaderStages[i]));
+		entryPointName = std::string(entryPoint);
 	}
 
-	std::vector<std::string> entryPointNames;
-	for (uint32_t i = 0; i < entryPointsCount; ++i)
-	{
-		entryPointNames.push_back(std::string(entryPoints[i]));
-	}
-
-	ris_shader_toolkit::CompileResult result = compiler->compileSlangToSpirV(
-		std::string(slangSourceCode), stages, entryPointNames, profile);
+	ris_shader_toolkit::CompileResult result = compiler->compileSlangToSpirV(std::string(slangSourceCode), stage, entryPointName, profile);
 
 	return c_to_cpp_CompileResult(result);
 }

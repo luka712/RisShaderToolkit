@@ -50,13 +50,11 @@ bool compile_slang_to_spir_v()
 {
 	Compiler compiler;
 
-	CompileResult result = compiler.compileSlangToSpirV(
-		SOURCE_CODE,
-		{ ShaderStage::Vertex, ShaderStage::Fragment },
-		{ }
-	);
+	auto vertexResult = compiler.compileSlangToSpirV(SOURCE_CODE, ShaderStage::Vertex);
+	auto fragmentResult = compiler.compileSlangToSpirV(SOURCE_CODE, ShaderStage::Fragment);
 
-	return result.isSuccess() && result.getBinaryCode().size() > 0;
+	return vertexResult.isSuccess() && vertexResult.getBinaryCode().size() > 0
+		&& fragmentResult.isSuccess() && fragmentResult.getBinaryCode().size() > 0;
 }
 
 //! Test if the compiler can successfully compile Slang source code to Spir-V,
@@ -66,13 +64,11 @@ bool compile_slang_to_spir_v_2()
 {
 	Compiler compiler;
 
-	CompileResult result = compiler.compileSlangToSpirV(
-		SOURCE_CODE,
-		{ ShaderStage::Vertex, ShaderStage::Fragment },
-		{ "main_vs", "main_fs" }
-	);
+	auto vertexResult = compiler.compileSlangToSpirV(SOURCE_CODE, ShaderStage::Vertex, "main_vs");
+	auto fragmentResult = compiler.compileSlangToSpirV(SOURCE_CODE, ShaderStage::Fragment, "main_fs");
 
-	return result.isSuccess() && result.getBinaryCode().size() > 0;
+	return vertexResult.isSuccess() && vertexResult.getBinaryCode().size() > 0
+		&& fragmentResult.isSuccess() && fragmentResult.getBinaryCode().size() > 0;
 }
 
 TEST_CASE("compiler tests", "[compile_slang_to_spir_v, compile_slang_to_spir_v_2]")

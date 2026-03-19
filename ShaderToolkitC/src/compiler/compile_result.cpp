@@ -15,7 +15,7 @@ namespace ris_shader_toolkit
 
 	CompileResult::CompileResult(
 		bool success,
-		const std::vector<uint8_t>& binaryCode,
+		const std::vector<uint32_t>& binaryCode,
 		const std::string& error)
 		: _success(success),
 		_binarySourceCode(binaryCode),
@@ -34,7 +34,7 @@ namespace ris_shader_toolkit
 	}
 
 	CompileResult::CompileResult(
-		const std::vector<uint8_t>& binaryCode,
+		const std::vector<uint32_t>& binaryCode,
 		ShaderReflection reflection)
 		: _success(true),
 		_binarySourceCode(binaryCode),
@@ -51,7 +51,7 @@ namespace ris_shader_toolkit
 	}
 
 	CompileResult CompileResult::successResult(
-		const std::vector<uint8_t>& binaryCode,
+		const std::vector<uint32_t>& binaryCode,
 		ShaderReflection reflection
 	)
 	{
