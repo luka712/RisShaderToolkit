@@ -54,12 +54,19 @@ extern "C" {
     void* compile_slang_to_spirv(
 		void* compilerPtr,
 		const char* slangSourceCode,
-		int32_t* shaderStages,
-		uint32_t shaderStagesCount,
-		const char** entryPoints,
-		uint32_t entryPointsCount,
+		int32_t shaderStage,
+		const char* entryPoint,
 		ris_shader_toolkit::SpirVProfile profile
     );
+
+	API_EXPORT
+	void* compile_slang_to_glsl(
+		void* compilerPtr,
+		const char* slangSourceCode,
+		int32_t shaderStage,
+		const char* entryPoint,
+		ris_shader_toolkit::GlslProfile profile
+	);
 
     //! Frees the Compiler instance.
     //! @param compilerPtr A pointer to the Compiler instance to free.
