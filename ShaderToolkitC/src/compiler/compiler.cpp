@@ -95,13 +95,15 @@ namespace ris_shader_toolkit {
 			|| profile == GlslProfile::GLES_320
 			) {
 
-			CompileResult spirvResult = compileSlangToSpirV(
-				sourceCode,
-				stage,
-				entryPoint,
-				SpirVProfile::SPIRV_1_5);
-
-			if (!spirvResult.isSuccess()) {
+			std::vector<ShaderStage> stages = { stage };
+			std::vector<std::string> entryPoints;
+			if (!entryPoint.empty())
+			{
+				entryPoints.push_back(entryPoint);
+			}
+			CompileResult spirvResult = compileSlangToSpirV(sourceCode, stages, entryPoints);
+			if (!spirvResult.isSuccess()) 
+			{
 				return spirvResult;
 			}
 
@@ -109,7 +111,7 @@ namespace ris_shader_toolkit {
 			SpirVCrossCompiler spirvCompiler;
 			SpirVCrossCompileResult glslResult = spirvCompiler.compile(
 				spirvResult.getBinaryCode(),
-				profile
+				profile, stage
 			);
 			if (!glslResult.isSuccess()) {
 				return CompileResult::errorResult("SPIR-V to GLSL compilation failed: " + glslResult.getErrorMessage());
@@ -136,10 +138,12 @@ namespace ris_shader_toolkit {
 		return CompileResult::successResult(glslSourceCode, ShaderReflection());
 	}
 
+#pragma region SPIR-V
+
 	CompileResult Compiler::compileSlangToSpirV(
 		const std::string& sourceCode,
-		ShaderStage stage,
-		std::string entryPoint,
+		std::vector<ShaderStage>& stages,
+		std::vector<std::string>& entryPoints,
 		SpirVProfile profile
 	)
 	{
@@ -148,13 +152,9 @@ namespace ris_shader_toolkit {
 			return CompileResult::errorResult("Failed to initialize Slang session.");
 		}
 
-		std::vector<std::string> entryPoints;
-		if (!entryPoint.empty()) {
-			entryPoints.push_back(entryPoint);
-		}
 		SlangCompileResult slangResult = slangSession.compileToSpirV(
 			sourceCode,
-			{stage},
+			stages,
 			entryPoints,
 			profile
 		);
@@ -165,10 +165,24 @@ namespace ris_shader_toolkit {
 		return CompileResult::successResult(spirvCode, ShaderReflection());
 	}
 
+	CompileResult Compiler::compileSlangToSpirV(
+		const std::string& sourceCode,
+		std::vector<ShaderStage>& stages,
+		SpirVProfile profile
+	)
+	{
+		std::vector<std::string> entryPoints;
+		return compileSlangToSpirV(sourceCode, stages, entryPoints, profile);
+	}
+
+#pragma endregion
+
+#pragma region WGSL
+
 	CompileResult Compiler::compileSlangToWgsl(
 		const std::string& sourceCode,
-		std::vector<ShaderStage>& shaderStages,
-		std::vector<std::string>& entryPoints
+		const std::vector<ShaderStage> shaderStages,
+		const std::vector<std::string> entryPoints
 	)
 	{
 		SlangSession slangSession;
@@ -192,3 +206,5 @@ namespace ris_shader_toolkit {
 		return compileSlangToWgsl(sourceCode, shaderStages, entryPoints);
 	}
 }
+
+#pragma endregion

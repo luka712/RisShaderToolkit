@@ -2,27 +2,9 @@
   "shaders": [
     {
       "name": "sprite.slang",
-      "profile": "glsl_450",
-      "stage": "vertex",
-      "output_file": "sprite_vs.glsl"
-    },
-    {
-      "name": "sprite.slang",
-      "profile": "glsl_450",
-      "stage": "fragment",
-      "output_file": "sprite_fs.glsl"
-    },
-    {
-      "name": "sprite.slang",
-      "profile": "glsl_300_es",
-      "stage": "vertex",
-      "output_file": "sprite_vs_es.glsl"
-    },
-    {
-      "name": "sprite.slang",
-      "profile": "glsl_300_es",
-      "stage": "fragment",
-      "output_file": "sprite_fs_es.glsl"
+      "profile": "spirv_1_2",
+      "stages": [ "vertex", "fragment" ],
+      "output_file": "sprite.spv"
     }
   ]
 }

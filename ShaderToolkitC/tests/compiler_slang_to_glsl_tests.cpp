@@ -50,7 +50,7 @@ bool compile_slang_to_glsl_450()
 	CompileResult vertexResult = compiler.compileSlangToGlsl(
 		SOURCE_CODE,
 		ShaderStage::Vertex,
-		"",
+		"main_vs",
 		GlslProfile::GLSL_450
 	);
 
@@ -80,7 +80,7 @@ bool compile_slang_to_glsl_300_es()
 	CompileResult fragmentResult = compiler.compileSlangToGlsl(
 		SOURCE_CODE,
 		ShaderStage::Fragment,
-		"main_fs",
+		"",
 		GlslProfile::GLES_300
 	);
 

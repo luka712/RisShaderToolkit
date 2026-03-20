@@ -41,21 +41,31 @@ extern "C" {
 	//);
 
 	API_EXPORT
-	void* compile_slang_to_wgsl(
-		void* compilerPtr,
-		const char* slangSourceCode,
-		int32_t* shaderStages,       
-		uint32_t shaderStagesCount,
-		const char** entryPoints,
-		uint32_t entryPointsCount
-	);
+		void* compile_slang_to_wgsl(
+			void* compilerPtr,
+			const char* slangSourceCode,
+			int32_t* shaderStages,
+			uint32_t shaderStagesCount
+		);
+
+	API_EXPORT
+		void* compile_slang_to_wgsl_ext(
+			void* compilerPtr,
+			const char* slangSourceCode,
+			int32_t* shaderStages,
+			uint32_t shaderStagesCount,
+			const char** entryPoints,
+			uint32_t entryPointsCount
+		);
 
 	API_EXPORT
     void* compile_slang_to_spirv(
 		void* compilerPtr,
 		const char* slangSourceCode,
-		int32_t shaderStage,
-		const char* entryPoint,
+		int32_t* shaderStages,
+		uint32_t shaderStagesCount,
+		const char** entryPoints,
+		uint32_t entryPointsCount,
 		ris_shader_toolkit::SpirVProfile profile
     );
 

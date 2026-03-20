@@ -20,7 +20,7 @@ public class ShaderCompiler : IDisposable
     static extern void free_compiler(IntPtr compiler);
 
     [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-    static unsafe extern IntPtr compile_slang_to_wgsl(
+    static unsafe extern IntPtr compile_slang_to_wgsl_ext(
       IntPtr compilerPtr,
       IntPtr sourceCode,
       ShaderStage* shaderStages,
@@ -29,11 +29,20 @@ public class ShaderCompiler : IDisposable
       uint entryPointsCount);
 
     [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+    static unsafe extern IntPtr compile_slang_to_wgsl(
+      IntPtr compilerPtr,
+      IntPtr sourceCode,
+      ShaderStage* shaderStages,
+      uint shaderStagesCount);
+
+    [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
     static unsafe extern IntPtr compile_slang_to_spirv(
       IntPtr compilerPtr,
       IntPtr sourceCode,
-      ShaderStage shaderStage,
-      IntPtr entryPoint,
+      ShaderStage* shaderStages,
+      uint shaderStagesCount,
+      IntPtr* entryPoints,
+      uint entryPointsCount,
       SpirVProfile spirVProfile
       );
 
@@ -70,29 +79,27 @@ public class ShaderCompiler : IDisposable
         }
     }
 
-    private void WriteGlslShaderToFile(ShaderCompileTaskDto task, CompileResult result, GlslProfile glslProfile)
+    private void WriteGlslShaderToFile(ShaderCompileTaskDto task, CompileResult result, GlslProfile glslProfile, ShaderStage stage)
     {
-        throw new InvalidOperationException("hello");
+        if (!result.Success)
+        {
+            return;
+        }
 
-        //if (!result.Success)
-        //{
-        //    return;
-        //}
+        string? outputFilePath = task.OutputFilePath;
+        if (string.IsNullOrEmpty(outputFilePath))
+        {
+            string[] split = task.InputFilePath.Split('.');
+            split = split[..^1]; // Remove extension
 
-        //string? outputFilePath = task.OutputFilePath;
-        //if (string.IsNullOrEmpty(outputFilePath))
-        //{
-        //    string[] split = task.InputFilePath.Split('.');
-        //    split = split[..^1]; // Remove extension
+            string name = String.Join("", split);
+            outputFilePath = $"{name}_{_shortStageName[stage]}_{glslProfile.ToString().ToLower()}.glsl";
+        }
 
-        //    string name = String.Join("", split);
-        //    outputFilePath = $"{name}_{_shortStageName[task.Stage.Value]}_{glslProfile.ToString().ToLower()}.glsl";
-        //}
-
-        //if (result.Success && result.SourceCode != null)
-        //{
-        //    File.WriteAllText(outputFilePath, result.SourceCode);
-        //}
+        if (result.Success && result.SourceCode != null)
+        {
+            File.WriteAllText(outputFilePath, result.SourceCode);
+        }
     }
 
     private void WriteWgslShaderToFile(ShaderCompileTaskDto task, CompileResult result)
@@ -138,20 +145,15 @@ public class ShaderCompiler : IDisposable
 
     private bool HandleSpirVProfile(List<CompileResult> results, ShaderCompileTaskDto compileTask)
     {
-        if (compileTask.Stages == null || compileTask.Stages.Count != 1)
-        {
-            throw new InvalidOperationException("SPIR-V compilation requires exactly one shader stage.");
-        }
-
         if (ProfileResolver.IsSpirVProfile(compileTask.Profile, out SpirVProfile spirVProfile))
         {
             string sourceCode = File.ReadAllText(compileTask.InputFilePath);
 
             var result = CompileSlangToSpirV(
                 sourceCode,
-                compileTask.Stages.FirstOrDefault(),
+                compileTask.Stages.ToArray(),
                 spirVProfile,
-                compileTask?.EntryPoints?.FirstOrDefault()
+                compileTask?.EntryPoints
                 );
             results.Add(result);
 
@@ -160,6 +162,27 @@ public class ShaderCompiler : IDisposable
             return true;
         }
 
+        return false;
+    }
+
+    private bool HandleGlslProfile(List<CompileResult> results, ShaderCompileTaskDto compileTask)
+    {
+        if (ProfileResolver.IsGlslProfile(compileTask.Profile, out GlslProfile glslProfile))
+        {
+            string sourceCode = File.ReadAllText(compileTask.InputFilePath);
+            foreach (ShaderStage shaderStage in compileTask.Stages)
+            {
+                var result = CompileSlangToGlsl(
+                    sourceCode,
+                    shaderStage,
+                    glslProfile,
+                    compileTask?.EntryPoints != null && compileTask.EntryPoints.Length > 0 ? compileTask.EntryPoints[0] : null
+                    );
+                results.Add(result);
+                WriteGlslShaderToFile(compileTask, result, glslProfile, shaderStage);
+            }
+            return true;
+        }
         return false;
     }
 
@@ -191,18 +214,9 @@ public class ShaderCompiler : IDisposable
             {
                 continue;
             }
-            else if (compileTask.SourceProfile == AnyProfile.SLANG && ProfileResolver.IsGlslProfile(compileTask.Profile, out GlslProfile glslProfile))
+            else if (HandleGlslProfile(results, compileTask))
             {
-                //CompileResult result = CompileSlangToGlsl(
-                //  compileTask.InputFilePath,
-                //  glslProfile,
-                //  compileTask.Stage.Value,
-                //  compileTask.EntryPoint,
-                //  compileTask.InputNameRule,
-                //  compileTask.OutputNameRule);
-
-                //results.Add(result);
-                //WriteGlslShaderToFile(compileTask, result, glslProfile);
+                continue;
             }
             else
             {
@@ -238,19 +252,36 @@ public class ShaderCompiler : IDisposable
                 shaderStagesPtr[i] = shaderStages[i];
             }
 
-            IntPtr* entryPointsPtr = stackalloc IntPtr[entryPoints.Length];
-            for (int i = 0; i < entryPoints.Length; i++)
+            // Generate default entry points if not provided
+            if (entryPoints == null || entryPoints.Length == 0)
             {
-                entryPointsPtr[i] = Marshal.StringToHGlobalAnsi(entryPoints[i]);
+                entryPoints = new string[shaderStages.Length];
+                for (int i = 0; i < shaderStages.Length; i++)
+                {
+                    entryPoints[i] = $"main_{_shortStageName[shaderStages[i]]}";
+                }
             }
 
             try
             {
-                IntPtr resultPtr = compile_slang_to_wgsl(
-                    NativePtr,
-                    slangSourceCodePtr,
-                    shaderStagesPtr, (uint)shaderStages.Length,
-                    entryPointsPtr, (uint)entryPoints.Length);
+                IntPtr resultPtr = IntPtr.Zero;
+                var entryPointsCount = entryPoints.Length;
+                IntPtr* entryPointsPtr = stackalloc IntPtr[entryPointsCount];
+                for (int i = 0; i < entryPointsCount; i++)
+                {
+                    entryPointsPtr[i] = Marshal.StringToHGlobalAnsi(entryPoints[i]);
+                }
+
+                resultPtr = compile_slang_to_wgsl_ext(
+                   NativePtr,
+                   slangSourceCodePtr,
+                   shaderStagesPtr, (uint)shaderStages.Length,
+                   entryPointsPtr, (uint)entryPointsCount);
+
+                for (int i = 0; i < entryPointsCount; i++)
+                {
+                    Marshal.FreeHGlobal(entryPointsPtr[i]);
+                }
 
                 if (resultPtr == IntPtr.Zero)
                 {
@@ -275,13 +306,20 @@ public class ShaderCompiler : IDisposable
                 return result;
 
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return new CompileResult
+                {
+                    Success = false,
+                    ErrorMessage = $"An error occurred during compilation: {ex.Message}",
+                    EntryPoints = entryPoints.ToArray(),
+                    ShaderStages = shaderStages
+                };
+            }
             finally
             {
                 Marshal.FreeHGlobal(slangSourceCodePtr);
-                for (int i = 0; i < entryPoints.Length; i++)
-                {
-                    Marshal.FreeHGlobal(entryPointsPtr[i]);
-                }
             }
         }
     }
@@ -290,15 +328,15 @@ public class ShaderCompiler : IDisposable
     /// Compiles the given Slang shader to WGSL.
     /// </summary>
     /// <param name="slangSourceCode">The slang source code.</param>
-    /// <param name="shaderStage">The <see cref="ShaderStage"/> to compile.</param>
+    /// <param name="shaderStages">The <see cref="ShaderStage"/>s to compile.</param>
     /// <param name="spirVProfile">The optional <see cref="SpirVProfile"/>. Default is SPIRV_1_2.</param>
-    /// <param name="entryPoint">The optional entry point.</param>
+    /// <param name="entryPoints">The optional entry points.</param>
     /// <returns>The <see cref="CompileResult"/>.</returns>
     public CompileResult CompileSlangToSpirV(
         string slangSourceCode,
-        ShaderStage shaderStage,
+        ShaderStage[] shaderStages,
         SpirVProfile spirVProfile = SpirVProfile.SPIRV_1_2,
-        string? entryPoint = null
+        params string[] entryPoints
         )
     {
         IntPtr slangSourceCodePtr = Marshal.StringToHGlobalAnsi(slangSourceCode);
@@ -306,15 +344,28 @@ public class ShaderCompiler : IDisposable
         CCompileResult compileResult = default;
         unsafe
         {
-            IntPtr entryPointPtr = Marshal.StringToHGlobalAnsi(entryPoint);
+            ShaderStage* shaderStagesPtr = stackalloc ShaderStage[shaderStages.Length];
+            for (int i = 0; i < shaderStages.Length; i++)
+            {
+                shaderStagesPtr[i] = shaderStages[i];
+            }
+
+            int entryPointsCount = entryPoints?.Length ?? 0;
+            IntPtr* entryPointsPtr = stackalloc IntPtr[entryPointsCount];
+            for (int i = 0; i < entryPointsCount; i++)
+            {
+                entryPointsPtr[i] = Marshal.StringToHGlobalAnsi(entryPoints[i]);
+            }
 
             try
             {
                 IntPtr resultPtr = compile_slang_to_spirv(
                     NativePtr,
                     slangSourceCodePtr,
-                    shaderStage,
-                    entryPointPtr,
+                    shaderStagesPtr,
+                    (uint)shaderStages.Length,
+                    entryPointsPtr,
+                    (uint)entryPoints.Length,
                     spirVProfile);
 
                 if (resultPtr == IntPtr.Zero)
@@ -333,8 +384,8 @@ public class ShaderCompiler : IDisposable
                     ErrorMessage = compileResult.Success
                         ? null
                         : Marshal.PtrToStringAnsi(compileResult.ErrorMessage) ?? "Unknown error.",
-                    EntryPoints = !string.IsNullOrEmpty(entryPoint) ? [entryPoint] : Array.Empty<string>(),
-                    ShaderStages = [shaderStage],
+                    EntryPoints = entryPoints.ToArray(),
+                    ShaderStages = shaderStages
                 };
 
                 byte[] bytes = new byte[compileResult.BinaryCodeLength];
@@ -351,7 +402,10 @@ public class ShaderCompiler : IDisposable
             finally
             {
                 Marshal.FreeHGlobal(slangSourceCodePtr);
-                Marshal.FreeHGlobal(entryPointPtr);
+                for (int i = 0; i < entryPoints.Length; i++)
+                {
+                    Marshal.FreeHGlobal(entryPointsPtr[i]);
+                }
             }
         }
     }
@@ -377,7 +431,11 @@ public class ShaderCompiler : IDisposable
         CCompileResult compileResult = default;
         unsafe
         {
-            IntPtr entryPointPtr = Marshal.StringToHGlobalAnsi(entryPoint);
+            var entryPointPtr = IntPtr.Zero;
+            if (!String.IsNullOrEmpty(entryPoint))
+            {
+                entryPointPtr = Marshal.StringToHGlobalAnsi(entryPoint);
+            }
 
             try
             {
@@ -413,6 +471,16 @@ public class ShaderCompiler : IDisposable
                 compileResult.Dispose();
                 return result;
 
+            }
+            catch (Exception ex)
+            {
+                return new CompileResult
+                {
+                    Success = false,
+                    ErrorMessage = $"An error occurred during compilation: {ex.Message}",
+                    EntryPoints = !string.IsNullOrEmpty(entryPoint) ? [entryPoint] : Array.Empty<string>(),
+                    ShaderStages = [shaderStage],
+                };
             }
             finally
             {

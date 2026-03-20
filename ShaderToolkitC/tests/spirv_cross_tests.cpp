@@ -6,7 +6,6 @@
 
 using namespace ris_shader_toolkit;
 
-const std::string VERTEX
 
 bool compile_spirv_to_glsl_300_es()
 {
@@ -27,7 +26,7 @@ bool compile_spirv_to_glsl_300_es()
 	}
 
 	ris_shader_toolkit::SpirVCrossCompiler compiler;
-	ris_shader_toolkit::SpirVCrossCompileResult result = compiler.compile(input, GlslProfile::GLES_300);
+	ris_shader_toolkit::SpirVCrossCompileResult result = compiler.compile(input, GlslProfile::GLES_300, ShaderStage::Vertex);
 	std::cout << "Glsl Source Code: " << result.getSourceCode() << std::endl;
 
 	return result.isSuccess();

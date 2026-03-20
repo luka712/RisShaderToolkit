@@ -16,7 +16,7 @@ public class SlangToSpirVTests
         string slangSourceCode = File.ReadAllText("Data/sprite.slang");
         // Act
         CompileResult vertexResult = compiler.CompileSlangToSpirV(slangSourceCode, 
-            ShaderStage.VERTEX,
+            [ShaderStage.VERTEX],
             SpirVProfile.SPIRV_1_2, 
             "main_vs");
         
@@ -26,7 +26,7 @@ public class SlangToSpirVTests
 
         // Act
         CompileResult fragmentResult = compiler.CompileSlangToSpirV(slangSourceCode,
-            ShaderStage.FRAGMENT,
+            [ShaderStage.FRAGMENT],
             SpirVProfile.SPIRV_1_2,
             "main_fs");
 
@@ -45,12 +45,12 @@ public class SlangToSpirVTests
         ShaderCompiler compiler = new ShaderCompiler();
         string slangSourceCode = File.ReadAllText("Data/sprite.slang");
         // Act
-        CompileResult vertexResult = compiler.CompileSlangToSpirV(slangSourceCode, ShaderStage.VERTEX);
+        CompileResult vertexResult = compiler.CompileSlangToSpirV(slangSourceCode, [ShaderStage.VERTEX]);
         Assert.True(vertexResult.Success);
         Assert.NotNull(vertexResult.BinarySourceCode);
         Assert.True(vertexResult.BinarySourceCode.Length > 0);
 
-        CompileResult fragmentResult = compiler.CompileSlangToSpirV(slangSourceCode, ShaderStage.VERTEX);
+        CompileResult fragmentResult = compiler.CompileSlangToSpirV(slangSourceCode, [ShaderStage.FRAGMENT]);
         Assert.True(fragmentResult.Success);
         Assert.NotNull(fragmentResult.BinarySourceCode);
         Assert.True(fragmentResult.BinarySourceCode.Length > 0);

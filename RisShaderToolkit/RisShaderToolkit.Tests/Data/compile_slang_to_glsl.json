@@ -2,15 +2,15 @@
   "shaders": [
     {
       "name": "sprite.slang",
-      "profile": "spirv_1_2",
-      "stage": "vertex",
-      "output_file": "sprite_vs.spv"
+      "profile": "glsl_450",
+      "stages": [ "vertex", "fragment" ],
+      "output_file": "sprite.glsl"
     },
     {
       "name": "sprite.slang",
-      "profile": "spirv_1_2",
-      "stage": "fragment",
-      "output_file": "sprite_fs.spv"
+      "profile": "gles_300",
+      "stages": [ "vertex", "fragment" ],
+      "output_file": "sprite_300es.glsl"
     }
   ]
 }

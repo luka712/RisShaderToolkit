@@ -20,13 +20,14 @@ namespace ris_shader_toolkit {
 		//! @param spirv The SPIR-V binary data.
 		//! @param profile The target shading language profile.
 		//! @return A SpirVCrossCompileResult object containing the result of the compilation.
-		SpirVCrossCompileResult compile(const std::vector<uint32_t>& spirv, GlslProfile profile);
+		SpirVCrossCompileResult compile(const std::vector<uint32_t>& spirv, GlslProfile profile, ShaderStage stage);
 
 	protected:
 		void handleImageAndSamplersGlsl(spirv_cross::CompilerGLSL& compiler, spirv_cross::ShaderResources& shaderResources);
 
-		FileReader fileReader;
-		std::map<GlslProfile, uint32_t> glslVersionMap;
+		FileReader _fileReader;
+		std::map<GlslProfile, uint32_t> _glslVersionMap;
+		std::map<ShaderStage, spv::ExecutionModel> _executionModelMap;
 	};
 }
 

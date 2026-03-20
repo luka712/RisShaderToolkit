@@ -5,7 +5,7 @@
 namespace ris_shader_toolkit {
 
 	SpirVCrossCompiler::SpirVCrossCompiler() {
-		glslVersionMap = {
+		_glslVersionMap = {
 			{ GlslProfile::GLSL_330, 330 },
 			{ GlslProfile::GLSL_400, 400 },
 			{ GlslProfile::GLSL_410, 410 },
@@ -17,6 +17,15 @@ namespace ris_shader_toolkit {
 			{ GlslProfile::GLES_300, 300 },
 			{ GlslProfile::GLES_310, 310 },
 			{ GlslProfile::GLES_320, 320 }
+		};
+
+		_executionModelMap = {
+			{ ShaderStage::Vertex, spv::ExecutionModel::ExecutionModelVertex },
+			{ ShaderStage::Fragment, spv::ExecutionModel::ExecutionModelFragment },
+			{ ShaderStage::Compute, spv::ExecutionModel::ExecutionModelGLCompute },
+			//{ ShaderStage::Geometry, spv::ExecutionModel::ExecutionModelGeometry },
+			//{ ShaderStage::Hull, spv::ExecutionModel::ExecutionModelTessellationControl },
+			//{ ShaderStage::Domain, spv::ExecutionModel::ExecutionModelTessellationEvaluation }
 		};
 	}
 
@@ -41,17 +50,30 @@ namespace ris_shader_toolkit {
 		}
 	}
 
-	SpirVCrossCompileResult SpirVCrossCompiler::compile(const std::vector<uint32_t>& spirv, GlslProfile profile) {
+	SpirVCrossCompileResult SpirVCrossCompiler::compile(const std::vector<uint32_t>& spirv, GlslProfile profile, ShaderStage stage) {
 		// Load SPIR-V
 		try {
 			spirv_cross::CompilerGLSL compiler(spirv);
 
 			// Set GLSL options
 			spirv_cross::CompilerGLSL::Options options;
-			options.version = glslVersionMap[profile];
+			options.version = _glslVersionMap[profile];
 			options.force_zero_initialized_variables = false;
 			if (profile == GlslProfile::GLES_300 || profile == GlslProfile::GLES_310 || profile == GlslProfile::GLES_320) {
 				options.es = true;
+			}
+
+			auto entry_points = compiler.get_entry_points_and_stages();
+			for (size_t i = 0; i < entry_points.size(); ++i)
+			{
+				auto executionModel = entry_points[i].execution_model;
+				auto desiredExecutionModel = _executionModelMap[stage];
+
+				if (desiredExecutionModel == executionModel)
+				{
+					auto entryPointName = entry_points[i].name;
+					compiler.set_entry_point(entryPointName, executionModel);
+				}
 			}
 
 			auto shaderResources = compiler.get_shader_resources();
