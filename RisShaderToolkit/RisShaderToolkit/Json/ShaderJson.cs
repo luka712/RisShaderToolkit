@@ -22,6 +22,12 @@ public class ShaderJson
 
     /// <summary>
     /// The stage of the shader to compile. 
+    /// This is used if the shader only has one stage, and is mutually exclusive with the `stages` property, which is used if the shader has multiple stages.
+    /// </summary>
+    public ShaderStage? Stage { get; set; }
+
+    /// <summary>
+    /// The stage of the shader to compile. 
     /// </summary>
     public ShaderStage[]? Stages { get; set; }
 
@@ -34,9 +40,4 @@ public class ShaderJson
     /// The source profile of the shader.
     /// </summary>
     public string? SourceProfile { get; set; } = string.Empty;
-
-    /// <summary>
-    /// The rules to apply to the shader.
-    /// </summary>
-    public RulesJson? Rules { get; set; }
 }

@@ -1,0 +1,16 @@
+﻿{
+  "shaders": [
+    {
+      "name": "sprite.slang",
+      "profile": "spirv_1_2",
+      "stage": "vertex",
+      "output_file": "sprite_vs.spv"
+    },
+    {
+      "name": "sprite.slang",
+      "profile": "spirv_1_2",
+      "stage": "fragment",
+      "output_file": "sprite_fs.spv"
+    }
+  ]
+}

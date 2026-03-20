@@ -15,14 +15,24 @@ public class SlangToSpirVTests
         ShaderCompiler compiler = new ShaderCompiler();
         string slangSourceCode = File.ReadAllText("Data/sprite.slang");
         // Act
-        CompileResult result = compiler.CompileSlangToSpirV(slangSourceCode, 
-            [ShaderStage.VERTEX, ShaderStage.FRAGMENT], 
+        CompileResult vertexResult = compiler.CompileSlangToSpirV(slangSourceCode, 
+            ShaderStage.VERTEX,
             SpirVProfile.SPIRV_1_2, 
-            ["main_vs", "main_fs"]);
+            "main_vs");
         
-        Assert.True(result.Success);
-        Assert.NotNull(result.BinarySourceCode);
-        Assert.True(result.BinarySourceCode.Length > 0);
+        Assert.True(vertexResult.Success);
+        Assert.NotNull(vertexResult.BinarySourceCode);
+        Assert.True(vertexResult.BinarySourceCode.Length > 0);
+
+        // Act
+        CompileResult fragmentResult = compiler.CompileSlangToSpirV(slangSourceCode,
+            ShaderStage.FRAGMENT,
+            SpirVProfile.SPIRV_1_2,
+            "main_fs");
+
+        Assert.True(fragmentResult.Success);
+        Assert.NotNull(fragmentResult.BinarySourceCode);
+        Assert.True(fragmentResult.BinarySourceCode.Length > 0);
     }
 
     /// <summary>
@@ -35,10 +45,15 @@ public class SlangToSpirVTests
         ShaderCompiler compiler = new ShaderCompiler();
         string slangSourceCode = File.ReadAllText("Data/sprite.slang");
         // Act
-        CompileResult result = compiler.CompileSlangToSpirV(slangSourceCode, [ShaderStage.VERTEX, ShaderStage.FRAGMENT], entryPoints: []);
-        Assert.True(result.Success);
-        Assert.NotNull(result.BinarySourceCode);
-        Assert.True(result.BinarySourceCode.Length > 0);
+        CompileResult vertexResult = compiler.CompileSlangToSpirV(slangSourceCode, ShaderStage.VERTEX);
+        Assert.True(vertexResult.Success);
+        Assert.NotNull(vertexResult.BinarySourceCode);
+        Assert.True(vertexResult.BinarySourceCode.Length > 0);
+
+        CompileResult fragmentResult = compiler.CompileSlangToSpirV(slangSourceCode, ShaderStage.VERTEX);
+        Assert.True(fragmentResult.Success);
+        Assert.NotNull(fragmentResult.BinarySourceCode);
+        Assert.True(fragmentResult.BinarySourceCode.Length > 0);
     }
 
     /// <summary>
@@ -46,8 +61,10 @@ public class SlangToSpirVTests
     /// Tests Slang to SpirV JSON compilation.
     /// </summary>
     [Fact]
-    public void TestCompilSpirVJson()
+    public void TestCompileSpirVJson()
     {
+        // TODO: fix when removing automapper.
+
         // Arrange
         ShaderCompiler compiler = new ShaderCompiler();
         string jsonFilePath = "Data/compile_slang_to_spirv.json";

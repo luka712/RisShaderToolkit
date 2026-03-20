@@ -10,10 +10,6 @@
     <Version>0.0.1-preview.5</Version>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="16.0.0" />
-  </ItemGroup>
-
   <!-- This enables native assets to be automatically copied when the project is referenced -->
   <!-- Works during build, publish, and when packed as NuGet -->
   <ItemGroup>

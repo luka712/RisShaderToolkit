@@ -1,10 +1,28 @@
 ﻿{
-  "compiler_verson": "0.0.1",
   "shaders": [
     {
       "name": "sprite.slang",
-      "profile": "spirv_1_2",
-      "output_file": "sprite.spv"
+      "profile": "glsl_450",
+      "stage": "vertex",
+      "output_file": "sprite_vs.glsl"
+    },
+    {
+      "name": "sprite.slang",
+      "profile": "glsl_450",
+      "stage": "fragment",
+      "output_file": "sprite_fs.glsl"
+    },
+    {
+      "name": "sprite.slang",
+      "profile": "glsl_300_es",
+      "stage": "vertex",
+      "output_file": "sprite_vs_es.glsl"
+    },
+    {
+      "name": "sprite.slang",
+      "profile": "glsl_300_es",
+      "stage": "fragment",
+      "output_file": "sprite_fs_es.glsl"
     }
   ]
 }
