@@ -7,7 +7,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>RisShaderToolkit</RootNamespace>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.2.2</Version>
+    <Version>0.2.3</Version>
   </PropertyGroup>
 
   <!-- This enables native assets to be automatically copied when the project is referenced -->
@@ -17,9 +17,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Update="runtimes\win-x64\native\fmt.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="runtimes\win-x64\native\shader_toolkit_c.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="runtimes\win-x64\native\slang.dll">
