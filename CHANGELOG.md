@@ -1,9 +1,9 @@
 # Changelog
 
-## [0.2.0] - TODO
+## [0.2.0] - 2026-03-21
 
 ### Added
-- `Slang` to `glsl` shader compilation is now allowed.
+- `Slang` to `glsl` shader compilation is now supported.
 - `CompileSlangToGlsl` method was added to the `ShaderCompiler`.
 
 ## [0.1.0] - 2026-03-04

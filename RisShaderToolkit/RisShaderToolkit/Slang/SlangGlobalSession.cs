@@ -78,6 +78,11 @@ namespace RisShaderToolkit.Slang
             }
         }
 
+        /// <summary>
+        /// Creates a new Slang session.
+        /// </summary>
+        /// <param name="sessionDescription">The <see cref="SlangSessionDescription"/>.</param>
+        /// <returns>The <see cref="SlangSession"/>.</returns>
         public SlangSession CreateSession(SlangSessionDescription sessionDescription)
         {
             unsafe
