@@ -1,23 +1,18 @@
-﻿#include "slang/slang_session.hpp"
+#include "slang/slang_session.hpp"
 #include <spdlog/spdlog.h>
 #include <string>
 
 namespace ris_shader_toolkit {
+
 	SlangSession::SlangSession()
 	{
 		_shaderStageMap = {
-			{ ShaderStage::Vertex, SLANG_STAGE_VERTEX },
-			{ ShaderStage::Fragment, SLANG_STAGE_FRAGMENT },
-			{ ShaderStage::Compute, SLANG_STAGE_COMPUTE },
+			{ ShaderStage::Vertex, SlangStage::SLANG_STAGE_VERTEX },
+			{ ShaderStage::Fragment, SlangStage::SLANG_STAGE_FRAGMENT },
+			{ ShaderStage::Compute, SlangStage::SLANG_STAGE_COMPUTE },
 			//{ ShaderStage::Geometry, SLANG_STAGE_GEOMETRY },
 			//{ ShaderStage::Hull, SLANG_STAGE_HULL },
 			//{ ShaderStage::Domain, SLANG_STAGE_DOMAIN }
-		};
-
-		_shaderAttributeValueToSlangStageMap = {
-			{ "vertex", SLANG_STAGE_VERTEX },
-			{ "fragment", SLANG_STAGE_FRAGMENT },
-			{ "compute", SLANG_STAGE_COMPUTE },
 		};
 
 		_hlslProfileMap = {
@@ -181,12 +176,15 @@ namespace ris_shader_toolkit {
 		{
 			if (diagnosticBlob.readRef())
 			{
-				std::string error = std::string((const char*)diagnosticBlob->getBufferPointer(), diagnosticBlob->getBufferSize());
-				return SlangCompileResult(false, "", ShaderReflection(), error);
+				std::string slangErr = std::string((const char*)diagnosticBlob->getBufferPointer(), diagnosticBlob->getBufferSize());
+                std::string error = "Failed to create slang module. " + slangErr;
+                return SlangCompileResult::errorResult(error);
 			}
 			else
 			{
-				return SlangCompileResult(false, "", ShaderReflection(), "Failed to load module from source string, and no diagnostics available.");
+                std::string error ="Failed to load module from source string, and no diagnostics available.";
+                spdlog::error(error);
+                return SlangCompileResult::errorResult(error);
 			}
 		}
 		componentTypes.push_back(module);
@@ -194,7 +192,7 @@ namespace ris_shader_toolkit {
 		// 3. LOOK UP ENTRY POINTS AND COMPILE
 
 		// If we have entry points, we will use that to read, otherwise we will simply lookup vertex stages.
-		std::vector<ComPtr<slang::IEntryPoint> > entryPointInterfaces;
+		std::vector<ComPtr<slang::IEntryPoint>> entryPointInterfaces;
 		if (entryPoints.size() > 0)
 		{
 			for (size_t i = 0; i < entryPoints.size(); i++)
@@ -222,39 +220,63 @@ namespace ris_shader_toolkit {
 		// This requires the Slang source code to be decorated with @shader attributes to specify the stage for each entry point.
 		else
 		{
+            SlangInt32 entryPointCount = module->getDefinedEntryPointCount();
+            
+            spdlog::trace("Entry point count: " + std::to_string(entryPointCount));
+            if(entryPointCount == 0)
+            {
+                std::string msg = "Module has no entry point.";
+                spdlog::error(msg);
+                return SlangCompileResult::errorResult(msg);
+            }
 
-			auto entryPointCount = module->getDefinedEntryPointCount();
-
-			for (size_t i = 0; i < entryPointCount; i++)
+			for (SlangInt32 i = 0; i < entryPointCount; i++)
 			{
 				ComPtr<slang::IEntryPoint> entryPoint = nullptr;
 				SlangResult result = module->getDefinedEntryPoint(i, entryPoint.writeRef());
+                
 
 				if (SLANG_FAILED(result))
 				{
 					if (diagnosticBlob)
 					{
-						std::string error = std::string((const char*)diagnosticBlob->getBufferPointer(), diagnosticBlob->getBufferSize());
-						return SlangCompileResult::errorResult("Failed to find entry point by index: " + std::to_string(i) + ". " + error);
+                        std::string bufferMsg = std::string((const char*)diagnosticBlob->getBufferPointer(), diagnosticBlob->getBufferSize());
+                        std::string error ="Failed to find entry point by index: " + std::to_string(i) + ". " + bufferMsg;
+                        spdlog::error(error);
+						return SlangCompileResult::errorResult(error);
 					}
 					else
 					{
-						return SlangCompileResult::errorResult("Failed to find entry point: by index" + std::to_string(i) + ". No diagnostics available.");
+                        std::string error ="Failed to find entry point: by index" + std::to_string(i) + ". No diagnostics available.";
+                        spdlog::error(error);
+						return SlangCompileResult::errorResult(error);
 					}
 				}
+                
+                spdlog::trace("Found entry point: " + std::to_string(i));
 
 				auto slangStage = findEntryPointStage(entryPoint);
-
-				if (slangStage == std::nullopt)
+                
+				if (!slangStage.has_value())
 				{
 					std::string error = "Unable to find entry point stage.";
+                    spdlog::error(error);
 					return SlangCompileResult::errorResult(error);
 				}
+                
+                spdlog::trace("Entry point stage: " + std::to_string(slangStage.value()));
 
 				for (size_t i = 0; i < stages.size(); i++)
 				{
-					if (stages[i] == slangStage)
+                    // Check if we have a stage.
+                    SlangStage a = stages[i];
+                    SlangStage b = slangStage.value();
+                    
+                    spdlog::trace("Comparing " + std::to_string(a) + ", " + std::to_string(b));
+                    
+					if (a == b)
 					{
+                        spdlog::trace("Pushing");
 						entryPointInterfaces.push_back(entryPoint);
 						componentTypes.push_back(entryPoint.get());
 					}
@@ -264,6 +286,7 @@ namespace ris_shader_toolkit {
 			if (entryPointInterfaces.size() == 0)
 			{
 				std::string error = "Unable to find entry point.";
+				spdlog::error(error);
 				return SlangCompileResult::errorResult(error);
 			}
 		}
@@ -311,18 +334,18 @@ namespace ris_shader_toolkit {
 		slang::ProgramLayout* layout = program->getLayout(0);
 
 		// Modify entry points.
-		int entryPointCount = layout->getEntryPointCount();
-		for (int i = 0; i < entryPointCount; i++)
+        SlangUInt entryPointCount = layout->getEntryPointCount();
+		for (SlangUInt i = 0; i < entryPointCount; i++)
 		{
 			slang::EntryPointLayout* entryPointLayout = layout->getEntryPointByIndex(i);
 			const char* entryPointName = entryPointLayout->getName();
 		}
 
 		// Modify parameters
-		int paramCount = layout->getParameterCount();
-		for (int i = 0; i < paramCount; i++)
+        SlangUInt paramCount = layout->getParameterCount();
+		for (SlangUInt i = 0; i < paramCount; i++)
 		{
-			slang::VariableLayoutReflection* param = layout->getParameterByIndex(i);
+			slang::VariableLayoutReflection* param = layout->getParameterByIndex(static_cast<unsigned>(i));
 			slang::TypeReflection* type = param->getType();
 			slang::TypeReflection::Kind kind = type->getKind();
 			SlangStage stage = param->getStage();
@@ -330,7 +353,7 @@ namespace ris_shader_toolkit {
 
 			ShaderBinding binding;
 			binding.name = param->getName();
-			binding.set = param->getSemanticIndex();
+			binding.set = static_cast<uint32_t>(param->getSemanticIndex());
 			binding.binding = param->getBindingIndex();
 
 			if (_bindingTypeMap.find(kind) == _bindingTypeMap.end())
@@ -347,33 +370,46 @@ namespace ris_shader_toolkit {
 	std::optional<SlangStage> SlangSession::findEntryPointStage(ComPtr<slang::IEntryPoint> entryPoint)
 	{
 		auto functionReflection = entryPoint->getFunctionReflection();
-
 		if (functionReflection == nullptr)
 		{
 			spdlog::error("Failed to get function reflection for entry point.");
 			return std::nullopt;
 		}
+        
+        spdlog::trace("Found reflection object for entry point");
 
 		// We need to check if entry point has a "shader" attribute for example, [shader("vertex")] VSOutput main_vs(VSInput input)
 		auto shaderAttr = functionReflection->findAttributeByName(_globalSession.get(), "shader");
-
 		if (shaderAttr == nullptr)
 		{
 			spdlog::error("Failed to find 'shader' attribute.");
 			return std::nullopt;
 		}
+        
+        spdlog::trace("Found 'shader' attribute from reflection object of entry point.");
 
 		// shader attribute will contain value such as "vertex" eg. shader("vertex")
-		size_t nameLength = 0;
-		auto nameStr = shaderAttr->getArgumentValueString(0, &nameLength);
-
+        size_t nameLength = 0;
+        const char* namePtr = shaderAttr->getArgumentValueString(0, &nameLength);
+        std::string nameStr(namePtr, nameLength);
 		if (nameLength == 0)
 		{
 			spdlog::error("Failed to retrieve 'shader' attribute argument value.");
 			return std::nullopt;
 		}
-
-		return _shaderAttributeValueToSlangStageMap[nameStr];
+        
+        spdlog::trace("Value of 'shader' attribute is '" + nameStr + "'.");
+        
+        // NOTE!: Windows returns without "", while macos returns with.
+        if(nameStr == "vertex" || nameStr == "\"vertex\"")
+                return SLANG_STAGE_VERTEX;
+        else if(nameStr == "fragment" || nameStr == "\"fragment\"")
+                return SLANG_STAGE_FRAGMENT;
+        else if(nameStr == "compute" || nameStr == "\"compute\"")
+                return SLANG_STAGE_COMPUTE;
+        
+         spdlog::error("'shader' attribute with value of  " "'" + nameStr + "'is not handled");
+         return std::nullopt;
 	}
 
 	/*

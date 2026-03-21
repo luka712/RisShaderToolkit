@@ -56,13 +56,21 @@ public class ShaderCompiler : IDisposable
     );
 
     [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-    static unsafe extern IntPtr compile_slang_to_glsl(
+    static unsafe extern IntPtr compile_slang_to_glsl_ext(
      IntPtr compilerPtr,
      IntPtr sourceCode,
      ShaderStage shaderStage,
      IntPtr entryPoint,
      GlslProfile glslProfile
      );
+    
+    [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+    static unsafe extern IntPtr compile_slang_to_glsl(
+        IntPtr compilerPtr,
+        IntPtr sourceCode,
+        ShaderStage shaderStage,
+        GlslProfile glslProfile
+    );
 
     private readonly IntPtr NativePtr;
     private readonly JsonReader _jsonReader = new();
@@ -459,20 +467,30 @@ public class ShaderCompiler : IDisposable
         CCompileResult compileResult = default;
         unsafe
         {
-            var entryPointPtr = IntPtr.Zero;
-            if (!String.IsNullOrEmpty(entryPoint))
-            {
-                entryPointPtr = Marshal.StringToHGlobalAnsi(entryPoint);
-            }
-
             try
             {
-                IntPtr resultPtr = compile_slang_to_glsl(
-                    NativePtr,
-                    slangSourceCodePtr,
-                    shaderStage,
-                    entryPointPtr,
-                    glslProfile);
+                IntPtr resultPtr;
+                if (!String.IsNullOrEmpty(entryPoint))
+                {
+                    var entryPointPtr = Marshal.StringToHGlobalAnsi(entryPoint);
+                    
+                    resultPtr = compile_slang_to_glsl_ext(
+                        NativePtr,
+                        slangSourceCodePtr,
+                        shaderStage,
+                        entryPointPtr,
+                        glslProfile);
+                    
+                    Marshal.FreeHGlobal(entryPointPtr);
+                }
+                else
+                {
+                    resultPtr = compile_slang_to_glsl(
+                        NativePtr,
+                        slangSourceCodePtr,
+                        shaderStage,
+                        glslProfile);
+                }
 
                 if (resultPtr == IntPtr.Zero)
                 {
@@ -513,7 +531,6 @@ public class ShaderCompiler : IDisposable
             finally
             {
                 Marshal.FreeHGlobal(slangSourceCodePtr);
-                Marshal.FreeHGlobal(entryPointPtr);
             }
         }
     }

@@ -47,11 +47,33 @@ bool c_compile_slang_to_glsl_450_vs()
 {
 	void* compilerPtr = create_compiler();
 
-	c_CompileResult* resultPtr = (c_CompileResult*)compile_slang_to_glsl(
+	c_CompileResult* resultPtr = (c_CompileResult*)compile_slang_to_glsl_ext(
 		compilerPtr,
 		SOURCE_CODE.c_str(),
 		static_cast<int>(ShaderStage::Vertex),
 		"main_vs",
+		ris_shader_toolkit::GlslProfile::GLSL_450
+	);
+
+	bool isSuccess = resultPtr->success;
+	std::string sourceCodeStr(resultPtr->sourceCode);
+	bool containsMain = sourceCodeStr.find("main") != std::string::npos;
+
+	free_compile_result(resultPtr);
+	free_compiler(compilerPtr);
+
+	return isSuccess && containsMain;
+}
+
+//! Test if the compiler can successfully compile Slang source code to GLSL 4.5,
+bool c_compile_slang_to_glsl_450_fs()
+{
+	void* compilerPtr = create_compiler();
+
+	c_CompileResult* resultPtr = (c_CompileResult*)compile_slang_to_glsl(
+		compilerPtr,
+		SOURCE_CODE.c_str(),
+		static_cast<int>(ShaderStage::Fragment),
 		ris_shader_toolkit::GlslProfile::GLSL_450
 	);
 
@@ -74,7 +96,6 @@ bool c_compile_slang_to_glsl_300_es_vs()
 		compilerPtr,
 		SOURCE_CODE.c_str(),
 		static_cast<int>(ShaderStage::Vertex),
-		nullptr,
 		ris_shader_toolkit::GlslProfile::GLES_300
 	);
 
@@ -88,8 +109,9 @@ bool c_compile_slang_to_glsl_300_es_vs()
 	return isSuccess && containsMain;
 }
 
-TEST_CASE("c compiler slang to glsl tests", "[c_compile_slang_to_glsl_450_vs, c_compile_slang_to_glsl_300_es_vs]")
+TEST_CASE("c compiler slang to glsl tests", "[c_compile_slang_to_glsl_450_vs, c_compile_slang_to_glsl_450_fs, c_compile_slang_to_glsl_300_es_vs]")
 {
 	REQUIRE(c_compile_slang_to_glsl_450_vs());
+	REQUIRE(c_compile_slang_to_glsl_450_fs());
 	REQUIRE(c_compile_slang_to_glsl_300_es_vs());
 }

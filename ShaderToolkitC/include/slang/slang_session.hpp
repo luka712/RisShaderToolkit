@@ -132,7 +132,6 @@ namespace ris_shader_toolkit {
 		std::map<GlslProfile, std::string> _glslProfileMap;
 		std::map<MetalProfile, std::string> _metalProfileMap;
 		std::map<SpirVProfile, std::string> _spirvProfileMap;
-		std::map<std::string, SlangStage> _shaderAttributeValueToSlangStageMap;
 
 		std::map< slang::TypeReflection::Kind, BindingType> _bindingTypeMap;
 

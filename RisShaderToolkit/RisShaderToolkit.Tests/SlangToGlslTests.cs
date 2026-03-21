@@ -48,8 +48,7 @@ public class SlangToGlslTests
         string slangSourceCode = File.ReadAllText("Data/sprite.slang");
         // Act
         CompileResult vertexResult = compiler.CompileSlangToGlsl(slangSourceCode,
-            ShaderStage.VERTEX,
-            GlslProfile.GLSL_450);
+            ShaderStage.VERTEX);
 
         Assert.True(vertexResult.Success);
         Assert.NotNull(vertexResult.SourceCode);
@@ -58,8 +57,7 @@ public class SlangToGlslTests
 
         // Act
         CompileResult fragmentResult = compiler.CompileSlangToGlsl(slangSourceCode,
-            ShaderStage.FRAGMENT,
-            GlslProfile.GLSL_450);
+            ShaderStage.FRAGMENT);
 
         Assert.True(fragmentResult.Success);
         Assert.NotNull(fragmentResult.SourceCode);
@@ -104,7 +102,7 @@ public class SlangToGlslTests
     /// Test compiling a Slang shader source code to GLSL.
     /// </summary>
     [Fact]
-    public void TestCompileSlangToGlsl300es2()
+    public void TestCompileSlangToGlsl300Es2()
     {
         // Arrange
         ShaderCompiler compiler = new ShaderCompiler();

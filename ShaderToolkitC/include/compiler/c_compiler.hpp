@@ -57,13 +57,23 @@ extern "C" {
 	);
 
 	API_EXPORT
-	void* compile_slang_to_glsl(
+		void* compile_slang_to_glsl(
+			void* compilerPtr,
+			const char* slangSourceCode,
+			int32_t shaderStage,
+			ris_shader_toolkit::GlslProfile profile
+		);
+
+	API_EXPORT
+	void* compile_slang_to_glsl_ext(
 		void* compilerPtr,
 		const char* slangSourceCode,
 		int32_t shaderStage,
 		const char* entryPoint,
 		ris_shader_toolkit::GlslProfile profile
 	);
+
+
 
     //! Frees the Compiler instance.
     //! @param compilerPtr A pointer to the Compiler instance to free.

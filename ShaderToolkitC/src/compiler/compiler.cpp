@@ -5,8 +5,19 @@
 #include <spirv-cross/spirv_cross_compiler.hpp>
 #include <spdlog/spdlog.h>
 
+
 namespace ris_shader_toolkit {
+
+std::shared_ptr<spdlog::logger> Compiler::_logger = nullptr;
+
 	Compiler::Compiler() : _fxcCompiler() {
+
+        if(_logger == nullptr) {
+            // TODO: this is currently issue when loading library multiple times. Figure out solution for it.
+            //spdlog::basic_logger_mt("dll_logger", "log.txt");
+            //spdlog::set_default_logger(_logger);
+            //spdlog::set_level(spdlog::level::trace);
+        }
 	}
 
 	//bool Compiler::createFile(
@@ -106,7 +117,7 @@ namespace ris_shader_toolkit {
 			}
 
 			std::vector<std::string> entryPoints;
-			if (!entryPoint.empty())
+			if (!entryPoint.empty() && entryPoint != "")
 			{
 				entryPoints.push_back(entryPoint);
 			}

@@ -124,6 +124,15 @@ void* compile_slang_to_glsl(
 	void* compilerPtr,
 	const char* slangSourceCode,
 	int32_t shaderStage,
+	ris_shader_toolkit::GlslProfile profile
+)  {
+	return compile_slang_to_glsl_ext(compilerPtr, slangSourceCode, shaderStage, nullptr, profile);
+}
+
+void* compile_slang_to_glsl_ext(
+	void* compilerPtr,
+	const char* slangSourceCode,
+	int32_t shaderStage,
 	const char* entryPoint,
 	ris_shader_toolkit::GlslProfile profile
 )

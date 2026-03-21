@@ -6,6 +6,8 @@
 #include "compiler/compile_result.hpp"
 #include "rules.hpp"
 #include <map>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/basic_file_sink.h>
 
 namespace ris_shader_toolkit {
 	class Compiler {
@@ -106,6 +108,7 @@ namespace ris_shader_toolkit {
 
 	private:
 		FxcCompiler _fxcCompiler;
+		static std::shared_ptr<spdlog::logger> _logger;
 
 		//! Creates a file with the specified content.
 		//! @param filePath The path to the file to create.
