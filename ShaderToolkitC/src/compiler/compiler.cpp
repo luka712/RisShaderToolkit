@@ -96,6 +96,15 @@ namespace ris_shader_toolkit {
 			) {
 
 			std::vector<ShaderStage> stages = { stage };
+
+			// For GLES 3.0, we need to compile vertex and fragment shaders together to ensure the input/output
+			// variable names match between vertex and fragment shaders for linking. 
+			// So if the profile is GLES 3.0 and the stage is vertex or fragment shader, we will compile both vertex and fragment shaders together.
+			if(profile == GlslProfile::GLES_300)
+			{
+				stages = { ShaderStage::Vertex, ShaderStage::Fragment };
+			}
+
 			std::vector<std::string> entryPoints;
 			if (!entryPoint.empty())
 			{

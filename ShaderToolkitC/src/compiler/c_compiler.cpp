@@ -77,6 +77,16 @@ void* compile_slang_to_spirv(
 	const char* slangSourceCode,
 	int32_t* shaderStages,
 	uint32_t shaderStagesCount,
+	ris_shader_toolkit::SpirVProfile profile)
+{
+	return compile_slang_to_spirv_ext(compilerPtr, slangSourceCode, shaderStages, shaderStagesCount, nullptr, 0, profile);
+}
+
+void* compile_slang_to_spirv_ext(
+	void* compilerPtr,
+	const char* slangSourceCode,
+	int32_t* shaderStages,
+	uint32_t shaderStagesCount,
 	const char** entryPoints,
 	uint32_t entryPointsCount,
 	ris_shader_toolkit::SpirVProfile profile)

@@ -7,7 +7,7 @@ using namespace ris_shader_toolkit;
 
 
 const std::string SOURCE_CODE = R"(struct VSInput
-{
+{ 
 	float3 position : POSITION;
 	float2 texCoord : TEXCOORD0;
 	float4 color : COLOR0;
@@ -78,12 +78,12 @@ bool compile_spirv_to_glsl_450_fs()
 }
 
 //! Test if the compiler can successfully compile Spir-V source code to GLSL 300 es
-bool compile_spirv_to_glsl_300_es_vs()
+bool compile_spirv_to_glsl_300_es()
 {
 	Compiler compiler;
 
-	std::vector<ShaderStage> stages = { ShaderStage::Vertex };
-	std::vector<std::string> entryPoints = { "main_vs" };
+	std::vector<ShaderStage> stages = { ShaderStage::Vertex, ShaderStage::Fragment };
+	std::vector<std::string> entryPoints = { "main_vs", "main_fs" };
 	auto spirVResult = compiler.compileSlangToSpirV(
 		SOURCE_CODE,
 		stages,
@@ -91,27 +91,11 @@ bool compile_spirv_to_glsl_300_es_vs()
 	);
 
 	SpirVCrossCompiler crossCompiler;
-	auto glslResult = crossCompiler.compile(spirVResult.getBinaryCode(), GlslProfile::GLES_300, ShaderStage::Vertex);
+	auto glslVertexResult = crossCompiler.compile(spirVResult.getBinaryCode(), GlslProfile::GLES_300, ShaderStage::Vertex);
+	auto glslFragmentResult = crossCompiler.compile(spirVResult.getBinaryCode(), GlslProfile::GLES_300, ShaderStage::Fragment);
 
-	return glslResult.isSuccess() && glslResult.getSourceCode().find("main") != std::string::npos;
-}
-
-bool compile_spirv_to_glsl_300_es_fs()
-{
-	Compiler compiler;
-
-	std::vector<ShaderStage> stages = { ShaderStage::Fragment };
-	std::vector<std::string> entryPoints = { "main_fs" };
-	auto spirVResult = compiler.compileSlangToSpirV(
-		SOURCE_CODE,
-		stages,
-		entryPoints
-	);
-
-	SpirVCrossCompiler crossCompiler;
-	auto glslResult = crossCompiler.compile(spirVResult.getBinaryCode(), GlslProfile::GLES_300, ShaderStage::Fragment);
-
-	return glslResult.isSuccess() && glslResult.getSourceCode().find("main") != std::string::npos;
+	return glslVertexResult.isSuccess() && glslVertexResult.getSourceCode().find("main") != std::string::npos &&
+	       glslFragmentResult.isSuccess() && glslFragmentResult.getSourceCode().find("main") != std::string::npos;
 }
 
 TEST_CASE("compiler spirv to glsl tests",
@@ -119,6 +103,5 @@ TEST_CASE("compiler spirv to glsl tests",
 {
 	REQUIRE(compile_spirv_to_glsl_450_vs());
 	REQUIRE(compile_spirv_to_glsl_450_fs());
-	REQUIRE(compile_spirv_to_glsl_300_es_vs());
-	REQUIRE(compile_spirv_to_glsl_300_es_fs());
+	REQUIRE(compile_spirv_to_glsl_300_es());
 }

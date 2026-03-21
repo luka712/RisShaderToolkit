@@ -50,7 +50,154 @@ namespace ris_shader_toolkit {
 		}
 	}
 
+	void SpirVCrossCompiler::handleAttributes(
+		spirv_cross::CompilerGLSL& vertexCompiler,
+		spirv_cross::CompilerGLSL& fragmentCompiler,
+		GlslProfile glslProfile,
+		ShaderStage stage)
+	{
+
+		// For GLES 3.0, we need to ensure that the input/output variable names match between vertex and fragment shaders.
+		// So input attribute of fragment shader should have name to corresponding output attribute of vertex shader.
+		// This is required for linking shaders in GLES 3.0.
+		if (glslProfile == GlslProfile::GLES_300 && stage == ShaderStage::Fragment)
+		{
+			std::map <uint32_t, std::string> inputIdNames;
+			uint32_t location = 0;
+			auto vertexShaderResources = vertexCompiler.get_shader_resources();
+			for (auto& outAttr : vertexShaderResources.stage_outputs)
+			{
+				std::string name = outAttr.name;
+				inputIdNames[location] = name;
+				location++;
+			}
+
+			location = 0;
+			auto fragmentShaderResources = fragmentCompiler.get_shader_resources();
+			for (auto& inAttr : fragmentShaderResources.stage_inputs)
+			{
+				std::string name = inputIdNames[location];
+				fragmentCompiler.set_name(inAttr.id, name);
+				location++;
+			}
+		}
+	}
+
+	void SpirVCrossCompiler::handleUniforms(spirv_cross::CompilerGLSL& compiler)
+	{
+		auto resources = compiler.get_shader_resources();
+		for (auto& ubo : resources.uniform_buffers)
+		{
+			spdlog::debug("UBO: " + ubo.name);
+
+			uint32_t type_id = ubo.base_type_id;
+
+			// If it's row major, then it applies to the whole block, otherwise we need to check each member.
+			if (compiler.has_decoration(type_id, spv::DecorationRowMajor))
+			{
+				compiler.unset_decoration(type_id, spv::DecorationRowMajor);
+				compiler.set_decoration(type_id, spv::DecorationColMajor);
+				spdlog::debug("  has RowMajor decoration, changed to ColMajor");
+			}
+			else 
+			{
+				auto& type = compiler.get_type(ubo.base_type_id);
+				for (uint32_t i = 0; i < type.member_types.size(); i++)
+				{
+					spdlog::debug("  member " + std::to_string(i));
+
+					if (compiler.has_member_decoration(ubo.base_type_id, i, spv::DecorationRowMajor))
+					{
+						spdlog::debug("    has RowMajor decoration");
+					}
+
+					if (compiler.has_member_decoration(ubo.base_type_id, i, spv::DecorationColMajor))
+					{
+						spdlog::debug("    has ColMajor decoration");
+					}
+
+					std::cout << "\n";
+				}
+			}
+		}
+	}
+
+	SpirVCrossCompileResult SpirVCrossCompiler::compileForLowerProfiles(const std::vector<uint32_t>& spirv, GlslProfile profile, ShaderStage stage)
+	{
+		// Load SPIR-V
+		try {
+			spirv_cross::CompilerGLSL vertexCompiler(spirv);
+			spirv_cross::CompilerGLSL fragmentCompiler(spirv);
+
+			// Default to vertex compiler, will switch to fragment compiler if stage is fragment shader.
+			spirv_cross::CompilerGLSL* targetCompiler = &vertexCompiler;
+			if (stage == ShaderStage::Fragment)
+			{
+				targetCompiler = &fragmentCompiler;
+			}
+
+			// Set GLSL options
+			spirv_cross::CompilerGLSL::Options options;
+			options.version = _glslVersionMap[profile];
+			options.force_zero_initialized_variables = false;
+			options.enable_storage_image_qualifier_deduction = true;
+			if (profile == GlslProfile::GLES_300
+				|| profile == GlslProfile::GLES_310
+				|| profile == GlslProfile::GLES_320) {
+				options.es = true;
+			}
+
+			auto entry_points = vertexCompiler.get_entry_points_and_stages();
+			for (size_t i = 0; i < entry_points.size(); ++i)
+			{
+				auto executionModel = entry_points[i].execution_model;
+
+				if (spv::ExecutionModel::ExecutionModelVertex == executionModel)
+				{
+					auto entryPointName = entry_points[i].name;
+					vertexCompiler.set_entry_point(entryPointName, executionModel);
+				}
+				else if (spv::ExecutionModel::ExecutionModelFragment == executionModel)
+				{
+					auto entryPointName = entry_points[i].name;
+					fragmentCompiler.set_entry_point(entryPointName, executionModel);
+				}
+				else
+				{
+					std::string msg = "Unsupported execution model: " + std::to_string(executionModel);
+					spdlog::error(msg);
+					return SpirVCrossCompileResult::errorResult(msg);
+				}
+			}
+
+			auto vertexShaderResources = vertexCompiler.get_shader_resources();
+			auto fragmentShaderResources = fragmentCompiler.get_shader_resources();
+
+			handleImageAndSamplersGlsl(fragmentCompiler, fragmentShaderResources);
+			handleAttributes(vertexCompiler, fragmentCompiler, profile, stage);
+			handleUniforms(vertexCompiler);
+			handleUniforms(fragmentCompiler);
+			vertexCompiler.set_common_options(options);
+			fragmentCompiler.set_common_options(options);
+
+			// Compile to GLSL
+			std::string glslSource = targetCompiler->compile();
+			return SpirVCrossCompileResult(true, glslSource, "");
+		}
+		catch (const std::exception& e) {
+			std::string msg = "SPIRV-Cross compilation failed: " + std::string(e.what());
+			spdlog::error(msg);
+			return SpirVCrossCompileResult::errorResult(msg);
+		}
+	}
+
 	SpirVCrossCompileResult SpirVCrossCompiler::compile(const std::vector<uint32_t>& spirv, GlslProfile profile, ShaderStage stage) {
+
+		if (profile == GlslProfile::GLES_300)
+		{
+			return compileForLowerProfiles(spirv, profile, stage);
+		}
+
 		// Load SPIR-V
 		try {
 			spirv_cross::CompilerGLSL compiler(spirv);
@@ -59,9 +206,10 @@ namespace ris_shader_toolkit {
 			spirv_cross::CompilerGLSL::Options options;
 			options.version = _glslVersionMap[profile];
 			options.force_zero_initialized_variables = false;
-			if (profile == GlslProfile::GLES_300 || profile == GlslProfile::GLES_310 || profile == GlslProfile::GLES_320) {
+			if (profile == GlslProfile::GLES_310 || profile == GlslProfile::GLES_320) {
 				options.es = true;
 			}
+			options.vertex.fixup_clipspace = true;
 
 			auto entry_points = compiler.get_entry_points_and_stages();
 			for (size_t i = 0; i < entry_points.size(); ++i)

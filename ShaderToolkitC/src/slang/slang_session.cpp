@@ -147,7 +147,8 @@ namespace ris_shader_toolkit {
 		slang::SessionDesc sessionDesc;
 		sessionDesc.targets = &targetDesc;
 		sessionDesc.targetCount = 1;
-		sessionDesc.defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR;
+	/*	sessionDesc.defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR;
+		sessionDesc.allowGLSLSyntax = true;*/
 
 		if (!profile.empty())
 		{
@@ -266,8 +267,6 @@ namespace ris_shader_toolkit {
 				return SlangCompileResult::errorResult(error);
 			}
 		}
-
-
 
 
 		// 4. CREATE A COMPOSITE COMPONENT TYPE

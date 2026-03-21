@@ -6,7 +6,7 @@ using namespace ris_shader_toolkit;
 
 
 const std::string SOURCE_CODE = R"(struct VSInput
-{
+{ 
 	float3 position : POSITION;
 	float2 texCoord : TEXCOORD0;
 	float4 color : COLOR0;
@@ -56,7 +56,8 @@ bool c_compile_slang_to_glsl_450_vs()
 	);
 
 	bool isSuccess = resultPtr->success;
-	bool containsMain = std::string(resultPtr->sourceCode).find("main") != std::string::npos;
+	std::string sourceCodeStr(resultPtr->sourceCode);
+	bool containsMain = sourceCodeStr.find("main") != std::string::npos;
 
 	free_compile_result(resultPtr);
 	free_compiler(compilerPtr);
@@ -78,7 +79,8 @@ bool c_compile_slang_to_glsl_300_es_vs()
 	);
 
 	bool isSuccess = resultPtr->success;
-	bool containsMain = std::string(resultPtr->sourceCode).find("main") != std::string::npos;
+	std::string sourceCodeStr(resultPtr->sourceCode);
+	bool containsMain = sourceCodeStr.find("main") != std::string::npos;
 
 	free_compile_result(resultPtr);
 	free_compiler(compilerPtr);

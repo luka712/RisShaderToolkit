@@ -36,7 +36,7 @@ public class ShaderCompiler : IDisposable
       uint shaderStagesCount);
 
     [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-    static unsafe extern IntPtr compile_slang_to_spirv(
+    static unsafe extern IntPtr compile_slang_to_spirv_ext(
       IntPtr compilerPtr,
       IntPtr sourceCode,
       ShaderStage* shaderStages,
@@ -45,6 +45,15 @@ public class ShaderCompiler : IDisposable
       uint entryPointsCount,
       SpirVProfile spirVProfile
       );
+
+    [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+    static unsafe extern IntPtr compile_slang_to_spirv(
+    IntPtr compilerPtr,
+    IntPtr sourceCode,
+    ShaderStage* shaderStages,
+    uint shaderStagesCount,
+    SpirVProfile spirVProfile
+    );
 
     [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
     static unsafe extern IntPtr compile_slang_to_glsl(
@@ -339,6 +348,8 @@ public class ShaderCompiler : IDisposable
         params string[] entryPoints
         )
     {
+        entryPoints = entryPoints ?? Array.Empty<string>();
+
         IntPtr slangSourceCodePtr = Marshal.StringToHGlobalAnsi(slangSourceCode);
 
         CCompileResult compileResult = default;
@@ -350,23 +361,43 @@ public class ShaderCompiler : IDisposable
                 shaderStagesPtr[i] = shaderStages[i];
             }
 
-            int entryPointsCount = entryPoints?.Length ?? 0;
-            IntPtr* entryPointsPtr = stackalloc IntPtr[entryPointsCount];
-            for (int i = 0; i < entryPointsCount; i++)
-            {
-                entryPointsPtr[i] = Marshal.StringToHGlobalAnsi(entryPoints[i]);
-            }
-
             try
             {
-                IntPtr resultPtr = compile_slang_to_spirv(
-                    NativePtr,
-                    slangSourceCodePtr,
-                    shaderStagesPtr,
-                    (uint)shaderStages.Length,
-                    entryPointsPtr,
-                    (uint)entryPoints.Length,
-                    spirVProfile);
+                IntPtr resultPtr;
+
+                if (entryPoints.Length > 0)
+                {
+                    int entryPointsCount = entryPoints.Length;
+                    IntPtr* entryPointsPtr = stackalloc IntPtr[entryPointsCount];
+                    for (int i = 0; i < entryPointsCount; i++)
+                    {
+                        entryPointsPtr[i] = Marshal.StringToHGlobalAnsi(entryPoints[i]);
+                    }
+
+                    resultPtr = compile_slang_to_spirv_ext(
+                        NativePtr,
+                        slangSourceCodePtr,
+                        shaderStagesPtr,
+                        (uint)shaderStages.Length,
+                        entryPointsPtr,
+                        (uint)entryPoints.Length,
+                        spirVProfile);
+
+                    for (int i = 0; i < entryPoints.Length; i++)
+                    {
+                        Marshal.FreeHGlobal(entryPointsPtr[i]);
+                    }
+                }
+                else
+                {
+                    // If no entry points are provided, pass null pointers and zero count
+                    resultPtr = compile_slang_to_spirv(
+                        NativePtr,
+                        slangSourceCodePtr,
+                        shaderStagesPtr,
+                        (uint)shaderStages.Length,
+                        spirVProfile);
+                }
 
                 if (resultPtr == IntPtr.Zero)
                 {
@@ -402,10 +433,7 @@ public class ShaderCompiler : IDisposable
             finally
             {
                 Marshal.FreeHGlobal(slangSourceCodePtr);
-                for (int i = 0; i < entryPoints.Length; i++)
-                {
-                    Marshal.FreeHGlobal(entryPointsPtr[i]);
-                }
+             
             }
         }
     }
