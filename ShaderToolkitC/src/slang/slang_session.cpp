@@ -138,7 +138,8 @@ namespace ris_shader_toolkit {
 		SlangCompileTarget compileTarget,
 		std::string profile,
 		const std::vector<SlangStage> stages,
-		const std::vector<std::string> entryPoints
+		const std::vector<std::string> entryPoints,
+		SlangSessionOptions options
 	) {
 		// 1. CREATE A SLANG SESSION
 		slang::TargetDesc targetDesc;
@@ -147,8 +148,7 @@ namespace ris_shader_toolkit {
 		slang::SessionDesc sessionDesc;
 		sessionDesc.targets = &targetDesc;
 		sessionDesc.targetCount = 1;
-	/*	sessionDesc.defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR;
-		sessionDesc.allowGLSLSyntax = true;*/
+		sessionDesc.defaultMatrixLayoutMode = options.matrixLayoutMode;
 
 		if (!profile.empty())
 		{
@@ -460,7 +460,8 @@ namespace ris_shader_toolkit {
 		const std::string& sourceCode,
 		std::vector<ShaderStage> stages,
 		std::vector<std::string> entryPoints,
-		SpirVProfile profile
+		SpirVProfile profile,
+		SlangSessionOptions options
 	)
 	{
 		std::vector<SlangStage> slangStages;
@@ -476,7 +477,8 @@ namespace ris_shader_toolkit {
 			SLANG_SPIRV,
 			spirVProfile,
 			slangStages,
-			entryPoints
+			entryPoints,
+			options
 		);
 	}
 

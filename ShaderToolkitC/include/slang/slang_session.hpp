@@ -10,6 +10,7 @@
 #include <vector>
 #include <compiler/compile_result.hpp>
 #include <optional>
+#include <slang/slang_session_options.hpp>
 
 using Slang::ComPtr;
 
@@ -37,12 +38,15 @@ namespace ris_shader_toolkit {
 		//! @param profile The profile to compile to (e.g., "sm_5_0"). Can be empty string when compiling to shader targets that do not require profile such as WGSL.
 		//! @param stages The shader stages (e.g., SLANG_STAGE_VERTEX).
 		//! @param entryPoints The entry points info function name. Must match the stages count.
+		//! @param options The session options for compilation. Default is SlangSessionOptions().
+		//! @return A SlangCompileResult object containing the result of the compilation.
 		SlangCompileResult compile(
 			const std::string& sourceCode,
 			SlangCompileTarget compileTarget,
 			std::string profile,
 			const std::vector<SlangStage> stages,
-			const std::vector<std::string> entryPoints
+			const std::vector<std::string> entryPoints,
+			SlangSessionOptions options = SlangSessionOptions()
 		);
 
 		//! Compiles an HLSL shader file to the specified profile and stage.
@@ -100,12 +104,14 @@ namespace ris_shader_toolkit {
 		//! @param stages The shader stages (e.g., ShaderStage::Vertex).
 		//! @param entryPoints The entry points info function name. Must match the stages count.
 		//! @param profile The SpirV profile to compile to (e.g., "spirv_1_2"). By default, it is SpirVProfile::SPIRV_1_2.
+		//! @param options The session options for compilation. Default is SlangSessionOptions().
 		//! @return A SlangCompileResult object containing the result of the compilation.
 		SlangCompileResult compileToSpirV(
 			const std::string& slangSourceCode,
 			std::vector<ShaderStage> stages,
 			std::vector<std::string> entryPoints,
-			SpirVProfile profile = SpirVProfile::SPIRV_1_2
+			SpirVProfile profile = SpirVProfile::SPIRV_1_2,
+			SlangSessionOptions options = SlangSessionOptions()
 		);
 
 		//! Compiles an GLSL shader file to the specified profile and stage.
