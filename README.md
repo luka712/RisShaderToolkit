@@ -15,6 +15,7 @@ The toolkit consists of two main parts:
   - SPIR-V
   - GLSL
   - possibly others in the future
+  
 - Published as **NuGet package(s)**
 - Used by **RisGameFramework** but can be used by any other .NET project
 
