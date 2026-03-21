@@ -1,0 +1,16 @@
+﻿{
+  "shaders": [
+    {
+      "name": "sprite.slang",
+      "profile": "glsl_450",
+      "stages": [ "vertex", "fragment" ],
+      "output_file": "sprite.glsl"
+    },
+    {
+      "name": "sprite.slang",
+      "profile": "gles_300",
+      "stages": [ "vertex", "fragment" ],
+      "output_file": "sprite_300es.glsl"
+    }
+  ]
+}

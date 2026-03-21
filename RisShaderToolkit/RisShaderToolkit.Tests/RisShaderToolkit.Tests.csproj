@@ -30,6 +30,9 @@
     <None Update="Data\compile.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Data\compile_slang_to_glsl.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Data\compile_slang_to_spirv.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

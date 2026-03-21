@@ -13,6 +13,7 @@ The toolkit consists of two main parts:
 - Provides easy-to-use methods for compiling Slang shaders into multiple target formats:
   - WGSL
   - SPIR-V
+  - GLSL
   - possibly others in the future
 - Published as **NuGet package(s)**
 - Used by **RisGameFramework** but can be used by any other .NET project

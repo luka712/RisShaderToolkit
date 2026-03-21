@@ -1,9 +1,9 @@
 ﻿{
-  "compiler_verson": "0.0.1",
   "shaders": [
     {
       "name": "sprite.slang",
       "profile": "spirv_1_2",
+      "stages": [ "vertex", "fragment" ],
       "output_file": "sprite.spv"
     }
   ]

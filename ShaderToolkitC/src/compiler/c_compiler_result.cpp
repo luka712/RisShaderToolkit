@@ -48,7 +48,7 @@ c_CompileResult* c_to_cpp_CompileResult(const ris_shader_toolkit::CompileResult&
 
 c_CompileResult* errorResult(const char* errorMessage)
 {
-	c_CompileResult* result = new c_CompileResult();
+	c_CompileResult* result = (c_CompileResult*)malloc(sizeof(c_CompileResult));
 	result->success = false;
 	result->sourceCode = nullptr;
 	result->binaryCode = nullptr;

@@ -26,12 +26,12 @@ namespace ris_shader_toolkit {
         //! @param success True if the compilation was successful, false otherwise.
         //! @param sourceCode The compiled source code in binary format if the compilation was successful.
         //! @param error The error message if the compilation failed.
-        CompileResult(bool success, const std::vector<uint8_t>& sourceCode, const std::string& error = "");
+        CompileResult(bool success, const std::vector<uint32_t>& sourceCode, const std::string& error = "");
 
         //! Constructs a CompileResult object with reflection data.
         //! @param sourceCode The compiled source code in binary format if the compilation was successful.
         //! @param reflectionData The reflection data from the compilation.
-        CompileResult(const std::vector<uint8_t>& sourceCode, ShaderReflection reflectionData);
+        CompileResult(const std::vector<uint32_t>& sourceCode, ShaderReflection reflectionData);
 
         //! Returns true if the compilation was successful, false otherwise.
         //! @return True if the compilation was successful, false otherwise.
@@ -43,7 +43,7 @@ namespace ris_shader_toolkit {
 
         //! Returns the compiled source code in binary format if the compilation was successful.
         //! @return The compiled source code in binary format if the compilation was successful or an empty string otherwise.
-        const std::vector<uint8_t>& getBinaryCode() const { return _binarySourceCode; }
+        const std::vector<uint32_t>& getBinaryCode() const { return _binarySourceCode; }
 
         //! Returns the compiled source code if the compilation was successful.
 		//! @return The compiled source code if the compilation was successful or an empty string otherwise.
@@ -63,7 +63,7 @@ namespace ris_shader_toolkit {
         //! @param binaryCode The compiled source code in binary format.
         //! @param reflectionData The reflection data from the compilation.
         //! @return A successful CompileResult object.
-        static CompileResult successResult(const std::vector<uint8_t>& binaryCode, ShaderReflection reflectionData);
+        static CompileResult successResult(const std::vector<uint32_t>& binaryCode, ShaderReflection reflectionData);
 
         //! Creates a failed CompileResult object.
         //! @param errorMessage The error message.
@@ -73,7 +73,7 @@ namespace ris_shader_toolkit {
     private:
         bool _success;
         std::string _sourceCode;
-        std::vector<uint8_t> _binarySourceCode;
+        std::vector<uint32_t> _binarySourceCode;
         std::string _errorMessage;
         ShaderReflection _reflectionData;
     };
