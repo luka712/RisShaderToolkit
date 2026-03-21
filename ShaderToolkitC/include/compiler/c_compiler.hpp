@@ -18,33 +18,19 @@ extern "C" {
     API_EXPORT
 	char* get_last_error_message();
 
- //   API_EXPORT
-	//void* compile_slang_to_glsl(
-	//	void* compilerPtr,
-	//	const char* inputFilePath,
-	//	int profile,           // GlslProfile as int
-	//	int shaderStage,       // ShaderStage as int
-	//	const char* entryPoint,
-	//	c_ReplaceStageInputNameRule* inputRule,
-	//	c_ReplaceStageOutputNameRule* outputRule
-	//);
-
-	//API_EXPORT
-	//void* compile_slang_source_code_to_glsl(
-	//void* compilerPtr,
-	//const char* slangSourceCode,
-	//int profile,           // GlslProfile as int
-	//int shaderStage,       // ShaderStage as int
-	//const char* entryPoint,
-	//c_ReplaceStageInputNameRule* inputRule,
-	//c_ReplaceStageOutputNameRule* outputRule
-	//);
-
 	API_EXPORT
 	void* compile_slang_to_wgsl(
 		void* compilerPtr,
 		const char* slangSourceCode,
-		int32_t* shaderStages,       
+		int32_t* shaderStages,
+		uint32_t shaderStagesCount
+	);
+
+	API_EXPORT
+	void* compile_slang_to_wgsl_ext(
+		void* compilerPtr,
+		const char* slangSourceCode,
+		int32_t* shaderStages,
 		uint32_t shaderStagesCount,
 		const char** entryPoints,
 		uint32_t entryPointsCount
@@ -56,10 +42,38 @@ extern "C" {
 		const char* slangSourceCode,
 		int32_t* shaderStages,
 		uint32_t shaderStagesCount,
+		ris_shader_toolkit::SpirVProfile profile
+    );
+
+	API_EXPORT
+	void* compile_slang_to_spirv_ext(
+		void* compilerPtr,
+		const char* slangSourceCode,
+		int32_t* shaderStages,
+		uint32_t shaderStagesCount,
 		const char** entryPoints,
 		uint32_t entryPointsCount,
 		ris_shader_toolkit::SpirVProfile profile
-    );
+	);
+
+	API_EXPORT
+		void* compile_slang_to_glsl(
+			void* compilerPtr,
+			const char* slangSourceCode,
+			int32_t shaderStage,
+			ris_shader_toolkit::GlslProfile profile
+		);
+
+	API_EXPORT
+	void* compile_slang_to_glsl_ext(
+		void* compilerPtr,
+		const char* slangSourceCode,
+		int32_t shaderStage,
+		const char* entryPoint,
+		ris_shader_toolkit::GlslProfile profile
+	);
+
+
 
     //! Frees the Compiler instance.
     //! @param compilerPtr A pointer to the Compiler instance to free.

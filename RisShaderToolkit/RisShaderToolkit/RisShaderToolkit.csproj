@@ -7,17 +7,24 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>RisShaderToolkit</RootNamespace>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.0.1-preview.5</Version>
+    <Version>0.2.0</Version>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="16.0.0" />
-  </ItemGroup>
 
   <!-- This enables native assets to be automatically copied when the project is referenced -->
   <!-- Works during build, publish, and when packed as NuGet -->
   <ItemGroup>
     <None Include="runtimes\**\*" Pack="true" PackagePath="runtimes\" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="runtimes\win-x64\native\fmt.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="runtimes\win-x64\native\slang.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="runtimes\win-x64\native\spdlog.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

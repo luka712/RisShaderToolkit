@@ -4,6 +4,7 @@
     {
       "name": "sprite.slang",
       "profile": "wgsl",
+      "stages": [ "vertex", "fragment" ],
       "output_file": "sprite.wgsl"
     }
   ]

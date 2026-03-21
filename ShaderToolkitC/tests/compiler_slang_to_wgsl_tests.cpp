@@ -50,11 +50,9 @@ bool compile_slang_to_wgsl()
 {
 	Compiler compiler;
 
-	CompileResult result = compiler.compileSlangToWgsl(
-		SOURCE_CODE,
-		{ ShaderStage::Vertex, ShaderStage::Fragment },
-		{ }
-	);
+	std::vector<ShaderStage> stages = { ShaderStage::Vertex, ShaderStage::Fragment };
+	std::vector<std::string> entryPoints; 
+	CompileResult result = compiler.compileSlangToWgsl(SOURCE_CODE,stages,entryPoints);
 
 	return result.isSuccess() && result.getSourceCode().find("fn main_vs") != std::string::npos && result.getSourceCode().find("fn main_fs") != std::string::npos;
 }
@@ -66,11 +64,9 @@ bool compile_slang_to_wgsl_2()
 {
 	Compiler compiler;
 
-	CompileResult result = compiler.compileSlangToWgsl(
-		SOURCE_CODE,
-		{ ShaderStage::Vertex, ShaderStage::Fragment },
-		{ "main_vs", "main_fs" }
-	);
+	std::vector<ShaderStage> stages = { ShaderStage::Vertex, ShaderStage::Fragment };
+	std::vector<std::string> entryPoints = { "main_vs", "main_fs" };
+	CompileResult result = compiler.compileSlangToWgsl(SOURCE_CODE, stages, entryPoints);
 
 	return result.isSuccess() && result.getSourceCode().find("fn main_vs") != std::string::npos && result.getSourceCode().find("fn main_fs") != std::string::npos;
 }

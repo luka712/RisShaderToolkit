@@ -50,12 +50,8 @@ bool compile_slang_to_spir_v()
 {
 	Compiler compiler;
 
-	CompileResult result = compiler.compileSlangToSpirV(
-		SOURCE_CODE,
-		{ ShaderStage::Vertex, ShaderStage::Fragment },
-		{ }
-	);
-
+	std::vector<ShaderStage> stages = { ShaderStage::Vertex, ShaderStage::Fragment };
+	auto result = compiler.compileSlangToSpirV(SOURCE_CODE, stages);
 	return result.isSuccess() && result.getBinaryCode().size() > 0;
 }
 
@@ -66,11 +62,9 @@ bool compile_slang_to_spir_v_2()
 {
 	Compiler compiler;
 
-	CompileResult result = compiler.compileSlangToSpirV(
-		SOURCE_CODE,
-		{ ShaderStage::Vertex, ShaderStage::Fragment },
-		{ "main_vs", "main_fs" }
-	);
+	std::vector<ShaderStage> stages = { ShaderStage::Vertex, ShaderStage::Fragment };
+	std::vector<std::string> entryPoints = { "main_vs", "main_fs" };
+	auto result = compiler.compileSlangToSpirV(SOURCE_CODE, stages, entryPoints);
 
 	return result.isSuccess() && result.getBinaryCode().size() > 0;
 }

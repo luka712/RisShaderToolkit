@@ -1,23 +1,28 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Logging.Abstractions;
-using RisShaderToolkit.Dto;
+﻿using RisShaderToolkit.Dto;
 using RisShaderToolkit.Json;
 using System.Text.Json;
 
 namespace RisShaderToolkit
 {
+    /// <summary>
+    /// This class is responsible for reading a JSON file that describes shader compilation tasks and 
+    /// converting it into a list of `ShaderCompileTaskDto` objects that can be used by the rest of the application.
+    /// </summary>
     internal class JsonReader
     {
-        private readonly IMapper _mapper;
-
-        internal JsonReader()
+        private static AnyProfile? ResolveProfile(string? profileStr)
         {
-            MapperConfiguration config = new (cfg =>
+            if (String.IsNullOrEmpty(profileStr))
             {
-                cfg.AddProfile<AutoMapperProfile>();
-            }, new NullLoggerFactory());
+                return null;
+            }
 
-            _mapper = config.CreateMapper();
+            if (Enum.TryParse<AnyProfile>(profileStr, ignoreCase: true, out AnyProfile value))
+            {
+                return value;
+            }
+
+            throw new InvalidOperationException($"Unsupported profile type: {profileStr}.");
         }
 
         /// <summary>
@@ -42,17 +47,35 @@ namespace RisShaderToolkit
                 throw new InvalidOperationException("Failed to deserialize compile JSON.");
             }
 
-            List<ShaderCompileTaskDto> results = new ();
+            List<ShaderCompileTaskDto> results = new();
 
-            foreach (ShaderJson shader in compileJson.Shaders)
+            foreach (ShaderJson shaderJson in compileJson.Shaders)
             {
                 // Create a task for each shader
-                string inputFilePath = Path.IsPathRooted(shader.Name)
-                    ? shader.Name
-                    : Path.Combine(directory, shader.Name);
+                string inputFilePath = Path.IsPathRooted(shaderJson.Name)
+                    ? shaderJson.Name
+                    : Path.Combine(directory, shaderJson.Name);
 
-                ShaderCompileTaskDto compileTask = _mapper.Map<ShaderCompileTaskDto>(shader);
+                ShaderCompileTaskDto compileTask = new()
+                {
+                    OutputFilePath = shaderJson.OutputFile,
+                    EntryPoints = shaderJson.EntryPoints,
+   
+                };
+
+                if(shaderJson.Stage.HasValue)
+                {
+                    compileTask.Stages.Add(shaderJson.Stage.Value);
+                }
+
+                if(shaderJson.Stages != null)
+                {
+                    compileTask.Stages.AddRange(shaderJson.Stages);
+                }
+
                 compileTask.InputFilePath = inputFilePath.Replace("\\", "/");
+                compileTask.SourceProfile = ResolveProfile(shaderJson.SourceProfile);
+                compileTask.Profile = ResolveProfile(shaderJson.Profile) ?? throw new InvalidOperationException("JSON entry in 'shaders' is missing 'profile' property.");
                 results.Add(compileTask);
             }
 

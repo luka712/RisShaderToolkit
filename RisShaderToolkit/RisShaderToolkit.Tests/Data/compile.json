@@ -1,5 +1,4 @@
 ﻿{
-  "compiler_verson": "0.0.1",
   "shaders": [
     {
       "name": "sprite.slang",
@@ -7,15 +6,6 @@
       "source_profile": "slang",
       "stage": "vertex",
       "profile": "gles_300",
-      "rules": {
-        "input_name_rule": {
-          "prefix": "in_"
-        },
-        "output_name_rule": {
-          "prefix": "out_",
-          "trim_entry_point_name": true
-        }
-      }
     },
     {
       "name": "sprite.slang",
@@ -23,15 +13,6 @@
       "source_profile": "slang",
       "stage": "fragment",
       "profile": "gles_300",
-      "rules": {
-        "input_name_rule": {
-          "prefix": "in_"
-        },
-        "output_name_rule": {
-          "prefix": "out_",
-          "trim_entry_point_name": true
-        }
-      }
     }
   ]
 }

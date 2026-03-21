@@ -6,6 +6,7 @@
 #define SLANG_COMPILE_RESULT_H
 
 #include <string>
+#include <map>
 #include "data/shader_reflection.hpp"
 
 namespace ris_shader_toolkit {
@@ -26,7 +27,9 @@ namespace ris_shader_toolkit {
 		//! @param binaryCode The compiled source code as binary if the compilation was successful. Binary code is used for targets like SPIR-V.
 		//! @param shaderReflection The shader reflection data if the compilation was successful.
 		//! @param error The error message if the compilation failed.
-		SlangCompileResult(bool success, const std::vector<uint8_t>& binaryCode, ShaderReflection shaderReflection, const std::string& error = "");
+		SlangCompileResult(bool success,
+			const std::vector<uint32_t>& binaryCode,
+			ShaderReflection shaderReflection, const std::string& error = "");
 
 		//! Returns true if the compilation was successful, false otherwise.
 		//! @return True if the compilation was successful, false otherwise.
@@ -37,8 +40,12 @@ namespace ris_shader_toolkit {
 		std::string getSourceCode() const { return _sourceCode; }
 
 		//! Returns the compiled binary source code if the compilation was successful.
+		//! @param shaderStage The shader stage to get the binary code for.
 		//! @return The compiled binary source code if the compilation was successful.
-		const std::vector<uint8_t>& getBinaryCode() const { return _binaryCode; }
+		const std::vector<uint32_t>& getBinaryCode() const
+		{
+			return _binaryCode;
+		}
 
 		//! Returns the error message if the compilation failed.
 		//! @return The error message if the compilation failed.
@@ -54,7 +61,9 @@ namespace ris_shader_toolkit {
 		//! @param binaryCode The compiled source code in binary format.
 		//! @param reflectionData The reflection data from the compilation.
 		//! @return A successful SlangCompileResult object.
-		static SlangCompileResult successResult(const std::vector<uint8_t>& binaryCode, ShaderReflection reflectionData);
+		static SlangCompileResult successResult(
+			const std::vector<uint32_t>& binaryCodePerStage,
+			ShaderReflection reflectionData);
 
 		//! Creates a failed SlangCompileResult object.
 		//! @param errorMessage The error message.
@@ -64,7 +73,7 @@ namespace ris_shader_toolkit {
 	private:
 		bool _success = false;
 		std::string _sourceCode;
-        std::vector<uint8_t> _binaryCode;
+		std::vector<uint32_t> _binaryCode;
 		std::string _errorMessage;
 		ShaderReflection _reflectionData;
 	};
