@@ -9,7 +9,7 @@ namespace ris_shader_toolkit {
 		_reflectionData = shaderReflection;
     }
 
-    SlangCompileResult::SlangCompileResult(bool success, const std::vector<uint8_t>& binaryCode, ShaderReflection shaderReflection, const std::string& error)
+    SlangCompileResult::SlangCompileResult(bool success, const std::vector<uint32_t>& binaryCode, ShaderReflection shaderReflection, const std::string& error)
 		: _success(success), _binaryCode(binaryCode), _errorMessage(error), _sourceCode("")
     {
         _reflectionData = shaderReflection;
@@ -20,7 +20,7 @@ namespace ris_shader_toolkit {
         return SlangCompileResult(true, sourceCode, shaderReflection);
     }
 
-    SlangCompileResult SlangCompileResult::successResult(const std::vector<uint8_t>& binaryCode, ShaderReflection shaderReflection)
+    SlangCompileResult SlangCompileResult::successResult(const std::vector<uint32_t>& binaryCode, ShaderReflection shaderReflection)
     {
         return SlangCompileResult(true, binaryCode, shaderReflection);
     }

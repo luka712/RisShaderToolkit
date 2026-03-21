@@ -1,6 +1,4 @@
-﻿using RisShaderToolkit.Rules;
-
-namespace RisShaderToolkit.Dto;
+﻿namespace RisShaderToolkit.Dto;
 
 /// <summary>
 /// The shader to compile.
@@ -25,7 +23,7 @@ internal record ShaderCompileTaskDto
     /// <summary>
     /// The stage of the shader to compile.
     /// </summary>
-    public ShaderStage[]? Stages { get; set; }
+    public List<ShaderStage> Stages { get; set; } = new();
 
     /// <summary>
     /// The target profile for the shader.
@@ -36,14 +34,4 @@ internal record ShaderCompileTaskDto
     /// The source profile of the shader.
     /// </summary>
     public AnyProfile? SourceProfile { get; set; }
-
-    /// <summary>
-    /// The input name rule to apply to the shader.
-    /// </summary>
-    public ReplaceStageInputNameRule? InputNameRule { get; set; }
-
-    /// <summary>
-    /// The output name rule to apply to the shader.
-    /// </summary>
-    public ReplaceStageOutputNameRule? OutputNameRule { get; set; }
 }

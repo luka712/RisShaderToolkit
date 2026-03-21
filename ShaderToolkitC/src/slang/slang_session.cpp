@@ -1,20 +1,21 @@
-﻿#include "slang/slang_session.hpp"
+#include "slang/slang_session.hpp"
 #include <spdlog/spdlog.h>
 #include <string>
 
 namespace ris_shader_toolkit {
+
 	SlangSession::SlangSession()
 	{
-		shaderStageMap = {
-			{ ShaderStage::Vertex, SLANG_STAGE_VERTEX },
-			{ ShaderStage::Fragment, SLANG_STAGE_FRAGMENT },
-			{ ShaderStage::Compute, SLANG_STAGE_COMPUTE },
+		_shaderStageMap = {
+			{ ShaderStage::Vertex, SlangStage::SLANG_STAGE_VERTEX },
+			{ ShaderStage::Fragment, SlangStage::SLANG_STAGE_FRAGMENT },
+			{ ShaderStage::Compute, SlangStage::SLANG_STAGE_COMPUTE },
 			//{ ShaderStage::Geometry, SLANG_STAGE_GEOMETRY },
 			//{ ShaderStage::Hull, SLANG_STAGE_HULL },
 			//{ ShaderStage::Domain, SLANG_STAGE_DOMAIN }
 		};
 
-		hlslProfileMap = {
+		_hlslProfileMap = {
 			   { HlslProfile::SM_4_0, "sm_4_0" },
 			   { HlslProfile::SM_4_1, "sm_4_1" },
 			   { HlslProfile::SM_5_0, "sm_5_0" },
@@ -27,7 +28,7 @@ namespace ris_shader_toolkit {
 			   { HlslProfile::SM_6_5, "sm_6_5" },
 		};
 
-		glslProfileMap = {
+		_glslProfileMap = {
 			{ GlslProfile::GLSL_330, "glsl_330" },
 			{ GlslProfile::GLSL_400, "glsl_400" },
 			{ GlslProfile::GLSL_410, "glsl_410" },
@@ -38,7 +39,7 @@ namespace ris_shader_toolkit {
 			{ GlslProfile::GLSL_460, "glsl_460" },
 		};
 
-		metalProfileMap = {
+		_metalProfileMap = {
 			{ MetalProfile::MSL_1_0, "metallib_1_0" },
 			{ MetalProfile::MSL_1_1, "metallib_1_1" },
 			{ MetalProfile::MSL_1_2, "metallib_1_2" },
@@ -49,7 +50,7 @@ namespace ris_shader_toolkit {
 			{ MetalProfile::MSL_2_4, "metallib_2_4" }
 		};
 
-		spirvProfileMap = {
+		_spirvProfileMap = {
 			{ SpirVProfile::SPIRV_1_0, "spirv_1_0" },
 			{ SpirVProfile::SPIRV_1_1, "spirv_1_1" },
 			{ SpirVProfile::SPIRV_1_2, "spirv_1_2" },
@@ -100,27 +101,30 @@ namespace ris_shader_toolkit {
 	}
 
 
-	std::vector<uint8_t> SlangSession::readCompiledBinaryCode(ComPtr<slang::IComponentType> component, size_t entryPointCount)
+	std::vector<uint32_t> SlangSession::readCompiledBinaryCode(ComPtr<slang::IComponentType> component)
 	{
-		std::vector<uint8_t> finalCode;
-		for (size_t i = 0; i < entryPointCount; i++)
-		{
-			ComPtr<slang::IBlob> shaderBlob = nullptr;
-			ComPtr<slang::IBlob> diagnosticBlob = nullptr;
-			SlangResult result = component->getEntryPointCode(i, 0, shaderBlob.writeRef(), diagnosticBlob.writeRef());
-			if (SLANG_SUCCEEDED(result)) {
+		std::vector<uint32_t> finalCode;
 
-				auto ptr = (uint8_t*) shaderBlob->getBufferPointer();
-				for (size_t i = 0; i < shaderBlob->getBufferSize(); i++)
-				{
-					finalCode.push_back(ptr[i]);
-				}
-			}
-			else {
-				std::string error = diagnosticBlob ? std::string((const char*)diagnosticBlob->getBufferPointer(), diagnosticBlob->getBufferSize()) : "Unknown error";
-				spdlog::error("Failed to get compiled code for entry point index {}. {}", i, error);
+		ComPtr<slang::IBlob> shaderBlob = nullptr;
+		ComPtr<slang::IBlob> diagnosticBlob = nullptr;
+		SlangResult result = component->getTargetCode(0, shaderBlob.writeRef(), diagnosticBlob.writeRef());
+
+		if (SLANG_SUCCEEDED(result))
+		{
+			auto* data = reinterpret_cast<const uint32_t*>(shaderBlob->getBufferPointer());
+			size_t wordCount = shaderBlob->getBufferSize() / sizeof(uint32_t);
+
+			for (size_t j = 0; j < wordCount; j++)
+			{
+				finalCode.push_back(data[j]);
 			}
 		}
+		else
+		{
+			std::string error = diagnosticBlob ? std::string((const char*)diagnosticBlob->getBufferPointer(), diagnosticBlob->getBufferSize()) : "Unknown error";
+			spdlog::error("Failed to get compiled code. {}", error);
+		}
+
 		return finalCode;
 	}
 
@@ -128,8 +132,9 @@ namespace ris_shader_toolkit {
 		const std::string& sourceCode,
 		SlangCompileTarget compileTarget,
 		std::string profile,
-		std::vector<SlangStage> stages,
-		std::vector<std::string> entryPoints
+		const std::vector<SlangStage> stages,
+		const std::vector<std::string> entryPoints,
+		SlangSessionOptions options
 	) {
 		// 1. CREATE A SLANG SESSION
 		slang::TargetDesc targetDesc;
@@ -138,7 +143,7 @@ namespace ris_shader_toolkit {
 		slang::SessionDesc sessionDesc;
 		sessionDesc.targets = &targetDesc;
 		sessionDesc.targetCount = 1;
-		sessionDesc.defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR;
+		sessionDesc.defaultMatrixLayoutMode = options.matrixLayoutMode;
 
 		if (!profile.empty())
 		{
@@ -171,12 +176,15 @@ namespace ris_shader_toolkit {
 		{
 			if (diagnosticBlob.readRef())
 			{
-				std::string error = std::string((const char*)diagnosticBlob->getBufferPointer(), diagnosticBlob->getBufferSize());
-				return SlangCompileResult(false, "", ShaderReflection(), error);
+				std::string slangErr = std::string((const char*)diagnosticBlob->getBufferPointer(), diagnosticBlob->getBufferSize());
+                std::string error = "Failed to create slang module. " + slangErr;
+                return SlangCompileResult::errorResult(error);
 			}
 			else
 			{
-				return SlangCompileResult(false, "", ShaderReflection(), "Failed to load module from source string, and no diagnostics available.");
+                std::string error ="Failed to load module from source string, and no diagnostics available.";
+                spdlog::error(error);
+                return SlangCompileResult::errorResult(error);
 			}
 		}
 		componentTypes.push_back(module);
@@ -184,7 +192,7 @@ namespace ris_shader_toolkit {
 		// 3. LOOK UP ENTRY POINTS AND COMPILE
 
 		// If we have entry points, we will use that to read, otherwise we will simply lookup vertex stages.
-		std::vector<ComPtr<slang::IEntryPoint> > entryPointInterfaces;
+		std::vector<ComPtr<slang::IEntryPoint>> entryPointInterfaces;
 		if (entryPoints.size() > 0)
 		{
 			for (size_t i = 0; i < entryPoints.size(); i++)
@@ -212,15 +220,77 @@ namespace ris_shader_toolkit {
 		// This requires the Slang source code to be decorated with @shader attributes to specify the stage for each entry point.
 		else
 		{
-			for (size_t i = 0; i < stages.size(); i++)
+            SlangInt32 entryPointCount = module->getDefinedEntryPointCount();
+            
+            spdlog::trace("Entry point count: " + std::to_string(entryPointCount));
+            if(entryPointCount == 0)
+            {
+                std::string msg = "Module has no entry point.";
+                spdlog::error(msg);
+                return SlangCompileResult::errorResult(msg);
+            }
+
+			for (SlangInt32 i = 0; i < entryPointCount; i++)
 			{
 				ComPtr<slang::IEntryPoint> entryPoint = nullptr;
 				SlangResult result = module->getDefinedEntryPoint(i, entryPoint.writeRef());
+                
 
-				entryPointInterfaces.push_back(entryPoint);
-				componentTypes.push_back(entryPoint.get());
+				if (SLANG_FAILED(result))
+				{
+					if (diagnosticBlob)
+					{
+                        std::string bufferMsg = std::string((const char*)diagnosticBlob->getBufferPointer(), diagnosticBlob->getBufferSize());
+                        std::string error ="Failed to find entry point by index: " + std::to_string(i) + ". " + bufferMsg;
+                        spdlog::error(error);
+						return SlangCompileResult::errorResult(error);
+					}
+					else
+					{
+                        std::string error ="Failed to find entry point: by index" + std::to_string(i) + ". No diagnostics available.";
+                        spdlog::error(error);
+						return SlangCompileResult::errorResult(error);
+					}
+				}
+                
+                spdlog::trace("Found entry point: " + std::to_string(i));
+
+				auto slangStage = findEntryPointStage(entryPoint);
+                
+				if (!slangStage.has_value())
+				{
+					std::string error = "Unable to find entry point stage.";
+                    spdlog::error(error);
+					return SlangCompileResult::errorResult(error);
+				}
+                
+                spdlog::trace("Entry point stage: " + std::to_string(slangStage.value()));
+
+				for (size_t i = 0; i < stages.size(); i++)
+				{
+                    // Check if we have a stage.
+                    SlangStage a = stages[i];
+                    SlangStage b = slangStage.value();
+                    
+                    spdlog::trace("Comparing " + std::to_string(a) + ", " + std::to_string(b));
+                    
+					if (a == b)
+					{
+                        spdlog::trace("Pushing");
+						entryPointInterfaces.push_back(entryPoint);
+						componentTypes.push_back(entryPoint.get());
+					}
+				}
+			}
+
+			if (entryPointInterfaces.size() == 0)
+			{
+				std::string error = "Unable to find entry point.";
+				spdlog::error(error);
+				return SlangCompileResult::errorResult(error);
 			}
 		}
+
 
 		// 4. CREATE A COMPOSITE COMPONENT TYPE
 		// Link the module to a composite component type, which represents the final shader program that can be executed.
@@ -243,13 +313,14 @@ namespace ris_shader_toolkit {
 		// BINARY FORMATS
 		if (compileTarget == SlangCompileTarget::SLANG_SPIRV)
 		{
-			auto binary = readCompiledBinaryCode(program, entryPointCount);
+			// We can read multiple binary entry points, but for SPIR-V we only 
+			// ever support single entry point, so we will just read the first one.
+			auto binary = readCompiledBinaryCode(program);
 			return SlangCompileResult(true, binary, ShaderReflection());
 		}
-		else 
+		else
 		{
 			// Get entry points.
-	
 			std::string code = readCompiledCode(program, entryPointCount);
 			return SlangCompileResult(true, code, ShaderReflection());
 		}
@@ -263,18 +334,18 @@ namespace ris_shader_toolkit {
 		slang::ProgramLayout* layout = program->getLayout(0);
 
 		// Modify entry points.
-		int entryPointCount = layout->getEntryPointCount();
-		for (int i = 0; i < entryPointCount; i++)
+        SlangUInt entryPointCount = layout->getEntryPointCount();
+		for (SlangUInt i = 0; i < entryPointCount; i++)
 		{
 			slang::EntryPointLayout* entryPointLayout = layout->getEntryPointByIndex(i);
 			const char* entryPointName = entryPointLayout->getName();
 		}
 
 		// Modify parameters
-		int paramCount = layout->getParameterCount();
-		for (int i = 0; i < paramCount; i++)
+        SlangUInt paramCount = layout->getParameterCount();
+		for (SlangUInt i = 0; i < paramCount; i++)
 		{
-			slang::VariableLayoutReflection* param = layout->getParameterByIndex(i);
+			slang::VariableLayoutReflection* param = layout->getParameterByIndex(static_cast<unsigned>(i));
 			slang::TypeReflection* type = param->getType();
 			slang::TypeReflection::Kind kind = type->getKind();
 			SlangStage stage = param->getStage();
@@ -282,7 +353,7 @@ namespace ris_shader_toolkit {
 
 			ShaderBinding binding;
 			binding.name = param->getName();
-			binding.set = param->getSemanticIndex();
+			binding.set = static_cast<uint32_t>(param->getSemanticIndex());
 			binding.binding = param->getBindingIndex();
 
 			if (_bindingTypeMap.find(kind) == _bindingTypeMap.end())
@@ -296,23 +367,52 @@ namespace ris_shader_toolkit {
 		}
 	}
 
-	/*SlangCompileResult SlangSession::compileSourceCodeToGlsl(
-		const std::string& slangSourceCode,
-		ShaderStage stage,
-		const std::string& entryPoint,
-		GlslProfile profile)
+	std::optional<SlangStage> SlangSession::findEntryPointStage(ComPtr<slang::IEntryPoint> entryPoint)
 	{
-		SlangStage slangStage = shaderStageMap[stage];
-		std::string glslProfile = glslProfileMap[profile];
+		auto functionReflection = entryPoint->getFunctionReflection();
+		if (functionReflection == nullptr)
+		{
+			spdlog::error("Failed to get function reflection for entry point.");
+			return std::nullopt;
+		}
+        
+        spdlog::trace("Found reflection object for entry point");
 
-		return compile(
-			slangSourceCode,
-			SLANG_GLSL,
-			glslProfile,
-			{ slangStage },
-			{ entryPoint }
-		);
+		// We need to check if entry point has a "shader" attribute for example, [shader("vertex")] VSOutput main_vs(VSInput input)
+		auto shaderAttr = functionReflection->findAttributeByName(_globalSession.get(), "shader");
+		if (shaderAttr == nullptr)
+		{
+			spdlog::error("Failed to find 'shader' attribute.");
+			return std::nullopt;
+		}
+        
+        spdlog::trace("Found 'shader' attribute from reflection object of entry point.");
+
+		// shader attribute will contain value such as "vertex" eg. shader("vertex")
+        size_t nameLength = 0;
+        const char* namePtr = shaderAttr->getArgumentValueString(0, &nameLength);
+        std::string nameStr(namePtr, nameLength);
+		if (nameLength == 0)
+		{
+			spdlog::error("Failed to retrieve 'shader' attribute argument value.");
+			return std::nullopt;
+		}
+        
+        spdlog::trace("Value of 'shader' attribute is '" + nameStr + "'.");
+        
+        // NOTE!: Windows returns without "", while macos returns with.
+        if(nameStr == "vertex" || nameStr == "\"vertex\"")
+                return SLANG_STAGE_VERTEX;
+        else if(nameStr == "fragment" || nameStr == "\"fragment\"")
+                return SLANG_STAGE_FRAGMENT;
+        else if(nameStr == "compute" || nameStr == "\"compute\"")
+                return SLANG_STAGE_COMPUTE;
+        
+         spdlog::error("'shader' attribute with value of  " "'" + nameStr + "'is not handled");
+         return std::nullopt;
 	}
+
+	/*
 
 	SlangCompileResult SlangSession::compileToHlsl(
 		const std::string& filePath,
@@ -374,13 +474,13 @@ namespace ris_shader_toolkit {
 
 	SlangCompileResult SlangSession::compileToWgsl(
 		const std::string& sourceCode,
-		std::vector<ShaderStage> stages,
-		std::vector<std::string> entryPoints)
+		const std::vector<ShaderStage> stages,
+		const std::vector<std::string> entryPoints)
 	{
 		std::vector<SlangStage> slangStages;
 		for (const auto& stage : stages)
 		{
-			slangStages.push_back(shaderStageMap[stage]);
+			slangStages.push_back(_shaderStageMap[stage]);
 		}
 
 		return compile(
@@ -396,23 +496,50 @@ namespace ris_shader_toolkit {
 		const std::string& sourceCode,
 		std::vector<ShaderStage> stages,
 		std::vector<std::string> entryPoints,
-		SpirVProfile profile
+		SpirVProfile profile,
+		SlangSessionOptions options
 	)
 	{
 		std::vector<SlangStage> slangStages;
 		for (const auto& stage : stages)
 		{
-			slangStages.push_back(shaderStageMap[stage]);
+			slangStages.push_back(_shaderStageMap[stage]);
 		}
 
-		std::string spirVProfile = spirvProfileMap[profile];
+		std::string spirVProfile = _spirvProfileMap[profile];
 
 		return compile(
 			sourceCode,
 			SLANG_SPIRV,
 			spirVProfile,
 			slangStages,
+			entryPoints,
+			options
+		);
+	}
+
+	SlangCompileResult SlangSession::compileToGlsl(
+		const std::string& sourceCode,
+		ShaderStage stages,
+		std::string entryPoint,
+		GlslProfile profile) {
+
+		SlangStage slangStage = _shaderStageMap[stages];
+		std::string glslProfile = _glslProfileMap[profile];
+
+		std::vector<std::string> entryPoints;
+		if (!entryPoint.empty())
+		{
+			entryPoints.push_back(entryPoint);
+		}
+
+		return compile(
+			sourceCode,
+			SLANG_GLSL,
+			glslProfile,
+			{ slangStage },
 			entryPoints
 		);
+
 	}
 }

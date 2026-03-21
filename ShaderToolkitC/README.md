@@ -71,7 +71,6 @@ The Windows script installs dependencies with vcpkg and configures CMake.
 .\scripts\build_windows.ps1
 ```
 
-
 Build output: `cmake-build-debugvisualstudio/`
 
 Notes:

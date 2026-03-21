@@ -1,4 +1,5 @@
 #include "compiler/c_compiler.hpp"
+#include <spdlog/spdlog.h>
 
 void* create_compiler()
 {
@@ -10,94 +11,18 @@ char* get_last_error_message()
 	return lastErrorMessage.empty() ? nullptr : const_cast<char*>(lastErrorMessage.c_str());
 }
 
-//void* compile_slang_to_glsl(
-//	void* compilerPtr,
-//	const char* inputFilePath,
-//	int profile,           // GlslProfile as int
-//	int shaderStage,       // ShaderStage as int
-//	const char* entryPointPtr,
-//	c_ReplaceStageInputNameRule* inputRulePtr,
-//	c_ReplaceStageOutputNameRule* outputRulePtr
-//)
-//{
-//	if (compilerPtr == nullptr)
-//	{
-//		return errorResult("Compiler instance is null.");
-//	}
-//
-//	ris_shader_toolkit::Compiler* compiler = static_cast<ris_shader_toolkit::Compiler*>(compilerPtr);
-//
-//	if (inputFilePath == nullptr)
-//	{
-//		return errorResult("Input file path or entry point is null.");
-//	}
-//
-//	ris_shader_toolkit::GlslProfile glslProfile = static_cast<ris_shader_toolkit::GlslProfile>(profile);
-//	ris_shader_toolkit::ShaderStage stage = static_cast<ris_shader_toolkit::ShaderStage>(shaderStage);
-//
-//	// Use "main" as default entry point if none is provided
-//	std::string entryPoint = (entryPointPtr != nullptr) ? std::string(entryPointPtr) : "main";
-//	ris_shader_toolkit::ReplaceStageInputNameRule* inputRule = c_to_cpp_ReplaceStageInputNameRule(inputRulePtr);
-//	ris_shader_toolkit::ReplaceStageOutputNameRule* outputRule = c_to_cpp_ReplaceStageOutputNameRule(outputRulePtr);
-//
-//	ris_shader_toolkit::CompileResult result = compiler->compileSlangToGlsl(
-//		std::string(inputFilePath),
-//		glslProfile, stage,
-//		std::string(entryPoint),
-//		inputRule, outputRule
-//	);
-//
-//	delete inputRule;
-//	delete outputRule;
-//
-//	return c_to_cpp_CompileResult(result);
-//}
-
-//
-//void* compile_slang_source_code_to_glsl(
-//	void* compilerPtr,
-//	const char* slangSourceCode,
-//	int profile,           // GlslProfile as int
-//	int shaderStage,       // ShaderStage as int
-//	const char* entryPointPtr,
-//	c_ReplaceStageInputNameRule* inputRulePtr,
-//	c_ReplaceStageOutputNameRule* outputRulePtr
-//)
-//{
-//	if (compilerPtr == nullptr)
-//	{
-//		return errorResult("Compiler instance is null.");
-//	}
-//
-//	ris_shader_toolkit::Compiler* compiler = static_cast<ris_shader_toolkit::Compiler*>(compilerPtr);
-//
-//	if (slangSourceCode == nullptr)
-//	{
-//		return errorResult("Slang source code is not defined.");
-//	}
-//
-//	ris_shader_toolkit::GlslProfile glslProfile = static_cast<ris_shader_toolkit::GlslProfile>(profile);
-//	ris_shader_toolkit::ShaderStage stage = static_cast<ris_shader_toolkit::ShaderStage>(shaderStage);
-//
-//	// Use "main" as default entry point if none is provided
-//	std::string entryPoint = (entryPointPtr != nullptr) ? std::string(entryPointPtr) : "main";
-//	ris_shader_toolkit::ReplaceStageInputNameRule* inputRule = c_to_cpp_ReplaceStageInputNameRule(inputRulePtr);
-//	ris_shader_toolkit::ReplaceStageOutputNameRule* outputRule = c_to_cpp_ReplaceStageOutputNameRule(outputRulePtr);
-//
-//	ris_shader_toolkit::CompileResult result = compiler->compileSlangSourceCodeToGlsl(
-//		std::string(slangSourceCode),
-//		glslProfile, stage,
-//		std::string(entryPoint),
-//		inputRule, outputRule
-//	);
-//
-//	delete inputRule;
-//	delete outputRule;
-//
-//	return c_to_cpp_CompileResult(result);
-//}
+#pragma region WGSL
 
 void* compile_slang_to_wgsl(
+	void* compilerPtr,
+	const char* slangSourceCode,
+	int32_t* shaderStages,
+	uint32_t shaderStagesCount
+) {
+	return compile_slang_to_wgsl_ext(compilerPtr, slangSourceCode, shaderStages, shaderStagesCount, nullptr, 0);
+}
+
+void* compile_slang_to_wgsl_ext(
 	void* compilerPtr,
 	const char* sourceCode,
 	int32_t* shaderStages,
@@ -108,14 +33,18 @@ void* compile_slang_to_wgsl(
 {
 	if (compilerPtr == nullptr)
 	{
-		return errorResult("Compiler instance is null.");
+		std::string message = "Compiler instance is null.";
+		spdlog::error(message);
+		return errorResult(message.c_str());
 	}
 
 	ris_shader_toolkit::Compiler* compiler = static_cast<ris_shader_toolkit::Compiler*>(compilerPtr);
 
 	if (sourceCode == nullptr)
 	{
-		return errorResult("Slang source code is not defined.");
+		std::string message = "Slang source code is not defined.";
+		spdlog::error(message);
+		return errorResult(message.c_str());
 	}
 
 	std::vector<ris_shader_toolkit::ShaderStage> stages;
@@ -130,13 +59,30 @@ void* compile_slang_to_wgsl(
 		entryPointNames.push_back(std::string(entryPoints[i]));
 	}
 
+	spdlog::info("Compiling Slang to WGSL with {} shader stages and {} entry points.", shaderStagesCount, entryPointsCount);
+
 	ris_shader_toolkit::CompileResult result = compiler->compileSlangToWgsl(
 		std::string(sourceCode), stages, entryPointNames);
+
+	spdlog::info("Compilation completed. Success: {}. Source code size: {}. Error message size: {}.",
+		result.isSuccess(), result.getSourceCode().size(), result.getErrorMessage().size());
 
 	return c_to_cpp_CompileResult(result);
 }
 
+#pragma endregion
+
 void* compile_slang_to_spirv(
+	void* compilerPtr,
+	const char* slangSourceCode,
+	int32_t* shaderStages,
+	uint32_t shaderStagesCount,
+	ris_shader_toolkit::SpirVProfile profile)
+{
+	return compile_slang_to_spirv_ext(compilerPtr, slangSourceCode, shaderStages, shaderStagesCount, nullptr, 0, profile);
+}
+
+void* compile_slang_to_spirv_ext(
 	void* compilerPtr,
 	const char* slangSourceCode,
 	int32_t* shaderStages,
@@ -169,8 +115,49 @@ void* compile_slang_to_spirv(
 		entryPointNames.push_back(std::string(entryPoints[i]));
 	}
 
-	ris_shader_toolkit::CompileResult result = compiler->compileSlangToSpirV(
-		std::string(slangSourceCode), stages, entryPointNames, profile);
+	ris_shader_toolkit::CompileResult result = compiler->compileSlangToSpirV(std::string(slangSourceCode), stages, entryPointNames, profile);
+
+	return c_to_cpp_CompileResult(result);
+}
+
+void* compile_slang_to_glsl(
+	void* compilerPtr,
+	const char* slangSourceCode,
+	int32_t shaderStage,
+	ris_shader_toolkit::GlslProfile profile
+)  {
+	return compile_slang_to_glsl_ext(compilerPtr, slangSourceCode, shaderStage, nullptr, profile);
+}
+
+void* compile_slang_to_glsl_ext(
+	void* compilerPtr,
+	const char* slangSourceCode,
+	int32_t shaderStage,
+	const char* entryPoint,
+	ris_shader_toolkit::GlslProfile profile
+)
+{
+	if (compilerPtr == nullptr)
+	{
+		return errorResult("Compiler instance is null.");
+	}
+
+	ris_shader_toolkit::Compiler* compiler = static_cast<ris_shader_toolkit::Compiler*>(compilerPtr);
+
+	if (slangSourceCode == nullptr)
+	{
+		return errorResult("Slang source code is not defined.");
+	}
+
+	ris_shader_toolkit::ShaderStage stage = static_cast<ris_shader_toolkit::ShaderStage>(shaderStage);
+
+	std::string entryPointName = "";
+	if (entryPoint != nullptr)
+	{
+		entryPointName = std::string(entryPoint);
+	}
+
+	ris_shader_toolkit::CompileResult result = compiler->compileSlangToGlsl(std::string(slangSourceCode), stage, entryPointName, profile);
 
 	return c_to_cpp_CompileResult(result);
 }
