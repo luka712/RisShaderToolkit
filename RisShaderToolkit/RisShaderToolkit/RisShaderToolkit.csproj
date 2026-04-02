@@ -7,7 +7,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>RisShaderToolkit</RootNamespace>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.2.0</Version>
+    <Version>0.2.2</Version>
   </PropertyGroup>
 
   <!-- This enables native assets to be automatically copied when the project is referenced -->
