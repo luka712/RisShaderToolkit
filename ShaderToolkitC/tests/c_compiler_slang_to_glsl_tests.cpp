@@ -47,13 +47,13 @@ bool c_compile_slang_to_glsl_450_vs()
 {
 	void* compilerPtr = create_compiler();
 
-	c_CompileResult* resultPtr = (c_CompileResult*)compile_slang_to_glsl_ext(
+	const auto resultPtr = static_cast<c_CompileResult *>(compile_slang_to_glsl_ext(
 		compilerPtr,
 		SOURCE_CODE.c_str(),
 		static_cast<int>(ShaderStage::Vertex),
 		"main_vs",
 		ris_shader_toolkit::GlslProfile::GLSL_450
-	);
+	));
 
 	bool isSuccess = resultPtr->success;
 	std::string sourceCodeStr(resultPtr->sourceCode);
@@ -70,12 +70,12 @@ bool c_compile_slang_to_glsl_450_fs()
 {
 	void* compilerPtr = create_compiler();
 
-	c_CompileResult* resultPtr = (c_CompileResult*)compile_slang_to_glsl(
+	auto* resultPtr = static_cast<c_CompileResult *>(compile_slang_to_glsl(
 		compilerPtr,
 		SOURCE_CODE.c_str(),
 		static_cast<int>(ShaderStage::Fragment),
 		ris_shader_toolkit::GlslProfile::GLSL_450
-	);
+	));
 
 	bool isSuccess = resultPtr->success;
 	std::string sourceCodeStr(resultPtr->sourceCode);
@@ -92,12 +92,12 @@ bool c_compile_slang_to_glsl_300_es_vs()
 {
 	void* compilerPtr = create_compiler();
 
-	c_CompileResult* resultPtr = (c_CompileResult*)compile_slang_to_glsl(
+	auto* resultPtr = static_cast<c_CompileResult *>(compile_slang_to_glsl(
 		compilerPtr,
 		SOURCE_CODE.c_str(),
 		static_cast<int>(ShaderStage::Vertex),
 		ris_shader_toolkit::GlslProfile::GLES_300
-	);
+	));
 
 	bool isSuccess = resultPtr->success;
 	std::string sourceCodeStr(resultPtr->sourceCode);

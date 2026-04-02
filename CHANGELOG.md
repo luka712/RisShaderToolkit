@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.2] - 2026-04-02
+
+### Fixed
+- Linux crashes.
+
 ## [0.2.1]
 
 ### Fixed - 2026-03-21
