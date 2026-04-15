@@ -1,13 +1,14 @@
 # Changelog
 
-## [0.2.2] - 2026-04-02
+## [0.2.2] - 2026-04-15
 
 ### Fixed
 - Linux crashes.
+- macOS crashes.
 
-## [0.2.1] - 2026-03-21
+## [0.2.1]
 
-### Fixed 
+### Fixed - 2026-03-21
 - Exception which occurs on Windows when compiling to `glsl` shaders.
 
 ## [0.2.0] - 2026-03-21
